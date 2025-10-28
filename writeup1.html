@@ -5,53 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mastering Web Application Security</title>
   <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #1a1a1a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #a0a0a0;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --border: #2a2a2a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      font-family: 'Poppins', sans-serif;
-      background: #f5f7fa;
-      color: #222;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       line-height: 1.7;
-      padding: 2rem;
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
     }
 
     .writeup-container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      background: var(--bg-secondary);
+      padding: 2rem 2.5rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      max-width: 850px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(99,102,241,0.1);
+      animation: fadeIn 0.6s ease-in-out;
     }
 
-    a {
-      text-decoration: none;
-      color: #0078ff;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    h1 {
-      color: #0078ff;
-      margin-bottom: 0.5rem;
-    }
-
-    h2 {
-      margin-top: 2rem;
-      color: #005fcc;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .back-link {
       display: inline-block;
       margin-bottom: 1.5rem;
-      color: #0078ff;
+      background: var(--bg-primary);
+      color: var(--accent);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .back-link:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      color: var(--accent-hover);
+      margin-top: 2rem;
+      font-size: 1.3rem;
     }
 
     p, ul {
+      color: var(--text-secondary);
       font-size: 1rem;
+      margin-top: 0.8rem;
     }
 
-    ul { margin-left: 1.2rem; }
+    code {
+      background: var(--bg-primary);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      color: var(--accent-hover);
+    }
+
+    ul { margin-left: 1.2rem; list-style-type: disc; }
   </style>
 </head>
 <body>
@@ -63,13 +100,13 @@
     <p>This article explores how security principles intertwine with modern web development — including XSS prevention, authentication, and CSP implementation.</p>
 
     <h2>1. Preventing XSS</h2>
-    <p>Always escape dynamic content and use `textContent` instead of `innerHTML` to avoid injection points.</p>
+    <p>Always escape dynamic content and use <code>textContent</code> instead of <code>innerHTML</code> to avoid injection points. Validate input on both client and server sides.</p>
 
     <h2>2. Using CSP</h2>
-    <p>Implement a Content Security Policy to prevent execution of untrusted scripts.</p>
+    <p>Implement a <strong>Content Security Policy</strong> to restrict execution of untrusted scripts, mitigating XSS and data injection attacks.</p>
 
     <h2>3. Secure Sessions</h2>
-    <p>Use secure cookies with <code>HttpOnly</code> and <code>Secure</code> flags, and invalidate sessions after logout.</p>
+    <p>Use secure cookies with <code>HttpOnly</code> and <code>Secure</code> flags, and ensure session invalidation upon logout or inactivity.</p>
   </div>
 </body>
 </html>
