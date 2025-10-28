@@ -1,284 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Srishti - Portfolio</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Srishti Rathi - Portfolio</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #1a1a1a;
-            --text-primary: #e0e0e0;
-            --text-secondary: #a0a0a0;
-            --accent: #6366f1;
-            --accent-hover: #818cf8;
-            --border: #2a2a2a;
-        }
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #1a1a1a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #a0a0a0;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --border: #2a2a2a;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-        }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
 
-        header {
-            margin-bottom: 4rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid var(--border);
-        }
+    header {
+      margin-bottom: 4rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.02em;
-        }
+    h1 {
+      font-size: 2.7rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
 
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
 
-        nav {
-            margin-top: 1.5rem;
-            display: flex;
-            gap: 2rem;
-        }
+    nav {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 2rem;
+    }
 
-        nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.2s;
-        }
+    nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
 
-        nav a:hover {
-            color: var(--accent-hover);
-        }
+    nav a:hover, nav a.active { color: var(--accent-hover); }
 
-        .timeline {
-            position: relative;
-        }
+    .page-section { display: none; animation: fadeIn 0.5s ease-in-out; }
+    .page-section.active { display: block; }
 
-        .post {
-            margin-bottom: 3rem;
-            padding: 1.5rem;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        .post:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.1);
-        }
+    .timeline { position: relative; }
+    .post {
+      margin-bottom: 3rem;
+      padding: 1.5rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-        .post-date {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
+    .post:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.1); }
+    .post-date { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .post-date::before { content: '📅'; }
+    .post-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+    .post-title a { color: inherit; text-decoration: none; transition: color 0.2s; }
+    .post-title a:hover { color: var(--accent-hover); }
+    .post-description { color: var(--text-secondary); margin-bottom: 1rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tag {
+      background: var(--bg-primary);
+      color: var(--accent);
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .tag:hover { background: var(--accent); color: #fff; }
 
-        .post-date::before {
-            content: '📅';
-        }
+    .projects-grid { display: grid; gap: 2rem; }
+    .project-card {
+      background: var(--bg-secondary);
+      padding: 2rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-        .post-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--text-primary);
-        }
+    .project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(99,102,241,0.15); }
+    .project-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .project-card p { color: var(--text-secondary); margin-bottom: 1.5rem; }
 
-        .post-title a {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+    .btn {
+      padding: 0.5rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
 
-        .post-title a:hover {
-            color: var(--accent-hover);
-        }
+    .btn:hover { background: var(--accent-hover); }
 
-        .post-description {
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            line-height: 1.7;
-        }
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
 
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-        .tag {
-            background: var(--bg-primary);
-            color: var(--accent);
-            padding: 0.25rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            border: 1px solid var(--border);
-            text-decoration: none;
-            transition: all 0.2s;
-        }
+    footer {
+      margin-top: 6rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
 
-        .tag:hover {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+    .social-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem; }
+    .social-links a { color: var(--text-secondary); text-decoration: none; }
+    .social-links a:hover { color: var(--accent-hover); }
 
-        footer {
-            margin-top: 6rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
+    @media (max-width: 640px) {
+      .container { padding: 2rem 1rem; }
+      h1 { font-size: 2rem; }
+      nav { flex-wrap: wrap; gap: 1rem; }
+      .skills-grid { grid-template-columns: repeat(2, 1fr); }
+    }
 
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
 
-        .social-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+    .skill-item {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+      transition: transform 0.2s;
+    }
 
-        .social-links a:hover {
-            color: var(--accent-hover);
-        }
-
-        @media (max-width: 640px) {
-            .container {
-                padding: 2rem 1rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .post {
-                padding: 1rem;
-            }
-        }
-    </style>
+    .skill-item:hover { transform: translateY(-2px); border-color: var(--accent); }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Srishti Rathi</h1>
-            <p class="subtitle">Developer • Security Researcher • Writer</p>
-            <nav>
-                <a href="#home">Home</a>
-                <a href="#blog">Blog</a>
-                <a href="#projects">Projects</a>
-                <a href="#about">About</a>
-            </nav>
-        </header>
+  <div class="container">
+    <header>
+      <h1>Srishti Rathi</h1>
+      <p class="subtitle">Web Developer • Cybersecurity Enthusiast • Bug Bounty Hunter</p>
+      <nav>
+        <a href="#" data-page="home" class="nav-link active">Home</a>
+        <a href="#" data-page="projects" class="nav-link">Projects</a>
+        <a href="#" data-page="blog" class="nav-link">Blog</a>
+        <a href="#" data-page="about" class="nav-link">About</a>
+      </nav>
+    </header>
 
-        <main class="timeline">
-            <article class="post">
-                <div class="post-date">Sep 07, 2025</div>
-                <h2 class="post-title">
-                    <a href="#post1">Building a Minimalist Portfolio Website</a>
-                </h2>
-                <p class="post-description">
-                    A comprehensive guide to creating a clean, modern portfolio website using HTML, CSS, and JavaScript. 
-                    Learn about responsive design, accessibility, and performance optimization.
-                </p>
-                <div class="tags">
-                    <a href="#" class="tag">Web Development</a>
-                    <a href="#" class="tag">CSS</a>
-                    <a href="#" class="tag">Design</a>
-                </div>
-            </article>
+    <!-- HOME -->
+    <main id="home" class="page-section active">
+      <div class="timeline">
+        <article class="post">
+          <div class="post-date">Oct 2025</div>
+          <h2 class="post-title"><a href="#">Mastering Web Application Security</a></h2>
+          <p class="post-description">
+            Exploring how security principles intertwine with modern web development — 
+            from XSS prevention to secure authentication practices.
+          </p>
+          <div class="tags"><span class="tag">Cybersecurity</span><span class="tag">Web Security</span><span class="tag">JavaScript</span></div>
+        </article>
 
-            <article class="post">
-                <div class="post-date">Apr 27, 2025</div>
-                <h2 class="post-title">
-                    <a href="#post2">Understanding JavaScript for Web Hacking</a>
-                </h2>
-                <p class="post-description">
-                    Read about the "JAVASCRIPT FOR HACKERS" and here what I learned.
-                </p>
-                <div class="tags">
-                    <a href="#" class="tag">JavaScript</a>
-                    <a href="#" class="tag">Tutorial</a>
-                    <a href="#" class="tag">Programming</a>
-                </div>
-            </article>
+        <article class="post">
+          <div class="post-date">Sep 2025</div>
+          <h2 class="post-title"><a href="#">Building My Portfolio Website</a></h2>
+          <p class="post-description">
+            A deep dive into creating this minimalist yet powerful portfolio site using 
+            HTML, CSS, and vanilla JavaScript for smooth navigation and animations.
+          </p>
+          <div class="tags"><span class="tag">Web Development</span><span class="tag">HTML</span><span class="tag">CSS</span></div>
+        </article>
+      </div>
+    </main>
 
-            <article class="post">
-                <div class="post-date">Mar 01, 2025</div>
-                <h2 class="post-title">
-                    <a href="#post3">Security Best Practices for Web Apps</a>
-                </h2>
-                <p class="post-description">
-                    An in-depth look at common web vulnerabilities and how to protect your applications 
-                    from XSS, CSRF, and injection attacks.
-                </p>
-                <div class="tags">
-                    <a href="#" class="tag">Security</a>
-                    <a href="#" class="tag">Web</a>
-                    <a href="#" class="tag">Best Practices</a>
-                </div>
-            </article>
+    <!-- PROJECTS -->
+    <main id="projects" class="page-section">
+      <h2 style="font-size: 2rem; margin-bottom: 2rem;">Projects</h2>
+      <div class="projects-grid">
+        <div class="project-card">
+          <h3>Threat Detection System</h3>
+          <p>Developed a YOLOv5-based model integrated with OpenCV to detect weapons in real-time through a webcam feed.</p>
+          <div class="tags"><span class="tag">YOLOv5</span><span class="tag">Python</span><span class="tag">OpenCV</span></div>
+        </div>
 
-            <article class="post">
-                <div class="post-date">Feb 10, 2025</div>
-                <h2 class="post-title">
-                    <a href="#post4">Top hackerOne Reports</a>
-                </h2>
-                <p class="post-description">
-                    All best reports related to all bug types at one place. b
-                </p>
-                <div class="tags">
-                    <a href="#" class="tag">React</a>
-                    <a href="#" class="tag">JavaScript</a>
-                    <a href="#" class="tag">Tutorial</a>
-                </div>
-            </article>
-        </main>
+        <div class="project-card">
+          <h3>VAPT Automation Tool</h3>
+          <p>A vulnerability assessment and penetration testing automation tool built using Python scripts and Geany IDE.</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">Security</span><span class="tag">Networking</span></div>
+        </div>
 
-        <footer>
-            <p>© 2025 Srishti. All rights reserved.</p>
-            <div class="social-links">
-                <a href="https://github.com/SrishtiCode">GitHub</a>
-                <a href="https://twitter.com/yourusername">Twitter</a>
-                <a href="https://linkedin.com/in/srishti-rathi-b487a9253">LinkedIn</a>
-                <a href="rathisrishti@gmail.com">Email</a>
-            </div>
-        </footer>
-    </div>
+        <div class="project-card">
+          <h3>Portfolio Website</h3>
+          <p>Responsive personal portfolio website created with pure HTML, CSS, and JavaScript for smooth transitions and accessibility.</p>
+          <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span></div>
+        </div>
+
+        <div class="project-card">
+          <h3>RoboSoccer with PS3 Controller</h3>
+          <p>Designed a robot controlled using a PS3 controller with ESP32 for wireless communication and motor control.</p>
+          <div class="tags"><span class="tag">ESP32</span><span class="tag">C++</span><span class="tag">Robotics</span></div>
+        </div>
+
+        <div class="project-card">
+          <h3>Obstacle Detection for Blind Assistance</h3>
+          <p>Created a smart system using machine learning and voice alerts to assist blind individuals by detecting nearby obstacles.</p>
+          <div class="tags"><span class="tag">ML</span><span class="tag">OpenCV</span><span class="tag">Speech</span></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ABOUT -->
+    <main id="about" class="page-section">
+      <h2 style="font-size: 2rem; margin-bottom: 2rem;">About Me</h2>
+      <p>
+        I’m <strong>Srishti Rathi</strong>, a Computer Science student passionate about <strong>cybersecurity</strong>, 
+        <strong>web development</strong>, and <strong>machine learning</strong>. I enjoy finding vulnerabilities, 
+        building secure web apps, and contributing to open-source projects.
+      </p>
+      <p style="margin-top: 1rem;">
+        My goal is to secure a cybersecurity internship and later a full-time role focusing on ethical hacking, 
+        VAPT, and secure software design.
+      </p>
+
+      <h3 style="margin-top: 2rem;">Skills</h3>
+      <div class="skills-grid">
+        <div class="skill-item">HTML</div>
+        <div class="skill-item">CSS</div>
+        <div class="skill-item">JavaScript</div>
+        <div class="skill-item">Python</div>
+        <div class="skill-item">Burp Suite</div>
+        <div class="skill-item">Networking</div>
+        <div class="skill-item">Git & GitHub</div>
+        <div class="skill-item">ESP32</div>
+        <div class="skill-item">Machine Learning</div>
+        <div class="skill-item">Penetration Testing</div>
+      </div>
+
+      <h3 style="margin-top: 2rem;">Contact</h3>
+      <p>Email: <a href="mailto:srishtirathi@gmail.com" style="color: var(--accent); text-decoration: none;">srishtirathi@gmail.com</a></p>
+    </main>
+
+    <!-- BLOG -->
+    <main id="blog" class="page-section">
+      <h2 style="font-size: 2rem; margin-bottom: 2rem;">Blog Posts</h2>
+      <div class="timeline">
+        <article class="post">
+          <div class="post-date">Oct 2025</div>
+          <h2 class="post-title"><a href="#">DOM XSS: My Learning Journey</a></h2>
+          <p class="post-description">Completed all Burp Suite DOM XSS labs, analyzed real-world cases, and explored detection using DevTools and MutationObservers.</p>
+          <div class="tags"><span class="tag">XSS</span><span class="tag">Security</span><span class="tag">Bug Bounty</span></div>
+        </article>
+
+        <article class="post">
+          <div class="post-date">Sep 2025</div>
+          <h2 class="post-title"><a href="#">Exploring Bug Bounty Hunting</a></h2>
+          <p class="post-description">My week-long bug bounty practice on GitLab — the methods, payloads, and lessons learned from real-world testing.</p>
+          <div class="tags"><span class="tag">Bug Bounty</span><span class="tag">Web Security</span></div>
+        </article>
+      </div>
+    </main>
+
+    <footer>
+      <p>© 2025 Srishti Rathi. All rights reserved.</p>
+      <div class="social-links">
+        <a href="https://github.com/srishtirathi">GitHub</a>
+        <a href="https://linkedin.com/in/srishtirathi">LinkedIn</a>
+        <a href="mailto:srishtirathi@gmail.com">Email</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const navLinks = document.querySelectorAll('.nav-link');
+      const pageSections = document.querySelectorAll('.page-section');
+
+      function showPage(pageName) {
+        pageSections.forEach(section => section.classList.remove('active'));
+        const targetPage = document.getElementById(pageName);
+        if (targetPage) targetPage.classList.add('active');
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.dataset.page === pageName) link.classList.add('active');
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        history.pushState(null, null, `#${pageName}`);
+      }
+
+      navLinks.forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          showPage(link.dataset.page);
+        });
+      });
+
+      window.addEventListener('popstate', () => {
+        const hash = window.location.hash.slice(1) || 'home';
+        showPage(hash);
+      });
+
+      const initialHash = window.location.hash.slice(1);
+      if (initialHash && ['home', 'projects', 'about', 'blog'].includes(initialHash)) {
+        showPage(initialHash);
+      }
+    });
+  </script>
 </body>
 </html>
