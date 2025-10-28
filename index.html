@@ -123,6 +123,7 @@
       border-radius: 6px;
       font-size: 0.9rem;
       transition: background 0.2s;
+      display: inline-block;
     }
 
     .btn:hover { background: var(--accent-hover); }
@@ -134,6 +135,12 @@
     }
 
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .project-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
 
     footer {
       margin-top: 6rem;
@@ -153,6 +160,7 @@
       h1 { font-size: 2rem; }
       nav { flex-wrap: wrap; gap: 1rem; }
       .skills-grid { grid-template-columns: repeat(2, 1fr); }
+      .project-links { flex-direction: column; }
     }
 
     .skills-grid {
@@ -181,7 +189,7 @@
       <nav>
         <a href="#" data-page="home" class="nav-link active">Home</a>
         <a href="#" data-page="projects" class="nav-link">Projects</a>
-        <a href="#" data-page="blog" class="nav-link">Blog</a>
+        <a href="#" data-page="writeups" class="nav-link">Writeups</a>
         <a href="#" data-page="about" class="nav-link">About</a>
       </nav>
     </header>
@@ -219,30 +227,45 @@
           <h3>Threat Detection System</h3>
           <p>Developed a YOLOv5-based model integrated with OpenCV to detect weapons in real-time through a webcam feed.</p>
           <div class="tags"><span class="tag">YOLOv5</span><span class="tag">Python</span><span class="tag">OpenCV</span></div>
+          <div class="project-links">
+            <a href="https://github.com/srishtirathi" class="btn" target="_blank">View on GitHub</a>
+          </div>
         </div>
 
         <div class="project-card">
           <h3>VAPT Automation Tool</h3>
           <p>A vulnerability assessment and penetration testing automation tool built using Python scripts and Geany IDE.</p>
           <div class="tags"><span class="tag">Python</span><span class="tag">Security</span><span class="tag">Networking</span></div>
+          <div class="project-links">
+            <a href="https://github.com/srishtirathi" class="btn" target="_blank">View on GitHub</a>
+          </div>
         </div>
 
         <div class="project-card">
           <h3>Portfolio Website</h3>
           <p>Responsive personal portfolio website created with pure HTML, CSS, and JavaScript for smooth transitions and accessibility.</p>
           <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span></div>
+          <div class="project-links">
+            <a href="https://github.com/srishtirathi" class="btn" target="_blank">View on GitHub</a>
+          </div>
         </div>
 
         <div class="project-card">
           <h3>RoboSoccer with PS3 Controller</h3>
           <p>Designed a robot controlled using a PS3 controller with ESP32 for wireless communication and motor control.</p>
           <div class="tags"><span class="tag">ESP32</span><span class="tag">C++</span><span class="tag">Robotics</span></div>
+          <div class="project-links">
+            <a href="https://github.com/srishtirathi" class="btn" target="_blank">View on GitHub</a>
+          </div>
         </div>
 
         <div class="project-card">
           <h3>Obstacle Detection for Blind Assistance</h3>
           <p>Created a smart system using machine learning and voice alerts to assist blind individuals by detecting nearby obstacles.</p>
           <div class="tags"><span class="tag">ML</span><span class="tag">OpenCV</span><span class="tag">Speech</span></div>
+          <div class="project-links">
+            <a href="https://github.com/srishtirathi" class="btn" target="_blank">View on GitHub</a>
+          </div>
         </div>
       </div>
     </main>
@@ -251,7 +274,7 @@
     <main id="about" class="page-section">
       <h2 style="font-size: 2rem; margin-bottom: 2rem;">About Me</h2>
       <p>
-        I’m <strong>Srishti Rathi</strong>, a Computer Science student passionate about <strong>cybersecurity</strong>, 
+        I'm <strong>Srishti Rathi</strong>, a Computer Science student passionate about <strong>cybersecurity</strong>, 
         <strong>web development</strong>, and <strong>machine learning</strong>. I enjoy finding vulnerabilities, 
         building secure web apps, and contributing to open-source projects.
       </p>
@@ -278,22 +301,38 @@
       <p>Email: <a href="mailto:srishtirathi@gmail.com" style="color: var(--accent); text-decoration: none;">srishtirathi@gmail.com</a></p>
     </main>
 
-    <!-- BLOG -->
-    <main id="blog" class="page-section">
-      <h2 style="font-size: 2rem; margin-bottom: 2rem;">Blog Posts</h2>
+    <!-- WRITEUPS -->
+    <main id="writeups" class="page-section">
+      <h2 style="font-size: 2rem; margin-bottom: 2rem;">Security Writeups</h2>
       <div class="timeline">
         <article class="post">
           <div class="post-date">Oct 2025</div>
-          <h2 class="post-title"><a href="#">DOM XSS: My Learning Journey</a></h2>
+          <h2 class="post-title">DOM XSS: My Learning Journey</h2>
           <p class="post-description">Completed all Burp Suite DOM XSS labs, analyzed real-world cases, and explored detection using DevTools and MutationObservers.</p>
           <div class="tags"><span class="tag">XSS</span><span class="tag">Security</span><span class="tag">Bug Bounty</span></div>
+          <div class="project-links" style="margin-top: 1rem;">
+            <a href="#" class="btn">Read Writeup</a>
+          </div>
         </article>
 
         <article class="post">
           <div class="post-date">Sep 2025</div>
-          <h2 class="post-title"><a href="#">Exploring Bug Bounty Hunting</a></h2>
+          <h2 class="post-title">Exploring Bug Bounty Hunting on GitLab</h2>
           <p class="post-description">My week-long bug bounty practice on GitLab — the methods, payloads, and lessons learned from real-world testing.</p>
           <div class="tags"><span class="tag">Bug Bounty</span><span class="tag">Web Security</span></div>
+          <div class="project-links" style="margin-top: 1rem;">
+            <a href="#" class="btn">Read Writeup</a>
+          </div>
+        </article>
+
+        <article class="post">
+          <div class="post-date">Aug 2025</div>
+          <h2 class="post-title">SQL Injection Deep Dive</h2>
+          <p class="post-description">Comprehensive analysis of SQL injection techniques, from basic UNION attacks to advanced blind SQL injection methodologies.</p>
+          <div class="tags"><span class="tag">SQL Injection</span><span class="tag">Web Security</span><span class="tag">Pentesting</span></div>
+          <div class="project-links" style="margin-top: 1rem;">
+            <a href="#" class="btn">Read Writeup</a>
+          </div>
         </article>
       </div>
     </main>
@@ -338,7 +377,7 @@
       });
 
       const initialHash = window.location.hash.slice(1);
-      if (initialHash && ['home', 'projects', 'about', 'blog'].includes(initialHash)) {
+      if (initialHash && ['home', 'projects', 'about', 'writeups'].includes(initialHash)) {
         showPage(initialHash);
       }
     });
