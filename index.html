@@ -317,7 +317,7 @@
         <div class="skill-item">Networking</div>
         <div class="skill-item">Git & GitHub</div>
         <div class="skill-item">CTFPlayer</div>
-        <div class="skill-item">MachineLearning</div>
+        <div class="skill-item">ML</div>
         <div class="skill-item">WebSecurity</div>
       </div>
 
@@ -331,25 +331,25 @@
       <div class="timeline">
         <article class="post">
           <div class="post-date">Oct 2025</div>
-          <h2 class="post-title">DOM XSS: My Learning Journey</h2>
-          <p class="post-description">Completed all Burp Suite DOM XSS labs, analyzed real-world cases, and explored detection using DevTools and MutationObservers.</p>
-          <div class="tags"><span class="tag">XSS</span><span class="tag">Security</span><span class="tag">Bug Bounty</span></div>
+          <h2 class="post-title">TryHackMe WriteUps</h2>
+          <p class="post-description">Concise walkthroughs of TryHackMe rooms with methodical reconnaissance, exploitation steps, and remediation notes — emphasis on reproducible commands, root proof, and pragmatic takeaways.</p>
+          <div class="tags"><span class="tag">Writeups</span><span class="tag">Security</span><span class="tag">TryHackMe</span></div>
           <div class="project-links" style="margin-top: 1rem;">
-            <a href="#" class="btn read-writeup" data-id="domxss">Read Writeup</a>
+            <a href="#" class="btn read-writeup" data-id="tryhackme">Read Writeup</a>
           </div>
         </article>
 
         <article class="post">
-          <div class="post-date">Sep 2025</div>
-          <h2 class="post-title">Exploring Bug Bounty Hunting on GitLab</h2>
-          <p class="post-description">My week-long bug bounty practice on GitLab — the methods, payloads, and lessons learned from real-world testing.</p>
-          <div class="tags"><span class="tag">Bug Bounty</span><span class="tag">Web Security</span></div>
+          <div class="post-date">June 2025</div>
+          <h2 class="post-title">PicoCTF Writeups</h2>
+          <p class="post-description">A collection of my writeups for PicoCTF challenges, documenting methodologies, tools, and solutions across various cybersecurity categories.</p>
+          <div class="tags"><span class="tag">PicoCTF</span><span class="tag">Web Security</span></div>
           <div class="project-links" style="margin-top: 1rem;">
-            <a href="#" class="btn read-writeup" data-id="gitlabbounty">Read Writeup</a>
+            <a href="#" class="btn read-writeup" data-id="picoctf">Read Writeup</a>
           </div>
         </article>
 
-        <article class="post">
+        <!--<article class="post">
           <div class="post-date">Aug 2025</div>
           <h2 class="post-title">SQL Injection Deep Dive</h2>
           <p class="post-description">Comprehensive analysis of SQL injection techniques, from basic UNION attacks to advanced blind SQL injection methodologies.</p>
@@ -359,7 +359,7 @@
           </div>
         </article>
       </div>
-    </main>
+    </main>-->
 
     <!-- SINGLE WRITEUP VIEW -->
     <main id="single-writeup" class="page-section">
@@ -387,23 +387,16 @@
       const backToWriteups = document.getElementById('backToWriteups');
 
       const writeups = {
-        domxss: `
-          <h2>DOM XSS: My Learning Journey</h2>
-          <p>In this writeup, I explored DOM-based Cross-Site Scripting (XSS) vulnerabilities. These occur when untrusted data is written to the DOM without proper sanitization.</p>
-          <p>I completed all Burp Suite DOM XSS labs and analyzed multiple payloads using <strong>DevTools</strong> and <strong>MutationObservers</strong> to trace JavaScript execution flows.</p>
-          <p>Key takeaways included understanding sinks like <code>innerHTML</code>, <code>document.write</code>, and <code>eval()</code>—and the importance of context-aware encoding.</p>
+        tryhackme: `
+          <h2>TryHackMe Writeups</h2>
+          <h3>Gaming Server</h3>
+          <a href="https://github.com/SrishtiCode/Tryhackme/tree/main/Easy/GamingServer" class="btn" target="_blank">View Writeup</a>
         `,
-        gitlabbounty: `
+        picoctf: `
           <h2>Exploring Bug Bounty Hunting on GitLab</h2>
           <p>During my week-long GitLab bug bounty practice, I focused on testing for injection, IDOR, and XSS vulnerabilities across endpoints.</p>
           <p>I learned how to efficiently use <strong>Burp Suite</strong> for intercepting API calls, and how GitLab’s bounty structure encourages detailed proof-of-concept submissions.</p>
           <p>This helped me refine my reconnaissance strategy and improved my payload crafting skills for web security testing.</p>
-        `,
-        sqlinjection: `
-          <h2>SQL Injection Deep Dive</h2>
-          <p>This writeup explores SQL Injection from fundamental UNION-based attacks to advanced Blind SQL Injection.</p>
-          <p>Key methods studied: <strong>boolean-based</strong>, <strong>time-based</strong>, and <strong>out-of-band</strong> injections.</p>
-          <p>I also practiced exploitation using <code>sqlmap</code> and learned preventive coding practices using parameterized queries and ORM frameworks.</p>
         `
       };
 
