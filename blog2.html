@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Deep Dive into Web Application Firewalls (WAF) — Evasion Techniques Explained</title>
+  <meta name="description" content="Analytical deep dive into Web Application Firewalls, common evasion categories, and defensive mitigations for web defenders and bug hunters." />
+  <style>
+    :root{
+      --bg-primary:#0a0a0a; --bg-secondary:#1a1a1a;
+      --text-primary:#e0e0e0; --text-secondary:#a0a0a0;
+      --accent:#00AD83; --border:#2a2a2a;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Segoe UI', Roboto, sans-serif;
+      background:var(--bg-primary); color:var(--text-primary);
+      padding:3rem 1.5rem; display:flex; justify-content:center;
+    }
+    .container{
+      max-width:900px; width:100%; background:var(--bg-secondary);
+      padding:2rem 2.5rem; border-radius:10px; border:1px solid var(--border);
+      box-shadow:0 8px 32px rgba(0,173,131,0.35);
+    }
+    a.back{display:inline-block;margin-bottom:1rem;color:var(--accent);text-decoration:none;padding:.4rem .8rem;border-radius:6px;background:var(--bg-primary);border:1px solid var(--border)}
+    h1{color:var(--accent);margin-bottom:.3rem}
+    p, li{color:var(--text-secondary);margin-top:.8rem;line-height:1.6}
+    h2{color:var(--accent);margin-top:1.6rem}
+    pre{background:#070707;padding:1rem;border-radius:6px;overflow:auto;color:var(--text-primary);font-family:Consolas,monospace}
+    ul{margin-left:1.1rem}
+    .note{background:#071815;border-left:4px solid var(--accent);padding:.8rem;border-radius:6px;margin-top:.8rem;color:var(--text-primary)}
+    .tags{margin-top:1rem;color:var(--text-secondary);font-size:.95rem}
+  </style>
+</head>
+<body>
+  <article class="container">
+    <a class="back" href="index.html">← Back to Home</a>
+    <h1>Deep Dive into Web Application Firewalls (WAF) — Evasion Techniques Explained</h1>
+    <p><strong>Date:</strong> October 2025</p>
+    <p class="note"><strong>Preview:</strong> This post explains how WAFs detect malicious requests, common categories of evasion used by attackers, and — importantly — how defenders can harden detection and testing approaches without revealing exploit recipes.</p>
+
+    <h2>Introduction</h2>
+    <p>Web Application Firewalls (WAFs) are an essential layer in modern web defense: they inspect incoming HTTP(S) traffic to detect and block malicious activity. WAFs range from simple rule-based signature engines to sophisticated anomaly/ML systems. For defenders and bug hunters, understanding typical evasion patterns helps design better tests and sensible mitigations.</p>
+
+    <h2>How WAFs Work — detection approaches</h2>
+    <p>Modern WAFs usually combine multiple detection strategies:</p>
+    <ul>
+      <li><strong>Signature-based:</strong> Known-malicious patterns, payload signatures, or regex rules.</li>
+      <li><strong>Rule engines / heuristics:</strong> Contextual rules (e.g., input length, suspicious characters in parameters).</li>
+      <li><strong>Anomaly detection / baselining:</strong> Flags deviations from normal traffic profiles — often aided by ML.</li>
+      <li><strong>Behavioral & stateful inspection:</strong> Tracks session state, cookies, and multi-step flows to detect suspicious sequences.</li>
+      <li><strong>Positive/negative security models:</strong> Positive (allow only known-safe inputs) vs negative (block known-bad inputs) approaches.</li>
+    </ul>
+
+    <h2>Common Evasion Categories (conceptual)</h2>
+    <p>Below are high-level categories of evasion observed in the wild. I explain each conceptually and pair it with defensive mitigations — no exploit payloads are provided.</p>
+
+    <h3>1. Encoding & obfuscation</h3>
+    <p><em>Concept:</em> Attackers encode, escape, or obfuscate malicious data (URL encoding, double-encoding, Unicode variants, base64) so signatures or simple pattern checks don’t match.</p>
+    <p><em>Defensive mitigations:</em> Normalize and decode inputs server-side before inspection; apply canonicalization consistently; inspect multiple decoded forms; enforce input validation after canonicalization.</p>
+
+    <h3>2. Request fragmentation & segmentation</h3>
+    <p><em>Concept:</em> Breaking a malicious payload across multiple parameters, headers, or fragmented requests (chunked encoding) to evade single-string detection.</p>
+    <p><em>Defensive mitigations:</em> Reconstruct logical request context before applying rules; ensure parsers normalize chunked/fragmented forms; use stateful inspection where practical.</p>
+
+    <h3>3. Protocol misuse & uncommon features</h3>
+    <p><em>Concept:</em> Abuse lesser-used HTTP features (unusual verbs, ambiguous headers, content-type mismatches) or craft requests that exploit differences between WAF parser and application parser.</p>
+    <p><em>Defensive mitigations:</em> Harden server parsing behavior, reject ambiguous/unsupported method combinations, and align the WAF parsing logic with application server behavior.</p>
+
+    <h3>4. Parameter pollution & ambiguous parsing</h3>
+    <p><em>Concept:</em> Supplying multiple parameters with the same name or using mixed encodings so the application and WAF interpret the request differently.</p>
+    <p><em>Defensive mitigations:</em> Define canonical parameter parsing rules (e.g., first/last/value-list) and enforce them consistently at both WAF and application layers; validate parameter schemas.</p>
+
+    <h3>5. Rate & fingerprint evasion</h3>
+    <p><em>Concept:</em> Low-and-slow attacks, distributed small-volume probes, or mimicking benign client fingerprints to avoid triggering threshold-based rules.</p>
+    <p><em>Defensive mitigations:</em> Implement multi-factor detections (combining rate, anomaly, and reputation signals), progressive challenge mechanisms (CAPTCHAs, JavaScript challenges), and retain longer baselines for behavior profiling.</p>
+
+    <h3>6. Whitelist & allowlist circumvention</h3>
+    <p><em>Concept:</em> Targeting endpoints or paths that have relaxed filtering (trusted APIs, internal endpoints, static assets) or manipulating headers (e.g., X-Forwarded-For) to appear from trusted sources.</p>
+    <p><em>Defensive mitigations:</em> Minimize overly permissive allowlists; isolate privileged endpoints behind stricter controls; validate client metadata server-side and ensure trust anchors are robust.</p>
+
+    <h2>Testing WAF Effectiveness (responsibly)</h2>
+    <p>As a defender or bug hunter, test WAFs ethically and legally. Points to consider:</p>
+    <ul>
+      <li>Always have authorization before testing a live system (explicit written permission).</li>
+      <li>Use controlled labs (local deployments, OWASP Juice Shop, TryHackMe labs) or staging environments that mirror production.</li>
+      <li>Focus tests on <strong>behavioral differences</strong>: how the WAF normalizes input, which endpoints are monitored, and how the backend parses requests.</li>
+      <li>Measure false positives and negatives — both matter. A high false positive rate may lead teams to disable important rules.</li>
+    </ul>
+
+    <div class="note">
+      <strong>Responsible testing note:</strong> This article explains evasion categories to help defenders harden systems. It intentionally avoids actionable exploit recipes or step-by-step bypasses that could facilitate misuse.
+    </div>
+
+    <h2>Operational Recommendations</h2>
+    <ul>
+      <li>Use a layered approach: WAF + secure coding + runtime protections + proper logging and monitoring.</li>
+      <li>Enforce input canonicalization early in the request pipeline and inspect the canonical form.</li>
+      <li>Adopt positive security models for high-risk inputs (strict schema validation) where feasible.</li>
+      <li>Retain rich logs (full request bodies where legally allowed) and correlate WAF events with application logs for investigations.</li>
+      <li>Continuously tune rules and use threat intelligence to update signatures; monitor for adversarial drift.</li>
+      <li>Use staged rollouts of new rules to measure impact and minimize regressions.</li>
+    </ul>
+
+    <h2>Conclusion</h2>
+    <p>WAFs are valuable but not infallible. Understanding common evasion categories helps defenders design normalization, stateful inspection, and layered defenses that reduce the attack surface. For bug hunters, a principled, authorized approach to testing WAFs — focused on observation and reporting — provides high value to asset owners without crossing ethical boundaries.</p>
+
+    <h2>Further reading & references</h2>
+    <ul>
+      <li>OWASP WAF Cheat Sheet (concepts & best practices)</li>
+      <li>Vendor docs (Cloud WAFs, managed WAF providers) for configuration specifics</li>
+      <li>Academic papers on HTTP parsing ambiguity and canonicalization</li>
+    </ul>
+
+    <p class="tags"><strong>Tags:</strong> WAF, web security, canonicalization, defensive-security, bug-bounty</p>
+  </article>
+</body>
+</html>
