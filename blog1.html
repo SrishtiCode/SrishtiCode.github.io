@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mastering Web Application Security</title>
+  <title>Understanding the CIA Triad (Confidentiality, Integrity, Availability)</title>
   <style>
     :root {
       --bg-primary: #0a0a0a;
@@ -80,33 +80,60 @@
       margin-top: 0.8rem;
     }
 
-    code {
-      background: var(--bg-primary);
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-family: 'Consolas', monospace;
-      color: var(--accent-hover);
-    }
-
     ul { margin-left: 1.2rem; list-style-type: disc; }
+
+    strong { color: var(--text-primary); }
   </style>
 </head>
 <body>
   <div class="writeup-container">
     <a href="index.html" class="back-link">← Back to Home</a>
-    <h1>Mastering Web Application Security</h1>
+    <h1>Understanding the CIA Triad (Confidentiality, Integrity, Availability)</h1>
     <p><strong>Date:</strong> October 2025</p>
 
-    <p>This article explores how security principles intertwine with modern web development — including XSS prevention, authentication, and CSP implementation.</p>
+    <p><em>From my first bug bounty submission to my CNS class, the CIA Triad has been at the core of everything I’ve learned about cybersecurity.</em></p>
 
-    <h2>1. Preventing XSS</h2>
-    <p>Always escape dynamic content and use <code>textContent</code> instead of <code>innerHTML</code> to avoid injection points. Validate input on both client and server sides.</p>
+    <h2>Introduction</h2>
+    <p>This semester, I have a new subject called <strong>CNS (Cryptography and Computer Networks)</strong>. The first thing my teacher taught was the goals of security — and the answer was <strong>CIA</strong>. Interestingly, I had already come across this concept while submitting my first bug report — it asked about the CIA impact, and based on that, the platform determined the severity of the bug.</p>
 
-    <h2>2. Using CSP</h2>
-    <p>Implement a <strong>Content Security Policy</strong> to restrict execution of untrusted scripts, mitigating XSS and data injection attacks.</p>
+    <p>You can think of the <strong>CIA Triad</strong> as a simple yet high-level checklist for evaluating security procedures and tools. It consists of three key principles — <strong>C (Confidentiality)</strong>, <strong>I (Integrity)</strong>, and <strong>A (Availability)</strong>. Let’s understand what each of these means.</p>
 
-    <h2>3. Secure Sessions</h2>
-    <p>Use secure cookies with <code>HttpOnly</code> and <code>Secure</code> flags, and ensure session invalidation upon logout or inactivity.</p>
+    <h2>1. Confidentiality</h2>
+    <p>Confidentiality means keeping data private and accessible only to those who are authorized to see it. In other words, information should remain within the boundaries of who it’s meant for.</p>
+
+    <p>Humans, driven by curiosity, often try to access things that are intentionally hidden — but in cybersecurity, this is not about curiosity, it’s about <strong>privacy</strong> and <strong>protection</strong>. Therefore, we must ensure that data remains confidential to maintain security.</p>
+
+    <p>In simple terms, confidentiality means only those with proper permission or authorization can access the information.</p>
+
+    <p>Some common ways to maintain confidentiality include <strong>authentication</strong>, <strong>authorization</strong>, <strong>encryption</strong>, <strong>passwords</strong>, and <strong>digital signatures</strong>. However, as defenders strengthen security, attackers continually develop new methods to exploit weaknesses — so, defenders must always stay one step ahead.</p>
+
+    <h2>2. Integrity</h2>
+    <p>Integrity ensures that data is trustworthy, accurate, and free from tampering. The integrity of data is maintained only if it remains authentic, reliable, and unaltered.</p>
+
+    <p>If a company provides some information, users must be confident that it’s correct — otherwise, trust can be severely damaged. To preserve integrity, we must ensure that data cannot be modified by unauthorized or untrustworthy individuals.</p>
+
+    <p>Techniques such as <strong>hashing</strong>, <strong>encryption</strong>, <strong>digital certificates</strong>, and <strong>digital signatures</strong> help in maintaining data integrity. For websites, using trusted <strong>Certificate Authorities (CAs)</strong> ensures that users are visiting genuine and verified websites, preventing impersonation or tampering.</p>
+
+    <h2>3. Availability</h2>
+    <p>Even if data is confidential and its integrity is maintained, it becomes useless if it isn’t available to those who need it. Availability ensures that systems, networks, and applications function properly and are accessible whenever required.</p>
+
+    <p>Individuals with authorized access should be able to retrieve information quickly and efficiently without excessive delay. In today’s digital world, downtime can cause massive losses, both financially and operationally.</p>
+
+    <p>One major threat to availability is a <strong>Denial-of-Service (DoS)</strong> attack, where attackers overwhelm a server with excessive traffic, causing legitimate requests to fail.</p>
+
+    <p>To ensure high availability, organizations often implement <strong>redundant servers</strong>, <strong>backup networks</strong>, and <strong>failover systems</strong> — these automatically take over when the primary system is disrupted or fails.</p>
+
+    <h2>Conclusion</h2>
+    <p>The <strong>CIA Triad</strong> forms the foundation of all cybersecurity principles. Whether it’s protecting user data, securing websites, or assessing bug impacts, understanding <strong>Confidentiality</strong>, <strong>Integrity</strong>, and <strong>Availability</strong> helps us evaluate how secure a system truly is.</p>
+
+    <ul>
+      <li><strong>Confidentiality</strong> keeps data private.</li>
+      <li><strong>Integrity</strong> keeps data accurate.</li>
+      <li><strong>Availability</strong> keeps data accessible.</li>
+    </ul>
+
+    <p>Together, they form the <strong>core of information security.</strong></p>
   </div>
 </body>
 </html>
+
