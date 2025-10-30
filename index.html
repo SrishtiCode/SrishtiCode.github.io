@@ -13,7 +13,7 @@
       --text-primary: #e0e0e0;
       --text-secondary: #a0a0a0;
       --accent: #00AD83;
-      --accent-hover: #00c793; /* slightly brighter for hover */
+      --accent-hover: #00c793;
       --border: #2a2a2a;
     }
 
@@ -53,6 +53,7 @@
       margin-top: 1.5rem;
       display: flex;
       gap: 2rem;
+      align-items: center;
     }
 
     nav a {
@@ -64,6 +65,30 @@
     }
 
     nav a:hover, nav a.active { color: var(--accent-hover); }
+
+    /* Resume button in nav */
+    .resume-nav-btn {
+      background: var(--accent);
+      color: white !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 20px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .resume-nav-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 173, 131, 0.4);
+    }
+
+    .resume-nav-btn svg {
+      width: 16px;
+      height: 16px;
+    }
 
     .page-section { display: none; animation: fadeIn 0.5s ease-in-out; }
     .page-section.active { display: block; }
@@ -124,7 +149,7 @@
       font-size: 0.9rem;
       transition: background 0.2s;
       display: inline-block;
-      cursor: pointer; /* explicit pointer */
+      cursor: pointer;
     }
 
     .btn:hover { background: var(--accent-hover); }
@@ -141,6 +166,36 @@
       display: flex;
       gap: 1rem;
       margin-top: 1rem;
+    }
+
+    /* Resume download button in About section */
+    .download-resume {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: var(--accent);
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .download-resume:hover {
+      background: var(--accent-hover);
+      transform: translateX(5px);
+    }
+
+    .download-resume svg {
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
     }
 
     footer {
@@ -216,6 +271,14 @@
         <a href="#" data-page="projects" class="nav-link">Projects</a>
         <a href="#" data-page="writeups" class="nav-link">Writeups</a>
         <a href="#" data-page="about" class="nav-link">About</a>
+        <a href="assets/Srishti_Rathi_Resume.pdf" download class="resume-nav-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Resume
+        </a>
       </nav>
     </header>
 
@@ -226,7 +289,7 @@
           <div class="post-date">Oct 2025</div>
           <h2 class="post-title"><a href="blog1.html">Understanding the CIA Triad (Confidentiality, Integrity, Availability)</a></h2>
           <p class="post-description">
-            From my first bug bounty submission to my CNS class, the CIA Triad has been at the core of everything I’ve learned about cybersecurity.
+            From my first bug bounty submission to my CNS class, the CIA Triad has been at the core of everything I've learned about cybersecurity.
           </p>
           <div class="tags"><span class="tag">Cybersecurity</span><span class="tag">Web Security</span><span class="tag">CIA</span></div>
         </article>
@@ -257,7 +320,7 @@
 
         <div class="project-card">
           <h3>VAPT Automation Tool</h3>
-          <p>Vulnerability Scanner is a powerful Bash-based automation tool crafted for penetration testers and cybersecurity professionals. It combines intelligence gathering, brute-force testing, and exploit analysis into one streamlined command-line utility. Whether you’re conducting a basic recon or an in-depth assessment, this tool helps identify weak spots in a network environment effectively.</p>
+          <p>Vulnerability Scanner is a powerful Bash-based automation tool crafted for penetration testers and cybersecurity professionals. It combines intelligence gathering, brute-force testing, and exploit analysis into one streamlined command-line utility. Whether you're conducting a basic recon or an in-depth assessment, this tool helps identify weak spots in a network environment effectively.</p>
           <div class="tags"><span class="tag">Bash</span><span class="tag">Security</span><span class="tag">Networking</span><span class="tag">Recon</span></div>
           <div class="project-links">
             <a href="https://github.com/SrishtiCode/Vulnerability-Scanner" class="btn" target="_blank" rel="noopener">View on GitHub</a>
@@ -294,8 +357,17 @@
         workflows.
       </p>
       <p style="margin-top: 1rem;">
-        When I’m not debugging vulnerabilities, I’m probably exploring new tech, jotting down insights here, or learning something wildly new.
+        When I'm not debugging vulnerabilities, I'm probably exploring new tech, jotting down insights here, or learning something wildly new.
       </p>
+
+      <a href="assets/Srishti_Rathi_Resume.pdf" download class="download-resume">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download Resume
+      </a>
 
       <h3 style="margin-top: 2rem;">Skills</h3>
       <div class="skills-grid">
@@ -339,20 +411,6 @@
             <a href="#" class="btn read-writeup" data-id="picoctf">Read Writeup</a>
           </div>
         </article>
-
-        <!-- Example commented-out article (safe comment placement) -->
-        <!--
-        <article class="post">
-          <div class="post-date">Aug 2025</div>
-          <h2 class="post-title">SQL Injection Deep Dive</h2>
-          <p class="post-description">Comprehensive analysis of SQL injection techniques, from basic UNION attacks to advanced blind SQL injection methodologies.</p>
-          <div class="tags"><span class="tag">SQL Injection</span><span class="tag">Web Security</span><span class="tag">Pentesting</span></div>
-          <div class="project-links" style="margin-top: 1rem;">
-            <a href="#" class="btn read-writeup" data-id="sqlinjection">Read Writeup</a>
-          </div>
-        </article>
-        -->
-
       </div>
     </section>
 
@@ -403,14 +461,12 @@
       };
 
       function showPage(pageName) {
-        // gracefully handle unknown pages by falling back to #home
         const targetPage = document.getElementById(pageName) || document.getElementById('home');
         pageSections.forEach(section => section.classList.remove('active'));
         targetPage.classList.add('active');
 
         navLinks.forEach(link => link.classList.toggle('active', link.dataset.page === pageName));
 
-        // update URL hash without creating a lot of history entries for tiny navigations
         if (pageName && document.getElementById(pageName)) {
           history.pushState(null, '', `#${pageName}`);
         } else {
@@ -427,7 +483,6 @@
         });
       });
 
-      // delegate clicks for dynamic or existing .read-writeup buttons
       document.body.addEventListener('click', function(e) {
         const btn = e.target.closest('.read-writeup');
         if (!btn) return;
@@ -444,7 +499,6 @@
 
       window.addEventListener('popstate', () => {
         const hash = (window.location.hash || '').slice(1) || 'home';
-        // if hash is not a section id, fall back to home
         if (document.getElementById(hash)) {
           showPage(hash);
         } else {
@@ -452,7 +506,6 @@
         }
       });
 
-      // initial load: use hash if it matches an existing section, otherwise default to home
       const initialHash = (window.location.hash || '').slice(1);
       if (initialHash && document.getElementById(initialHash)) {
         showPage(initialHash);
