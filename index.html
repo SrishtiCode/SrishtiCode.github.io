@@ -260,6 +260,12 @@
       color: #fff;
     }
   </style>
+  <script>
+    // Prevent automatic scrolling to hash on page load
+    if (window.location.hash) {
+      window.scrollTo(0, 0);
+    }
+  </script>
 </head>
 <body>
   <div class="container">
