@@ -355,53 +355,63 @@
       </div>
     </section>
 
-    <section id="research" class="page-section">
-  <h2 style="font-size: 2rem; margin-bottom: 1rem;">
-    🔍 Research & Threat Intelligence
-  </h2>
+<!-- RESEARCH SECTION -->
+<section id="research" class="page-section">
+  <h2 style="font-size: 2rem; margin-bottom: 1rem;">🔍 Research & Threat Intelligence</h2>
 
-  <p style="color: var(--text-secondary); margin-bottom: 2rem;">
-    This section contains my OSINT investigations, threat intelligence case studies,
-    attacker profiling research, and cybersecurity analysis notes focused on
-    real-world adversary behavior and digital risk.
+  <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+    This section showcases OSINT investigations, threat intelligence case studies,
+    attack surface analysis, and structured research focused on real-world threat activity.
+  </p>
+
+  <p style="font-size:.9rem; color: var(--text-secondary); margin-bottom: 2rem;">
+    All research is based on open source intelligence (OSINT) using publicly available sources
+    and conducted for educational and defensive security purposes.
   </p>
 
   <div class="projects-grid">
 
     <!-- OSINT REPORT -->
     <div class="project-card">
-      <h3>OSINT Threat Intelligence Case Study</h3>
-      <p>
-        End-to-end OSINT investigation covering threat actor profiling,
-        open-source data collection, attack surface analysis, and
-        MITRE ATT&CK technique mapping.
-      </p>
+      <h3>OSINT Threat Intelligence Report — LockBit Ransomware</h3>
+      <p>A structured OSINT case study analyzing LockBit ransomware’s operations, TTPs,
+         and defensive recommendations.</p>
 
       <div class="tags">
-        <span class="tag">OSINT</span>
-        <span class="tag">Threat Intelligence</span>
-        <span class="tag">MITRE ATT&CK</span>
-        <span class="tag">Attack Surface</span>
+        <span class="tag">OSINT</span><span class="tag">Threat Intel</span>
+        <span class="tag">MITRE ATT&CK</span><span class="tag">Ransomware</span>
       </div>
 
       <div class="project-links">
-        <a href="reports/OSINT_Report_1.pdf" class="btn" target="_blank">View Report (PDF)</a>
+        <a href="reports/LockBit_OSINT_Report.pdf" class="btn" target="_blank">View Report (PDF)</a>
         <a href="https://github.com/SrishtiCode/OSINT-Reports" class="btn btn-secondary" target="_blank">GitHub</a>
+      </div>
+    </div>
+
+    <!-- MITRE ATT&CK MAP -->
+    <div class="project-card">
+      <h3>MITRE ATT&CK Navigator Layer — LockBit</h3>
+      <p>Visual mapping of LockBit ransomware techniques (ATT&CK v14) derived from OSINT analysis.</p>
+
+      <div class="tags">
+        <span class="tag">MITRE ATT&CK</span><span class="tag">OSINT</span>
+        <span class="tag">Navigator</span><span class="tag">Threat Mapping</span>
+      </div>
+
+      <div class="project-links">
+        <a href="#!" class="btn btn-secondary" onclick="document.getElementById('mitreModal').style.display='flex';">View Screenshot</a>
+        <a href="https://github.com/SrishtiCode/SrishtiCode.github.io/blob/main/assets/LockBit_MITRE_ATTCK_Navigator.png" class="btn" target="_blank">Full Image</a>
+        <a href="https://github.com/SrishtiCode/SrishtiCode.github.io/blob/main/assets/lockbit_attack_navigator_layer.json" class="btn btn-secondary" target="_blank">JSON Layer</a>
       </div>
     </div>
 
     <!-- RESEARCH NOTES -->
     <div class="project-card">
       <h3>Cybersecurity Research Notes</h3>
-      <p>
-        Structured notes covering OSINT methodologies, intelligence writing,
-        MITRE ATT&CK mapping, web security analysis, and network threat detection.
-      </p>
+      <p>Notes & methodology on OSINT techniques, ATT&CK mapping, data validation, and analyst practices.</p>
 
       <div class="tags">
-        <span class="tag">OSINT</span>
-        <span class="tag">Intel Writing</span>
-        <span class="tag">Blue Team</span>
+        <span class="tag">OSINT</span><span class="tag">Notes</span><span class="tag">Intel Writing</span>
       </div>
 
       <div class="project-links">
@@ -412,6 +422,7 @@
 
   </div>
 </section>
+
 
 
     <!-- ABOUT -->
@@ -592,6 +603,34 @@
       // Always scroll to top on initial load
       window.scrollTo(0, 0);
     });
+    document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    document.getElementById("mitreModal").style.display = "none";
+  }
+});
+
   </script>
+    <div id="mitreModal"
+     onclick="if(event.target.id==='mitreModal') this.style.display='none';"
+     style="
+  display:none; position:fixed; z-index:9999; top:0; left:0;
+  width:100%; height:100%; background:rgba(0,0,0,0.8);
+  justify-content:center; align-items:center;
+">
+
+  <div style="position:relative; max-width:90%; width:800px; margin:auto;">
+    <span onclick="document.getElementById('mitreModal').style.display='none'"
+      style="position:absolute; top:10px; right:15px; font-size:2rem; color:#fff; cursor:pointer;">✕</span>
+
+    <img src="assets/LockBit_MITRE_ATTCK_Navigator.svg"
+         alt="MITRE ATT&CK Layer"
+         style="width:100%; border-radius:8px;" />
+
+    <p style="font-size:0.8rem; color:var(--text-secondary); text-align:center;">
+  Figure: MITRE ATT&CK Enterprise matrix visualizing LockBit ransomware TTPs based on OSINT analysis.
+</p>
+
+  </div>
+</div>
 </body>
 </html>
