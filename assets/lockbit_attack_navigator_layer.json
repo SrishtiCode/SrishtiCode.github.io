@@ -1,0 +1,265 @@
+{
+	"name": "layer",
+	"versions": {
+		"attack": "18",
+		"navigator": "5.2.0",
+		"layer": "4.5"
+	},
+	"domain": "enterprise-attack",
+	"description": "",
+	"filters": {
+		"platforms": [
+			"Windows",
+			"Linux",
+			"macOS",
+			"Network Devices",
+			"ESXi",
+			"PRE",
+			"Containers",
+			"IaaS",
+			"Office Suite",
+			"SaaS",
+			"Identity Provider"
+		]
+	},
+	"sorting": 0,
+	"layout": {
+		"layout": "side",
+		"aggregateFunction": "max",
+		"showID": false,
+		"showName": true,
+		"showAggregateScores": true,
+		"countUnscored": false,
+		"expandedSubtechniques": "none"
+	},
+	"hideDisabled": false,
+	"techniques": [
+		{
+			"techniqueID": "T1003",
+			"tactic": "credential-access",
+			"color": "#e6d60d",
+			"comment": "Credential dumping tools, including Mimikatz, are used to extract credentials from memory, enabling privilege escalation and lateral movement.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1133",
+			"tactic": "persistence",
+			"color": "#e60d0d",
+			"comment": "Remote access services such as RDP and VPNs are leveraged by affiliates for direct network access, often following credential compromise or brute-force activity.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1133",
+			"tactic": "initial-access",
+			"color": "#e60d0d",
+			"comment": "Remote access services such as RDP and VPNs are leveraged by affiliates for direct network access, often following credential compromise or brute-force activity.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1053",
+			"tactic": "execution",
+			"color": "#e6550d",
+			"comment": "Scheduled tasks are created to maintain persistence, automate execution of ransomware components, or delay payload deployment across infected systems.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1053",
+			"tactic": "persistence",
+			"color": "#e6550d",
+			"comment": "Scheduled tasks are created to maintain persistence, automate execution of ransomware components, or delay payload deployment across infected systems.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1053",
+			"tactic": "privilege-escalation",
+			"color": "#e6550d",
+			"comment": "Scheduled tasks are created to maintain persistence, automate execution of ransomware components, or delay payload deployment across infected systems.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1190",
+			"tactic": "initial-access",
+			"color": "#e60d0d",
+			"comment": "LockBit affiliates exploit vulnerable internet-facing services and applications, including VPNs and web services, to gain unauthorized access to victim networks.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1567",
+			"tactic": "exfiltration",
+			"color": "#3182bd",
+			"comment": "LockBit affiliates exfiltrate sensitive data using web-based file transfer services to facilitate double extortion operations prior to encryption.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1567.002",
+			"tactic": "exfiltration",
+			"color": "#3182bd",
+			"comment": "Cloud storage services are abused for staging and exfiltration of stolen data, enabling large-scale data theft while blending with legitimate traffic.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1021",
+			"tactic": "lateral-movement",
+			"color": "",
+			"comment": "",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1021.002",
+			"tactic": "lateral-movement",
+			"color": "#31a354",
+			"comment": "SMB and Windows administrative shares are leveraged for lateral movement, allowing affiliates to propagate ransomware and access networked systems.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1491",
+			"tactic": "impact",
+			"color": "",
+			"comment": "",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1491.001",
+			"tactic": "impact",
+			"color": "#756bb1",
+			"comment": "Desktop wallpapers and system visuals are modified to display ransom messaging and LockBit branding, reinforcing extortion pressure on victims.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1059",
+			"tactic": "execution",
+			"color": "#e6550d",
+			"comment": "Command-line interfaces are used by LockBit affiliates to execute payloads, automate tasks, and manage post-exploitation activity across compromised hosts.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": true
+		},
+		{
+			"techniqueID": "T1059.001",
+			"tactic": "execution",
+			"color": "#e6550d",
+			"comment": "PowerShell is leveraged for execution of malicious commands, system reconnaissance, payload delivery, and evasion by blending with legitimate administrative activity.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1566",
+			"tactic": "initial-access",
+			"color": "#e60d0d",
+			"comment": "Observed in LockBit affiliate campaigns where phishing emails are used to deliver malicious attachments or links, enabling initial foothold through user interaction.\n",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1078",
+			"tactic": "defense-evasion",
+			"color": "#e60d0d",
+			"comment": "Affiliates frequently abuse compromised credentials, including those obtained from access brokers, to authenticate to victim systems and evade initial security controls.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1078",
+			"tactic": "persistence",
+			"color": "#e60d0d",
+			"comment": "Affiliates frequently abuse compromised credentials, including those obtained from access brokers, to authenticate to victim systems and evade initial security controls.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1078",
+			"tactic": "privilege-escalation",
+			"color": "#e60d0d",
+			"comment": "Affiliates frequently abuse compromised credentials, including those obtained from access brokers, to authenticate to victim systems and evade initial security controls.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1078",
+			"tactic": "initial-access",
+			"color": "#e60d0d",
+			"comment": "Affiliates frequently abuse compromised credentials, including those obtained from access brokers, to authenticate to victim systems and evade initial security controls.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		},
+		{
+			"techniqueID": "T1486",
+			"tactic": "impact",
+			"color": "#756bb1",
+			"comment": "LockBit encrypts files across local and network-accessible systems to disrupt operations and coerce victims into ransom payment.",
+			"enabled": true,
+			"metadata": [],
+			"links": [],
+			"showSubtechniques": false
+		}
+	],
+	"gradient": {
+		"colors": [
+			"#ff6666ff",
+			"#ffe766ff",
+			"#8ec843ff"
+		],
+		"minValue": 0,
+		"maxValue": 100
+	},
+	"legendItems": [],
+	"metadata": [],
+	"links": [],
+	"showTacticRowBackground": false,
+	"tacticRowBackground": "#dddddd",
+	"selectTechniquesAcrossTactics": true,
+	"selectSubtechniquesWithParent": false,
+	"selectVisibleTechniques": false
+}
