@@ -136,7 +136,7 @@
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,173,131,0.35); }
+    .project-card:hover {transform: translateY(-2px);border-color: var(--accent);}
     .project-card h3 { font-size: 1.5rem; margin-bottom: 1rem; }
     .project-card p { color: var(--text-secondary); margin-bottom: 1.5rem; }
 
@@ -210,6 +210,12 @@
       .skills-grid { grid-template-columns: repeat(2, 1fr); }
       .project-links { flex-direction: column; }
     }
+    
+    .primary-skill {
+      border-color: var(--accent);
+      color: #ffffff;
+      font-weight: 600;
+    }
 
     .skills-grid {
       display: grid;
@@ -263,7 +269,7 @@
   <div class="container">
     <header>
       <h1>Srishti Rathi</h1>
-      <p class="subtitle">Threat Intelligence • OSINT Research • Security Analysis •  Blue Team</p>
+      <p class="subtitle">Cyber Threat Intelligence Researcher • OSINT • Threat Actor Analysis</p>
       <p style="margin-top: 10px; color: var(--accent); font-size: 0.95rem;">Open to Remote Threat Intelligence & OSINT Internships</p>
       <nav>
         <a href="#" data-page="home" class="nav-link active">Home</a>
@@ -318,7 +324,7 @@
       <h2 style="font-size: 2rem; margin-bottom: 2rem;">Projects</h2>
       <div class="projects-grid">
         <div class="project-card">
-  <h3>Threat Intelligence Platform</h3>
+  <h3>Threat Intelligence Platform<span style="font-size:0.75rem; color:var(--accent); margin-left:8px;">FEATURED</span></h3>
   <p>A cyber threat intelligence platform focused on OSINT-driven threat analysis and reporting. The platform aggregates open-source intelligence related to threat actors, vulnerabilities,and malicious infrastructure, enabling structured research and contextual intelligence reporting. Designed to support analyst workflows, RFI-style investigations, and intelligence documentation.</p>
   <div class="tags"><span class="tag">Cyber Threat Intelligence</span><span class="tag">OSINT</span><span class="tag">Python</span><span class="tag">Automation</span><span class="tag">Security Research</span></div>
   <div class="project-links">
@@ -451,22 +457,34 @@
     </svg>
     Download Resume
   </a>
+<h3 style="margin-top: 2rem;">Core Competencies</h3>
 
-  <h3 style="margin-top: 2rem;">Core Skills</h3>
-  <div class="skills-grid">
-    <div class="skill-item">Cyber Threat Intelligence (CTI)</div>
-    <div class="skill-item">OSINT Investigations</div>
-    <div class="skill-item">Threat Actor Profiling</div>
-    <div class="skill-item">VAPT</div>
-    <div class="skill-item">OWASP Top 10</div>
-    <div class="skill-item">Bug Bounty</div>
-    <div class="skill-item">Burp Suite</div>
-    <div class="skill-item">Web & Application Security</div>
-    <div class="skill-item">Networking Fundamentals</div>
-    <div class="skill-item">Git & GitHub</div>
-    <div class="skill-item">CTF Player</div>
-    <div class="skill-item">Security Automation</div>
-  </div>
+<h4 style="margin: 1rem 0 0.5rem; color: var(--accent);">Threat Intelligence</h4>
+<div class="skills-grid">
+  <div class="skill-item primary-skill">Cyber Threat Intelligence (CTI)</div>
+  <div class="skill-item primary-skill">OSINT Investigations</div>
+  <div class="skill-item primary-skill">Threat Actor Profiling</div>
+  <div class="skill-item primary-skill">MITRE ATT&CK Mapping</div>
+  <div class="skill-item primary-skill">Intel Writing & Reporting</div>
+</div>
+
+<h4 style="margin: 1.5rem 0 0.5rem; color: var(--accent);">Security & Analysis</h4>
+<div class="skills-grid">
+  <div class="skill-item">VAPT</div>
+  <div class="skill-item">OWASP Top 10</div>
+  <div class="skill-item">Web & Application Security</div>
+  <div class="skill-item">Burp Suite</div>
+  <div class="skill-item">Networking Fundamentals</div>
+</div>
+
+<h4 style="margin: 1.5rem 0 0.5rem; color: var(--accent);">Hands-on & Automation</h4>
+<div class="skills-grid">
+  <div class="skill-item">Security Automation</div>
+  <div class="skill-item">Bug Bounty</div>
+  <div class="skill-item">CTF Player</div>
+  <div class="skill-item">Git & GitHub</div>
+</div>
+
 
   <h3 style="margin-top: 2rem;">Research Interests</h3>
   <ul style="color: var(--text-secondary); line-height: 1.8;">
