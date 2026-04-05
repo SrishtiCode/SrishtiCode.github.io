@@ -607,7 +607,7 @@
     </div>
 
     <div class="research-note fade-up">
-      <span>Independent research write-ups</span> — deep dives into live protocol code, architecture review, threat modeling, and documented attack vectors. Not paid audit engagements.
+      <span>Independent research write-ups</span> — deep dives into live protocol code, architecture review, threat modeling, invariant analysis, and attacker mindset modeling. Not paid audit engagements.
     </div>
 
     <div class="filter-row fade-up" id="filters">
@@ -637,25 +637,25 @@
       <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="defi">
         <div>
           <span class="card-cat cat-defi">DeFi / Lending</span>
-          <span class="card-tag">Oracle Manipulation</span>
+          <span class="card-tag">Liquidation Logic</span>
         </div>
-        <div class="card-title">DEX Price Oracle — Spot Price Attack Surface</div>
-        <div class="card-desc">Analyzed AMM price feed usage as an on-chain oracle. Documented how spot price manipulation within a single block could allow undercollateralized borrows, and modeled the capital cost of such an attack.</div>
+        <div class="card-title">Aave — Lending Pool & Liquidation Mechanics</div>
+        <div class="card-desc">Reverse engineered the lending pool architecture, focusing on health factor computation and liquidation flow. Modeled edge cases involving oracle delays and identified conditions where stale pricing could enable undercollateralized positions to avoid liquidation or be exploited.</div>
         <div class="card-meta">
-          <div class="protocol">DEX Protocol</div>
+          <div class="protocol">Aave v3</div>
           <span class="card-link">Write-up</span>
         </div>
       </a>
 
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="governance">
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="defi">
         <div>
-          <span class="card-cat cat-governance">Governance</span>
-          <span class="card-tag">Flash Loan Attack</span>
+          <span class="card-cat cat-defi">DeFi / AMM</span>
+          <span class="card-tag">Price Manipulation</span>
         </div>
-        <div class="card-title">DAO Governance — Flash Loan Voting Attack</div>
-        <div class="card-desc">Studied the token-weighted voting model and documented a single-transaction attack path: borrow governance tokens via flash loan, pass a malicious proposal, execute treasury drain, repay loan — all atomically.</div>
+        <div class="card-title">Uniswap V3 — Concentrated Liquidity & Price Oracle Risks</div>
+        <div class="card-desc">Analyzed tick-based liquidity and swap execution paths. Documented how low-liquidity ranges can be exploited for price manipulation, impacting protocols relying on TWAP or spot pricing. Evaluated capital efficiency vs manipulation resistance.</div>
         <div class="card-meta">
-          <div class="protocol">DAO Protocol</div>
+          <div class="protocol">Uniswap V3</div>
           <span class="card-link">Write-up</span>
         </div>
       </a>
@@ -663,25 +663,12 @@
       <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="staking">
         <div>
           <span class="card-cat cat-staking">Staking</span>
-          <span class="card-tag">Access Control</span>
+          <span class="card-tag">Rebasing Logic</span>
         </div>
-        <div class="card-title">Staking Contract — Reward Rate Access Control</div>
-        <div class="card-desc">Reviewed reward distribution logic and identified the absence of caller restrictions on a rate-setting function. Documented how an external call could break protocol token economics by inflating or zeroing reward rates.</div>
+        <div class="card-title">Lido — stETH Rebasing & Withdrawal Queue</div>
+        <div class="card-desc">Analyzed stETH rebasing mechanism and validator reward distribution. Explored edge cases where delayed oracle updates or withdrawal queue imbalances could affect peg stability and create arbitrage or accounting inconsistencies.</div>
         <div class="card-meta">
-          <div class="protocol">Staking Protocol</div>
-          <span class="card-link">Write-up</span>
-        </div>
-      </a>
-
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="nft">
-        <div>
-          <span class="card-cat cat-nft">NFT</span>
-          <span class="card-tag">Integer Overflow</span>
-        </div>
-        <div class="card-title">NFT Marketplace — Royalty Calculation Overflow</div>
-        <div class="card-desc">Examined pre-0.8 Solidity royalty math and traced overflow conditions in the calculation path. Documented the specific price ranges under which integer wrap-around could result in near-zero effective purchase cost.</div>
-        <div class="card-meta">
-          <div class="protocol">NFT Marketplace</div>
+          <div class="protocol">Lido</div>
           <span class="card-link">Write-up</span>
         </div>
       </a>
@@ -689,12 +676,25 @@
       <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="infra">
         <div>
           <span class="card-cat cat-infra">Infrastructure</span>
-          <span class="card-tag">Proxy / Storage</span>
+          <span class="card-tag">Accounting</span>
         </div>
-        <div class="card-title">Vault UUPS Proxy — Storage Layout &amp; Upgrade Path</div>
-        <div class="card-desc">Reviewed the UUPS proxy implementation for storage layout consistency across upgrades. Documented collision risks from unordered storage slots and missing initializer guards that could affect post-upgrade state integrity.</div>
+        <div class="card-title">Yearn Vaults — Share Accounting & Strategy Risk</div>
+        <div class="card-desc">Studied vault-to-strategy fund flows and share minting logic. Identified potential inconsistencies between totalAssets and totalSupply during strategy harvest cycles, and modeled how incorrect accounting could lead to share inflation or value leakage.</div>
         <div class="card-meta">
-          <div class="protocol">Vault Protocol</div>
+          <div class="protocol">Yearn Finance</div>
+          <span class="card-link">Write-up</span>
+        </div>
+      </a>
+      
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="infra">
+        <div>
+          <span class="card-cat cat-infra">Infrastructure</span>
+          <span class="card-tag">Message Validation</span>
+        </div>
+        <div class="card-title">LayerZero — Cross-Chain Messaging Trust Model</div>
+        <div class="card-desc">Mapped endpoint, oracle, and relayer interactions. Identified trust assumptions and analyzed potential attack vectors including message spoofing, replay attacks, and misconfigured trusted remote addresses.</div>
+        <div class="card-meta">
+          <div class="protocol">LayerZero</div>
           <span class="card-link">Write-up</span>
         </div>
       </a>
