@@ -25,9 +25,7 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
-
   body {
     background: var(--bg);
     color: var(--text);
@@ -37,7 +35,6 @@
     overflow-x: hidden;
   }
 
-  /* ---- NOISE OVERLAY ---- */
   body::before {
     content: '';
     position: fixed;
@@ -48,23 +45,15 @@
     opacity: 0.4;
   }
 
-  /* ---- SCANLINES ---- */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
     pointer-events: none;
     z-index: 0;
   }
 
-  /* ---- GRID BG ---- */
   .grid-bg {
     position: fixed;
     inset: 0;
@@ -76,31 +65,11 @@
     z-index: 0;
   }
 
-  /* ---- GLOW BLOBS ---- */
-  .blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(100px);
-    pointer-events: none;
-    z-index: 0;
-  }
-  .blob-1 {
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(109,40,217,0.18) 0%, transparent 70%);
-    top: -150px; left: -100px;
-  }
-  .blob-2 {
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(167,139,250,0.10) 0%, transparent 70%);
-    top: 40%; right: -100px;
-  }
-  .blob-3 {
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(76,29,149,0.15) 0%, transparent 70%);
-    bottom: 0; left: 30%;
-  }
+  .blob { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+  .blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(109,40,217,0.18) 0%, transparent 70%); top: -150px; left: -100px; }
+  .blob-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(167,139,250,0.10) 0%, transparent 70%); top: 40%; right: -100px; }
+  .blob-3 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(76,29,149,0.15) 0%, transparent 70%); bottom: 0; left: 30%; }
 
-  /* ---- NAV ---- */
   nav {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -122,18 +91,9 @@
     letter-spacing: -0.02em;
     text-decoration: none;
   }
+  .nav-logo span { color: var(--text-muted); font-weight: 400; }
 
-  .nav-logo span {
-    color: var(--text-muted);
-    font-weight: 400;
-  }
-
-  .nav-links {
-    display: flex;
-    gap: 2.5rem;
-    list-style: none;
-  }
-
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
   .nav-links a {
     color: var(--text-muted);
     text-decoration: none;
@@ -143,7 +103,6 @@
     transition: color 0.2s;
     position: relative;
   }
-
   .nav-links a::after {
     content: '';
     position: absolute;
@@ -153,35 +112,14 @@
     transform: scaleX(0);
     transition: transform 0.2s;
   }
-
   .nav-links a:hover { color: var(--purple-bright); }
   .nav-links a:hover::after { transform: scaleX(1); }
 
-  /* ---- SECTIONS ---- */
-  section {
-    position: relative;
-    z-index: 1;
-  }
+  section { position: relative; z-index: 1; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 3rem; }
 
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 3rem;
-  }
-
-  /* ---- HERO ---- */
-  #hero {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    padding: 8rem 0 5rem;
-  }
-
-  .hero-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 3rem;
-  }
+  #hero { min-height: 100vh; display: flex; align-items: center; padding: 8rem 0 5rem; }
+  .hero-inner { max-width: 1100px; margin: 0 auto; padding: 0 3rem; }
 
   .hero-tag {
     display: inline-flex;
@@ -197,7 +135,6 @@
     margin-bottom: 2rem;
     background: var(--purple-glow);
   }
-
   .hero-tag::before {
     content: '';
     display: inline-block;
@@ -207,10 +144,7 @@
     animation: pulse 2s infinite;
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
   .hero-title {
     font-family: var(--display);
@@ -221,11 +155,7 @@
     margin-bottom: 1.5rem;
     color: #fff;
   }
-
-  .hero-title .accent {
-    color: var(--purple-bright);
-    display: block;
-  }
+  .hero-title .accent { color: var(--purple-bright); display: block; }
 
   .hero-subtitle {
     font-size: 13px;
@@ -234,17 +164,9 @@
     line-height: 1.9;
     margin-bottom: 2.5rem;
   }
+  .hero-subtitle .highlight { color: var(--purple-bright); }
 
-  .hero-subtitle .highlight {
-    color: var(--purple-bright);
-  }
-
-  .hero-cta {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
 
   .btn-primary {
     display: inline-block;
@@ -260,11 +182,7 @@
     transition: background 0.2s, box-shadow 0.2s;
     clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
   }
-
-  .btn-primary:hover {
-    background: var(--purple);
-    box-shadow: 0 0 30px rgba(167,139,250,0.3);
-  }
+  .btn-primary:hover { background: var(--purple); box-shadow: 0 0 30px rgba(167,139,250,0.3); }
 
   .btn-ghost {
     display: inline-block;
@@ -280,11 +198,7 @@
     transition: border-color 0.2s, background 0.2s;
     clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
   }
-
-  .btn-ghost:hover {
-    border-color: var(--purple);
-    background: var(--purple-glow);
-  }
+  .btn-ghost:hover { border-color: var(--purple); background: var(--purple-glow); }
 
   .hero-stats {
     display: flex;
@@ -293,25 +207,9 @@
     padding-top: 2.5rem;
     border-top: 1px solid var(--border);
   }
+  .stat-num { font-family: var(--display); font-size: 2rem; font-weight: 800; color: var(--purple-bright); display: block; line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
 
-  .stat-item {}
-  .stat-num {
-    font-family: var(--display);
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--purple-bright);
-    display: block;
-    line-height: 1;
-  }
-  .stat-label {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: 4px;
-  }
-
-  /* ---- TERMINAL SNIPPET ---- */
   .hero-terminal {
     position: absolute;
     right: 3rem;
@@ -325,24 +223,13 @@
     font-size: 12px;
     display: none;
   }
-
   @media (min-width: 1100px) {
     .hero-terminal { display: block; }
-    .hero-inner { max-width: 1100px; }
     #hero { position: relative; }
   }
 
-  .terminal-bar {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .t-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
+  .terminal-bar { display: flex; gap: 6px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .t-dot { width: 10px; height: 10px; border-radius: 50%; }
   .t-dot:nth-child(1) { background: #ff5f57; }
   .t-dot:nth-child(2) { background: #ffbd2e; }
   .t-dot:nth-child(3) { background: #28ca41; }
@@ -352,21 +239,10 @@
   .t-cmd { color: #e2e0f0; }
   .t-out { color: var(--text-muted); }
   .t-success { color: #a3e635; }
-  .t-warn { color: #f59e0b; }
-  .t-cursor {
-    display: inline-block;
-    width: 8px; height: 14px;
-    background: var(--purple);
-    vertical-align: text-bottom;
-    animation: blink 1s step-end infinite;
-  }
+  .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--purple); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* ---- SECTION HEADER ---- */
-  .section-header {
-    margin-bottom: 3rem;
-  }
-
+  .section-header { margin-bottom: 3rem; }
   .section-tag {
     font-size: 11px;
     letter-spacing: 0.15em;
@@ -377,91 +253,57 @@
     align-items: center;
     gap: 10px;
   }
+  .section-tag::before { content: ''; display: block; width: 30px; height: 1px; background: var(--purple); }
+  .section-title { font-family: var(--display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; line-height: 1.1; }
 
-  .section-tag::before {
-    content: '';
-    display: block;
-    width: 30px; height: 1px;
-    background: var(--purple);
-  }
+  #about { padding: 8rem 0; border-top: 1px solid var(--border); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+  .about-text p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.9; font-size: 13px; }
+  .about-text p .hl { color: var(--purple-bright); }
+  .skills-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.5rem; }
+  .skill-tag { font-size: 11px; padding: 5px 12px; border: 1px solid var(--purple-border); color: var(--purple-bright); background: var(--purple-glow); letter-spacing: 0.05em; }
 
-  .section-title {
-    font-family: var(--display);
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
+  .info-box { background: var(--bg-card); border: 1px solid var(--border); border-left: 2px solid var(--purple); padding: 1.5rem; margin-bottom: 1rem; }
+  .info-box-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); margin-bottom: 0.5rem; }
+  .info-box-value { color: var(--text); font-size: 13px; }
 
-  /* ---- ABOUT ---- */
-  #about {
-    padding: 8rem 0;
-    border-top: 1px solid var(--border);
-  }
+  /* ---- RESEARCH / AUDITS ---- */
+  #audits { padding: 8rem 0; border-top: 1px solid var(--border); }
 
-  .about-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  .about-text p {
+  .research-note {
+    font-size: 12px;
     color: var(--text-muted);
-    margin-bottom: 1.25rem;
-    line-height: 1.9;
-    font-size: 13px;
-  }
-
-  .about-text p .hl {
-    color: var(--purple-bright);
-  }
-
-  .skills-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 1.5rem;
-  }
-
-  .skill-tag {
-    font-size: 11px;
-    padding: 5px 12px;
-    border: 1px solid var(--purple-border);
-    color: var(--purple-bright);
-    background: var(--purple-glow);
-    letter-spacing: 0.05em;
-  }
-
-  .about-right {}
-
-  .info-box {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-left: 2px solid var(--purple);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
+    border-left: 2px solid var(--purple-dim);
+    padding: 12px 16px;
+    margin-bottom: 2rem;
+    line-height: 1.7;
+  }
+  .research-note span { color: var(--purple-bright); }
+
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
   }
 
-  .info-box-label {
-    font-size: 10px;
+  .filter-btn {
+    font-size: 11px;
+    padding: 5px 14px;
+    border: 1px solid var(--purple-border);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--purple);
-    margin-bottom: 0.5rem;
+    transition: all 0.15s;
   }
-
-  .info-box-value {
-    color: var(--text);
-    font-size: 13px;
-  }
-
-  /* ---- AUDIT REPORTS ---- */
-  #audits {
-    padding: 8rem 0;
-    border-top: 1px solid var(--border);
-  }
+  .filter-btn:hover { color: var(--purple-bright); background: var(--purple-glow); }
+  .filter-btn.active { background: var(--purple-dim); color: #fff; border-color: var(--purple); }
 
   .cards-grid {
     display: grid;
@@ -479,11 +321,7 @@
     text-decoration: none;
     display: block;
   }
-
-  .audit-card:hover {
-    background: var(--bg-card2);
-  }
-
+  .audit-card:hover { background: var(--bg-card2); }
   .audit-card::before {
     content: '';
     position: absolute;
@@ -494,86 +332,50 @@
     transition: transform 0.3s;
     transform-origin: left;
   }
-
   .audit-card:hover::before { transform: scaleX(1); }
 
-  .card-severity {
+  /* category badge replaces severity */
+  .card-cat {
     display: inline-block;
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 3px 10px;
-    margin-bottom: 1rem;
-    font-weight: 700;
-  }
-
-  .sev-critical { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
-  .sev-high { background: rgba(249,115,22,0.15); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }
-  .sev-medium { background: rgba(234,179,8,0.15); color: #fde047; border: 1px solid rgba(234,179,8,0.3); }
-  .sev-low { background: rgba(167,139,250,0.15); color: var(--purple-bright); border: 1px solid var(--purple-border); }
-
-  .card-title {
-    font-family: var(--display);
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #fff;
     margin-bottom: 0.5rem;
-    line-height: 1.3;
+    font-weight: 700;
+    border-radius: 2px;
   }
+  .cat-defi       { background: rgba(56,130,221,0.15); color: #93c5fd; border: 1px solid rgba(56,130,221,0.3); }
+  .cat-governance { background: rgba(167,139,250,0.15); color: var(--purple-bright); border: 1px solid var(--purple-border); }
+  .cat-nft        { background: rgba(251,191,36,0.12); color: #fcd34d; border: 1px solid rgba(251,191,36,0.3); }
+  .cat-staking    { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
+  .cat-infra      { background: rgba(156,163,175,0.12); color: #d1d5db; border: 1px solid rgba(156,163,175,0.2); }
 
-  .card-desc {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.7;
-    margin-bottom: 1.5rem;
-  }
-
-  .card-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 11px;
+  .card-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
     color: var(--text-dim);
-  }
-
-  .card-meta .protocol {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .card-meta .protocol::before {
-    content: '';
-    display: block;
-    width: 8px; height: 8px;
-    border: 1px solid var(--purple);
-    transform: rotate(45deg);
-  }
-
-  .card-link {
-    color: var(--purple);
-    font-size: 11px;
     letter-spacing: 0.05em;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    margin-bottom: 0.75rem;
+    margin-left: 6px;
   }
 
+  .card-title { font-family: var(--display); font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; line-height: 1.3; }
+  .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
+
+  .card-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
+  .card-meta .protocol { display: flex; align-items: center; gap: 6px; }
+  .card-meta .protocol::before { content: ''; display: block; width: 8px; height: 8px; border: 1px solid var(--purple); transform: rotate(45deg); }
+  .card-link { color: var(--purple); font-size: 11px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; }
   .card-link::after { content: '↗'; }
 
   /* ---- CHALLENGES ---- */
-  #challenges {
-    padding: 8rem 0;
-    border-top: 1px solid var(--border);
-  }
+  #challenges { padding: 8rem 0; border-top: 1px solid var(--border); }
 
-  .challenges-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .challenges-tabs { display: flex; gap: 0; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
   .tab-btn {
     padding: 10px 24px;
     font-family: var(--mono);
@@ -588,24 +390,13 @@
     margin-bottom: -1px;
     transition: color 0.2s, border-color 0.2s;
   }
-
-  .tab-btn.active {
-    color: var(--purple-bright);
-    border-bottom-color: var(--purple);
-  }
-
+  .tab-btn.active { color: var(--purple-bright); border-bottom-color: var(--purple); }
   .tab-btn:hover { color: var(--text-muted); }
 
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  .challenge-list {
-    display: grid;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
+  .challenge-list { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .challenge-item {
     background: var(--bg-card);
     padding: 1.25rem 1.5rem;
@@ -616,67 +407,18 @@
     text-decoration: none;
     transition: background 0.15s;
   }
-
   .challenge-item:hover { background: var(--bg-card2); }
-
-  .ch-num {
-    font-family: var(--display);
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--purple-dim);
-    text-align: center;
-  }
-
-  .ch-info {}
-  .ch-name {
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 2px;
-  }
-  .ch-topic {
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
-  .ch-badge {
-    font-size: 10px;
-    padding: 3px 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: rgba(163,230,53,0.1);
-    color: #a3e635;
-    border: 1px solid rgba(163,230,53,0.25);
-  }
+  .ch-num { font-family: var(--display); font-size: 1.1rem; font-weight: 800; color: var(--purple-dim); text-align: center; }
+  .ch-name { color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .ch-topic { font-size: 11px; color: var(--text-dim); }
+  .ch-badge { font-size: 10px; padding: 3px 10px; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(163,230,53,0.1); color: #a3e635; border: 1px solid rgba(163,230,53,0.25); }
 
   /* ---- CONTACT ---- */
-  #contact {
-    padding: 8rem 0;
-    border-top: 1px solid var(--border);
-  }
+  #contact { padding: 8rem 0; border-top: 1px solid var(--border); }
+  .contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+  .contact-intro { font-size: 13px; color: var(--text-muted); line-height: 1.9; margin-top: 1.5rem; }
 
-  .contact-inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5rem;
-    align-items: start;
-  }
-
-  .contact-text {}
-  .contact-intro {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.9;
-    margin-top: 1.5rem;
-  }
-
-  .social-links {
-    margin-top: 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
+  .social-links { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 12px; }
   .social-link {
     display: flex;
     align-items: center;
@@ -689,142 +431,37 @@
     font-size: 12px;
     transition: border-color 0.2s, color 0.2s, background 0.2s;
   }
+  .social-link:hover { border-color: var(--purple-border); color: var(--purple-bright); background: var(--purple-glow); }
+  .social-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--purple-border); color: var(--purple); font-size: 16px; flex-shrink: 0; }
+  .social-detail { flex: 1; }
+  .social-name { font-weight: 700; color: #fff; font-size: 12px; display: block; margin-bottom: 2px; }
+  .social-handle { font-size: 11px; color: var(--text-dim); }
+  .social-arrow { color: var(--purple-dim); font-size: 14px; }
 
-  .social-link:hover {
-    border-color: var(--purple-border);
-    color: var(--purple-bright);
-    background: var(--purple-glow);
-  }
+  .pgp-box { background: var(--bg-card); border: 1px solid var(--purple-border); padding: 1.5rem; }
+  .pgp-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .pgp-label::before { content: '🔐'; font-size: 13px; }
+  .pgp-text { font-size: 11px; color: var(--text-dim); word-break: break-all; line-height: 1.8; }
 
-  .social-icon {
-    width: 36px; height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--purple-border);
-    color: var(--purple);
-    font-size: 16px;
-    flex-shrink: 0;
-  }
+  .availability { margin-top: 1.5rem; padding: 1.25rem; background: rgba(163,230,53,0.05); border: 1px solid rgba(163,230,53,0.2); display: flex; align-items: center; gap: 10px; }
+  .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: #a3e635; animation: pulse 2s infinite; flex-shrink: 0; }
+  .avail-text { font-size: 12px; color: #a3e635; }
 
-  .social-detail {
-    flex: 1;
-  }
-  .social-name {
-    font-weight: 700;
-    color: #fff;
-    font-size: 12px;
-    display: block;
-    margin-bottom: 2px;
-  }
-  .social-handle {
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
-  .social-arrow {
-    color: var(--purple-dim);
-    font-size: 14px;
-  }
-
-  .contact-right {}
-
-  .pgp-box {
-    background: var(--bg-card);
-    border: 1px solid var(--purple-border);
-    padding: 1.5rem;
-  }
-
-  .pgp-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--purple);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .pgp-label::before {
-    content: '🔐';
-    font-size: 13px;
-  }
-
-  .pgp-text {
-    font-size: 11px;
-    color: var(--text-dim);
-    word-break: break-all;
-    line-height: 1.8;
-  }
-
-  .availability {
-    margin-top: 1.5rem;
-    padding: 1.25rem;
-    background: rgba(163,230,53,0.05);
-    border: 1px solid rgba(163,230,53,0.2);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .avail-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #a3e635;
-    animation: pulse 2s infinite;
-    flex-shrink: 0;
-  }
-
-  .avail-text {
-    font-size: 12px;
-    color: #a3e635;
-  }
-
-  /* ---- FOOTER ---- */
-  footer {
-    position: relative;
-    z-index: 1;
-    border-top: 1px solid var(--border);
-    padding: 2rem 0;
-  }
-
-  .footer-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .footer-text {
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
+  footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 2rem 0; }
+  .footer-inner { max-width: 1100px; margin: 0 auto; padding: 0 3rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-text { font-size: 11px; color: var(--text-dim); }
   .footer-text .hl { color: var(--purple); }
 
-  /* ---- SCROLL ANIMATIONS ---- */
-  .fade-up {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
+  .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-  .fade-up.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ---- RESPONSIVE ---- */
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
     .container { padding: 0 1.5rem; }
     .hero-inner { padding: 0 1.5rem; }
     .hero-title { font-size: 3rem; }
-    .hero-stats { gap: 2rem; }
+    .hero-stats { gap: 2rem; flex-wrap: wrap; }
     .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
     .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
     .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
@@ -844,7 +481,7 @@
   <a href="#" class="nav-logo"><span>Srishti</span></a>
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
-    <li><a href="#audits">Audits</a></li>
+    <li><a href="#audits">Research</a></li>
     <li><a href="#challenges">Challenges</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
@@ -864,13 +501,13 @@
       and <span class="highlight">EVM-level exploits</span>.
     </p>
     <div class="hero-cta">
-      <a href="#audits" class="btn-primary">View Audit Reports</a>
+      <a href="#audits" class="btn-primary">View Research</a>
       <a href="https://github.com/SrishtiCode" class="btn-ghost" target="_blank">GitHub ↗</a>
     </div>
     <div class="hero-stats">
       <div class="stat-item">
-        <span class="stat-num">10+</span>
-        <span class="stat-label">Protocols Audited</span>
+        <span class="stat-num">6+</span>
+        <span class="stat-label">Protocols Researched</span>
       </div>
       <div class="stat-item">
         <span class="stat-num">18</span>
@@ -887,12 +524,9 @@
     </div>
   </div>
 
-  <!-- Terminal -->
   <div class="hero-terminal">
     <div class="terminal-bar">
-      <div class="t-dot"></div>
-      <div class="t-dot"></div>
-      <div class="t-dot"></div>
+      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
     </div>
     <div class="t-line"><span class="t-prompt">~$</span> <span class="t-cmd">whoami</span></div>
     <div class="t-line t-out">srishti@web3-auditor</div>
@@ -920,15 +554,9 @@
     </div>
     <div class="about-grid">
       <div class="about-text fade-up">
-        <p>
-          Hi, I'm <span class="hl">Srishti</span> — a Web3 security researcher passionate about finding and documenting vulnerabilities in DeFi protocols before malicious actors do.
-        </p>
-        <p>
-          My journey started with <span class="hl">Ethernaut</span>, where I developed a deep understanding of EVM internals and common Solidity pitfalls. I then moved on to <span class="hl">Damn Vulnerable DeFi</span>, tackling complex multi-contract exploit scenarios involving flash loans, price manipulation, and governance attacks.
-        </p>
-        <p>
-          Today, I conduct comprehensive smart contract audits — examining codebases for logic flaws, economic attack vectors, and access control issues that could put user funds at risk.
-        </p>
+        <p>Hi, I'm <span class="hl">Srishti</span> — a Web3 security researcher passionate about finding and documenting vulnerabilities in DeFi protocols before malicious actors do.</p>
+        <p>My journey started with <span class="hl">Ethernaut</span>, where I developed a deep understanding of EVM internals and common Solidity pitfalls. I then moved on to <span class="hl">Damn Vulnerable DeFi</span>, tackling complex multi-contract exploit scenarios involving flash loans, price manipulation, and governance attacks.</p>
+        <p>Today, I conduct in-depth protocol research — reading live codebases, mapping attack surfaces, and documenting potential vulnerabilities across DeFi, governance, NFT, and infrastructure contracts.</p>
         <div class="skills-list">
           <span class="skill-tag">Solidity</span>
           <span class="skill-tag">Foundry</span>
@@ -947,7 +575,7 @@
       <div class="about-right fade-up">
         <div class="info-box">
           <div class="info-box-label">Focus Area</div>
-          <div class="info-box-value">DeFi Security / Smart Contract Auditing</div>
+          <div class="info-box-value">DeFi Security / Smart Contract Research</div>
         </div>
         <div class="info-box">
           <div class="info-box-label">Primary Tools</div>
@@ -970,78 +598,111 @@
   </div>
 </section>
 
-<!-- AUDIT REPORTS -->
+<!-- RESEARCH / AUDITS -->
 <section id="audits">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-tag">02 — Audit Reports</div>
-      <h2 class="section-title">Security Audits &amp;<br>Findings</h2>
+      <div class="section-tag">02 — Research</div>
+      <h2 class="section-title">Protocol Research &amp;<br>Attack Surface Analysis</h2>
     </div>
-    <div class="cards-grid fade-up">
 
-      <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/VenusPrime.md" target="_blank" class="audit-card">
-        <div class="card-severity sev-critical">Critical</div>
-        <div class="card-title">Venus Prime Audit</div>
-        <div class="card-desc">Identified a cross-function reentrancy vulnerability in a lending protocol's withdraw mechanism allowing full treasury drain via flash loan.</div>
+    <div class="research-note fade-up">
+      <span>Independent research write-ups</span> — deep dives into live protocol code, architecture review, threat modeling, and documented attack vectors. Not paid audit engagements.
+    </div>
+
+    <div class="filter-row fade-up" id="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="defi">DeFi / Lending</button>
+      <button class="filter-btn" data-filter="governance">Governance</button>
+      <button class="filter-btn" data-filter="nft">NFT</button>
+      <button class="filter-btn" data-filter="staking">Staking</button>
+      <button class="filter-btn" data-filter="infra">Infrastructure</button>
+    </div>
+
+    <div class="cards-grid fade-up" id="research-grid">
+
+      <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/VenusPrime.md" target="_blank" class="audit-card" data-cat="defi">
+        <div>
+          <span class="card-cat cat-defi">DeFi / Lending</span>
+          <span class="card-tag">Reentrancy</span>
+        </div>
+        <div class="card-title">Venus Prime — Lending Protocol Architecture</div>
+        <div class="card-desc">Mapped the withdraw mechanism and traced a theoretical cross-function reentrancy path via flash loan. Analyzed how lending and collateral module interactions could enable treasury exposure.</div>
         <div class="card-meta">
           <div class="protocol">Venus Prime v2</div>
-          <span class="card-link">Report</span>
+          <span class="card-link">Write-up</span>
         </div>
       </a>
 
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card">
-        <div class="card-severity sev-high">High</div>
-        <div class="card-title">DEX Price Oracle Manipulation</div>
-        <div class="card-desc">Spot price manipulation attack vector discovered in AMM price feed used as oracle, enabling borrowing far beyond collateral value.</div>
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="defi">
+        <div>
+          <span class="card-cat cat-defi">DeFi / Lending</span>
+          <span class="card-tag">Oracle Manipulation</span>
+        </div>
+        <div class="card-title">DEX Price Oracle — Spot Price Attack Surface</div>
+        <div class="card-desc">Analyzed AMM price feed usage as an on-chain oracle. Documented how spot price manipulation within a single block could allow undercollateralized borrows, and modeled the capital cost of such an attack.</div>
         <div class="card-meta">
           <div class="protocol">DEX Protocol</div>
-          <span class="card-link">Report</span>
+          <span class="card-link">Write-up</span>
         </div>
       </a>
 
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card">
-        <div class="card-severity sev-high">High</div>
-        <div class="card-title">Governance Takeover Analysis</div>
-        <div class="card-desc">Flash loan-powered governance takeover demonstrated — attacker could borrow voting tokens, pass malicious proposal, and drain treasury in one tx.</div>
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="governance">
+        <div>
+          <span class="card-cat cat-governance">Governance</span>
+          <span class="card-tag">Flash Loan Attack</span>
+        </div>
+        <div class="card-title">DAO Governance — Flash Loan Voting Attack</div>
+        <div class="card-desc">Studied the token-weighted voting model and documented a single-transaction attack path: borrow governance tokens via flash loan, pass a malicious proposal, execute treasury drain, repay loan — all atomically.</div>
         <div class="card-meta">
           <div class="protocol">DAO Protocol</div>
-          <span class="card-link">Report</span>
+          <span class="card-link">Write-up</span>
         </div>
       </a>
 
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card">
-        <div class="card-severity sev-medium">Medium</div>
-        <div class="card-title">Staking Contract Access Control</div>
-        <div class="card-desc">Missing access control on reward distribution function allowed any caller to arbitrarily set reward rates, breaking protocol economics.</div>
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="staking">
+        <div>
+          <span class="card-cat cat-staking">Staking</span>
+          <span class="card-tag">Access Control</span>
+        </div>
+        <div class="card-title">Staking Contract — Reward Rate Access Control</div>
+        <div class="card-desc">Reviewed reward distribution logic and identified the absence of caller restrictions on a rate-setting function. Documented how an external call could break protocol token economics by inflating or zeroing reward rates.</div>
         <div class="card-meta">
           <div class="protocol">Staking Protocol</div>
-          <span class="card-link">Report</span>
+          <span class="card-link">Write-up</span>
         </div>
       </a>
 
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card">
-        <div class="card-severity sev-medium">Medium</div>
-        <div class="card-title">NFT Marketplace Integer Overflow</div>
-        <div class="card-desc">Pre-Solidity 0.8 integer overflow in royalty calculation logic enabled zero-cost NFT purchases under specific price conditions.</div>
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="nft">
+        <div>
+          <span class="card-cat cat-nft">NFT</span>
+          <span class="card-tag">Integer Overflow</span>
+        </div>
+        <div class="card-title">NFT Marketplace — Royalty Calculation Overflow</div>
+        <div class="card-desc">Examined pre-0.8 Solidity royalty math and traced overflow conditions in the calculation path. Documented the specific price ranges under which integer wrap-around could result in near-zero effective purchase cost.</div>
         <div class="card-meta">
           <div class="protocol">NFT Marketplace</div>
-          <span class="card-link">Report</span>
+          <span class="card-link">Write-up</span>
         </div>
       </a>
 
-      <a href="https://github.com/yourusername" target="_blank" class="audit-card">
-        <div class="card-severity sev-low">Low / Info</div>
-        <div class="card-title">Vault Upgrade Proxy Analysis</div>
-        <div class="card-desc">Storage collision risk in UUPS proxy implementation identified along with missing initializer guards across upgrade path.</div>
+      <a href="https://github.com/yourusername" target="_blank" class="audit-card" data-cat="infra">
+        <div>
+          <span class="card-cat cat-infra">Infrastructure</span>
+          <span class="card-tag">Proxy / Storage</span>
+        </div>
+        <div class="card-title">Vault UUPS Proxy — Storage Layout &amp; Upgrade Path</div>
+        <div class="card-desc">Reviewed the UUPS proxy implementation for storage layout consistency across upgrades. Documented collision risks from unordered storage slots and missing initializer guards that could affect post-upgrade state integrity.</div>
         <div class="card-meta">
           <div class="protocol">Vault Protocol</div>
-          <span class="card-link">Report</span>
+          <span class="card-link">Write-up</span>
         </div>
       </a>
 
     </div>
+
     <div style="margin-top:1.5rem; text-align:right;">
-      <a href="https://github.com/SrishtiCode/my-audit-reports" target="_blank" class="btn-ghost">All Reports on GitHub ↗</a>
+      <a href="https://github.com/SrishtiCode/my-audit-reports" target="_blank" class="btn-ghost">All Write-ups on GitHub ↗</a>
     </div>
   </div>
 </section>
@@ -1063,58 +724,37 @@
       <div class="challenge-list">
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/Level0Solution.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">00</div>
-          <div class="ch-info">
-            <div class="ch-name">Hello Ethernaut</div>
-            <div class="ch-topic">Basics · ABI Interaction</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Hello Ethernaut</div><div class="ch-topic">Basics · ABI Interaction</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/FallbackSolution.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">01</div>
-          <div class="ch-info">
-            <div class="ch-name">Fallback</div>
-            <div class="ch-topic">Ownership · Fallback Functions</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Fallback</div><div class="ch-topic">Ownership · Fallback Functions</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/Telephone.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">04</div>
-          <div class="ch-info">
-            <div class="ch-name">Telephone</div>
-            <div class="ch-topic">tx.origin vs msg.sender</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Telephone</div><div class="ch-topic">tx.origin vs msg.sender</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/DelegationSolution.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">06</div>
-          <div class="ch-info">
-            <div class="ch-name">Delegation</div>
-            <div class="ch-topic">delegatecall · Storage Collision</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Delegation</div><div class="ch-topic">delegatecall · Storage Collision</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/ReentrancySolution.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">10</div>
-          <div class="ch-info">
-            <div class="ch-name">Re-entrancy</div>
-            <div class="ch-topic">Classic Reentrancy Attack</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Re-entrancy</div><div class="ch-topic">Classic Reentrancy Attack</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/PreservationSolution.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">16</div>
-          <div class="ch-info">
-            <div class="ch-name">Preservation</div>
-            <div class="ch-topic">delegatecall · Slot Collision</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Preservation</div><div class="ch-topic">delegatecall · Slot Collision</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/MotorbikeSolution.s.sol" target="_blank" class="challenge-item">
           <div class="ch-num">25</div>
-          <div class="ch-info">
-            <div class="ch-name">Motorbike</div>
-            <div class="ch-topic">UUPS · Proxy Patterns</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Motorbike</div><div class="ch-topic">UUPS · Proxy Patterns</div></div>
           <div class="ch-badge">Solved</div>
         </a>
       </div>
@@ -1127,58 +767,37 @@
       <div class="challenge-list">
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/unstoppable/Unstoppable.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">01</div>
-          <div class="ch-info">
-            <div class="ch-name">Unstoppable</div>
-            <div class="ch-topic">Flash Loan · Assertion Breaking</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Unstoppable</div><div class="ch-topic">Flash Loan · Assertion Breaking</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/naive-receiver/NaiveReceiver.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">02</div>
-          <div class="ch-info">
-            <div class="ch-name">Naive Receiver</div>
-            <div class="ch-topic">Flash Loan · ETH Draining</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Naive Receiver</div><div class="ch-topic">Flash Loan · ETH Draining</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/side-entrance/SideEntrance.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">04</div>
-          <div class="ch-info">
-            <div class="ch-name">Side Entrance</div>
-            <div class="ch-topic">Flash Loan · Balance Accounting</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Side Entrance</div><div class="ch-topic">Flash Loan · Balance Accounting</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/selfie/Selfie.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">06</div>
-          <div class="ch-info">
-            <div class="ch-name">Selfie</div>
-            <div class="ch-topic">Flash Loan · Governance Hijack</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Selfie</div><div class="ch-topic">Flash Loan · Governance Hijack</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/compromised/Compromised.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">07</div>
-          <div class="ch-info">
-            <div class="ch-name">Compromised</div>
-            <div class="ch-topic">Price Oracle · Off-chain Leakage</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Compromised</div><div class="ch-topic">Price Oracle · Off-chain Leakage</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/puppet/Puppet.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">09</div>
-          <div class="ch-info">
-            <div class="ch-name">Puppet</div>
-            <div class="ch-topic">Uniswap v1 · Oracle Manipulation</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Puppet</div><div class="ch-topic">Uniswap v1 · Oracle Manipulation</div></div>
           <div class="ch-badge">Solved</div>
         </a>
         <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/backdoor/Backdoor.t.sol" target="_blank" class="challenge-item">
           <div class="ch-num">11</div>
-          <div class="ch-info">
-            <div class="ch-name">Backdoor</div>
-            <div class="ch-topic">Gnosis Safe · Module Exploit</div>
-          </div>
+          <div class="ch-info"><div class="ch-name">Backdoor</div><div class="ch-topic">Gnosis Safe · Module Exploit</div></div>
           <div class="ch-badge">Solved</div>
         </a>
       </div>
@@ -1214,7 +833,6 @@
             </div>
             <span class="social-arrow">↗</span>
           </a>
-
           <a href="https://x.com/rRat1315" target="_blank" class="social-link">
             <div class="social-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1225,7 +843,6 @@
             </div>
             <span class="social-arrow">↗</span>
           </a>
-
           <a href="https://t.me/srishtirathi" target="_blank" class="social-link">
             <div class="social-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
@@ -1236,7 +853,6 @@
             </div>
             <span class="social-arrow">↗</span>
           </a>
-
           <a href="mailto:rathisrishti@gmail.com" class="social-link">
             <div class="social-icon">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
@@ -1255,7 +871,6 @@
           <div class="avail-dot"></div>
           <div class="avail-text">Currently available for audit engagements</div>
         </div>
-
         <div class="pgp-box" style="margin-top: 1.5rem;">
           <div class="pgp-label">Quick Info</div>
           <div class="pgp-text">
@@ -1273,7 +888,6 @@
             </div>
           </div>
         </div>
-
         <div style="margin-top: 1.5rem; padding: 1.25rem; background: var(--bg-card); border: 1px solid var(--border);">
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); margin-bottom: 0.75rem;">Audit Scope I Cover</div>
           <div style="display: flex; flex-wrap: wrap; gap: 6px;">
@@ -1321,6 +935,21 @@
   }, { threshold: 0.1 });
 
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // Filter logic
+  const filterBtns = document.querySelectorAll('#filters .filter-btn');
+  const researchCards = document.querySelectorAll('#research-grid .audit-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      researchCards.forEach(card => {
+        card.style.display = (filter === 'all' || card.dataset.cat === filter) ? '' : 'none';
+      });
+    });
+  });
 </script>
 </body>
 </html>
