@@ -296,7 +296,7 @@
       <a href="https://github.com/SrishtiCode" class="btn-ghost" target="_blank">GitHub ↗</a>
     </div>
     <div class="hero-stats">
-      <div class="stat-item"><span class="stat-num">6+</span><span class="stat-label">Protocols Researched</span></div>
+      <div class="stat-item"><span class="stat-num">6+</span><span class="stat-label">Protocols Audits and Researched</span></div>
       <div class="stat-item"><span class="stat-num">18</span><span class="stat-label">Ethernaut Solved</span></div>
       <div class="stat-item"><span class="stat-num">15</span><span class="stat-label">DVDeFi Completed</span></div>
       <div class="stat-item"><span class="stat-num">∞</span><span class="stat-label">Bugs to Find</span></div>
@@ -355,28 +355,28 @@
 <section id="audits">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-tag">02 — Research</div>
-      <h2 class="section-title">Protocol Research &amp;<br>Attack Surface Analysis</h2>
+      <div class="section-tag">02 — Audits and Research</div>
+      <h2 class="section-title">Protocols Audits and Research &amp;<br>Attack Surface Analysis</h2>
     </div>
     <div class="research-note fade-up"><span>Independent research write-ups</span> — deep dives into live protocol code, architecture review, threat modeling, invariant analysis, and attacker mindset modeling. Not paid audit engagements.</div>
     <div class="filter-row fade-up" id="filters">
       <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="defi">DeFi / Lending</button>
+      <button class="filter-btn" data-filter="defi">DeFi</button>
       <button class="filter-btn" data-filter="staking">Staking</button>
       <button class="filter-btn" data-filter="infra">Infrastructure</button>
     </div>
     <div class="cards-grid fade-up" id="research-grid">
       <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/VenusPrime.md" target="_blank" class="audit-card" data-cat="defi">
-        <div><span class="card-cat cat-defi">DeFi / Lending</span><span class="card-tag">Reentrancy</span></div>
+        <div><span class="card-cat cat-defi">DeFi</span><span class="card-tag">Reentrancy</span></div>
         <div class="card-title">Venus Prime — Lending Protocol Architecture</div>
         <div class="card-desc">Mapped the withdraw mechanism and traced a theoretical cross-function reentrancy path via flash loan. Analyzed how lending and collateral module interactions could enable treasury exposure.</div>
         <div class="card-meta"><div class="protocol">Venus Prime v2</div><span class="card-link">Write-up</span></div>
       </a>
-      <a href="#" class="audit-card" data-cat="defi">
-        <div><span class="card-cat cat-defi">DeFi / Lending</span><span class="card-tag">Liquidation Logic</span></div>
-        <div class="card-title">Aave — Lending Pool & Liquidation Mechanics</div>
-        <div class="card-desc">Reverse engineered the lending pool architecture, focusing on health factor computation and liquidation flow. Modeled edge cases involving oracle delays and identified conditions where stale pricing could be exploited.</div>
-        <div class="card-meta"><div class="protocol">Aave v3</div><span class="card-link">Write-up</span></div>
+     <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/SukukFi.md" class="audit-card" data-cat="defi">
+        <div><span class="card-cat cat-defi">DeFi</span><span class="card-tag">Settlement Layer</span></div>
+        <div class="card-title">SukukFi — WERC7575 Telecom Settlement & Investment Layer</div>
+        <div class="card-desc">Audited a two-layer blockchain settlement system for inter-carrier wholesale voice traffic. Analysed the dual-authorization withdrawal model, batch netting logic via a trusted validator, and the async ERC-7540 investment flow.</div>
+        <div class="card-meta"><div class="protocol">WERC7575 / ERC-7540</div><span class="card-link">Write-up</span></div>
       </a>
       <a href="#" class="audit-card" data-cat="defi">
         <div><span class="card-cat cat-defi">DeFi / AMM</span><span class="card-tag">Price Manipulation</span></div>
