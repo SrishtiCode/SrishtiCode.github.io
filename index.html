@@ -356,9 +356,9 @@
   <div class="container">
     <div class="section-header fade-up">
       <div class="section-tag">02 — Audits and Research</div>
-      <h2 class="section-title">Protocols Audits and Research &amp;<br>Attack Surface Analysis</h2>
+      <h2 class="section-title">Protocols Audits Research &amp;<br>Attack Surface Analysis</h2>
     </div>
-    <div class="research-note fade-up"><span>Independent research write-ups</span> — deep dives into live protocol code, architecture review, threat modeling, invariant analysis, and attacker mindset modeling. Not paid audit engagements.</div>
+    <div class="research-note fade-up"><span>Independent research write-ups and audits</span> — deep dives into live protocol code, architecture review, threat modeling, invariant analysis, and attacker mindset modeling. Not paid audit engagements.</div>
     <div class="filter-row fade-up" id="filters">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="defi">DeFi</button>
@@ -378,11 +378,12 @@
         <div class="card-desc">Audited a two-layer blockchain settlement system for inter-carrier wholesale voice traffic. Analysed the dual-authorization withdrawal model, batch netting logic via a trusted validator, and the async ERC-7540 investment flow.</div>
         <div class="card-meta"><div class="protocol">WERC7575 / ERC-7540</div><span class="card-link">Write-up</span></div>
       </a>
-      <a href="#" class="audit-card" data-cat="defi">
-        <div><span class="card-cat cat-defi">DeFi / AMM</span><span class="card-tag">Price Manipulation</span></div>
-        <div class="card-title">Uniswap V3 — Concentrated Liquidity & Oracle Risks</div>
-        <div class="card-desc">Analyzed tick-based liquidity and swap execution paths. Documented how low-liquidity ranges can be exploited for price manipulation, impacting protocols relying on TWAP or spot pricing.</div>
-        <div class="card-meta"><div class="protocol">Uniswap V3</div><span class="card-link">Write-up</span></div>
+     <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/Panoptic.md" class="audit-card" data-cat="defi">
+       <div><span class="card-cat cat-defi">DeFi / Options</span><span class="card-tag">Oracle Manipulation</span></div>
+       <div class="card-title">Panoptic — On-Chain Options Protocol & Risk Engine</div>
+       <div class="card-desc">Reviewed a permissionless options protocol built on Uniswap V3/V4, covering the full position lifecycle across the SFPM, PanopticPool, RiskEngine, and CollateralTracker. 
+    Focused on premium accounting correctness, liquidation bonus calculations, and manipulation resistance of the EMA/median-filter oracle.</div>
+       <div class="card-meta"><div class="protocol">Panoptic v2</div><span class="card-link">Write-up</span></div>
       </a>
       <a href="#" class="audit-card" data-cat="staking">
         <div><span class="card-cat cat-staking">Staking</span><span class="card-tag">Rebasing Logic</span></div>
