@@ -161,7 +161,7 @@
   .card-link { color: var(--purple); font-size: 11px; display: flex; align-items: center; gap: 4px; }
   .card-link::after { content: '↗'; }
 
-  /* BLOG PREVIEW (main page) */
+  /* BLOG */
   #blog { padding: 8rem 0; border-top: 1px solid var(--border); }
 
   .blog-featured { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg-card); border: 1px solid var(--purple-border); margin-bottom: 1px; text-decoration: none; position: relative; overflow: hidden; transition: background 0.2s; }
@@ -247,129 +247,6 @@
   .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
   .fade-up.visible { opacity: 1; transform: translateY(0); }
 
-  /* ======================== BLOG PAGE OVERLAY ======================== */
-  #blog-page {
-    position: fixed; inset: 0; z-index: 200;
-    background: var(--bg);
-    overflow-y: auto;
-    transform: translateX(100%);
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  #blog-page.open { transform: translateX(0); }
-
-  /* Sticky nav inside blog page */
-  .bp-nav {
-    position: sticky; top: 0; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1.25rem 4rem;
-    border-bottom: 1px solid var(--border);
-    background: rgba(10,10,15,0.92);
-    backdrop-filter: blur(16px);
-  }
-  .bp-brand { font-family: var(--display); font-size: 1rem; font-weight: 800; color: var(--purple-bright); letter-spacing: -0.02em; }
-  .bp-brand span { color: var(--text-muted); font-weight: 400; font-size: 0.85rem; }
-  .bp-close {
-    display: flex; align-items: center; gap: 8px;
-    background: none; border: 1px solid var(--border); color: var(--text-muted);
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 8px 16px; cursor: pointer; transition: all 0.2s;
-  }
-  .bp-close:hover { border-color: var(--purple-border); color: var(--purple-bright); background: var(--purple-glow); }
-
-  /* Blog page hero */
-  .bp-hero {
-    padding: 5rem 4rem 3.5rem;
-    border-bottom: 1px solid var(--border);
-    position: relative; overflow: hidden;
-    max-width: 1200px; margin: 0 auto;
-  }
-  .bp-hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(167,139,250,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
-  .bp-hero-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple); border: 1px solid var(--purple-border); padding: 5px 12px; border-radius: 2px; margin-bottom: 1.5rem; background: var(--purple-glow); }
-  .bp-hero-tag::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
-  .bp-hero-title { font-family: var(--display); font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.03em; color: #fff; margin-bottom: 1rem; }
-  .bp-hero-title .accent { color: var(--purple-bright); }
-  .bp-hero-sub { font-size: 13px; color: var(--text-muted); max-width: 520px; line-height: 1.8; }
-  .bp-hero-stats { display: flex; gap: 2.5rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
-  .bp-stat-num { font-family: var(--display); font-size: 1.6rem; font-weight: 800; color: var(--purple-bright); display: block; line-height: 1; }
-  .bp-stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 3px; }
-
-  /* Blog page body */
-  .bp-body { max-width: 1200px; margin: 0 auto; padding: 3rem 4rem 5rem; }
-
-  /* Controls bar */
-  .bp-controls { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-  .bp-search-wrap { position: relative; flex: 1; min-width: 180px; }
-  .bp-search-wrap::before { content: '⌕'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 16px; pointer-events: none; }
-  .bp-search { width: 100%; background: var(--bg-card); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 12px 10px 34px; outline: none; transition: border-color 0.2s; }
-  .bp-search:focus { border-color: var(--purple-border); }
-  .bp-search::placeholder { color: var(--text-dim); }
-  .bp-filter-strip { display: flex; gap: 6px; flex-wrap: wrap; }
-  .view-toggle { display: flex; border: 1px solid var(--border); overflow: hidden; margin-left: auto; }
-  .view-btn { background: none; border: none; color: var(--text-dim); padding: 8px 12px; cursor: pointer; font-size: 14px; transition: all 0.15s; }
-  .view-btn + .view-btn { border-left: 1px solid var(--border); }
-  .view-btn.active { background: var(--purple-dim); color: #fff; }
-
-  /* Featured post (blog page) */
-  .bp-feat {
-    display: grid; grid-template-columns: 3fr 2fr;
-    background: var(--bg-card); border: 1px solid var(--purple-border);
-    text-decoration: none; position: relative; overflow: hidden; transition: background 0.2s;
-    margin-bottom: 1px;
-  }
-  .bp-feat:hover { background: var(--bg-card2); }
-  .bp-feat::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--purple-dim), var(--purple-bright)); }
-  .bp-feat-body { padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between; }
-  .bp-feat-visual { background: linear-gradient(135deg, rgba(109,40,217,0.3) 0%, rgba(76,29,149,0.45) 60%, rgba(10,10,15,0.6) 100%); border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; min-height: 240px; }
-  .bp-feat-visual::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(167,139,250,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.07) 1px, transparent 1px); background-size: 20px 20px; }
-  .bp-feat-icon { font-size: 4.5rem; position: relative; z-index: 1; filter: drop-shadow(0 0 40px rgba(167,139,250,0.5)); animation: float 4s ease-in-out infinite; }
-
-  /* Grid view */
-  .bp-posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-
-  /* List view */
-  .bp-list { border: 1px solid var(--border); }
-  .bp-list-row {
-    background: var(--bg-card); padding: 1.4rem 2rem;
-    display: grid; grid-template-columns: 52px 1fr auto;
-    gap: 1.25rem; align-items: center;
-    text-decoration: none;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s; position: relative;
-  }
-  .bp-list-row:last-child { border-bottom: none; }
-  .bp-list-row:hover { background: var(--bg-card2); }
-  .bp-list-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--purple-dim); transform: scaleY(0); transform-origin: top; transition: transform 0.3s; }
-  .bp-list-row:hover::before { transform: scaleY(1); }
-  .bp-list-num { font-family: var(--display); font-size: 1.4rem; font-weight: 800; color: var(--purple-dim); opacity: 0.45; text-align: center; }
-  .bp-list-title { font-family: var(--display); font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
-  .bp-list-meta { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--text-dim); flex-wrap: wrap; }
-  .bp-list-right { text-align: right; }
-  .bp-list-date { font-size: 11px; color: var(--text-dim); display: block; margin-bottom: 5px; white-space: nowrap; }
-  .bp-list-arrow { color: var(--purple); font-size: 14px; transition: transform 0.2s; display: block; }
-  .bp-list-row:hover .bp-list-arrow { transform: translateX(4px); }
-
-  /* Empty state */
-  .bp-empty { display: none; padding: 3rem; text-align: center; border: 1px solid var(--border); background: var(--bg-card); margin-top: 1px; }
-  .bp-empty-icon { font-size: 2rem; margin-bottom: 1rem; }
-  .bp-empty-title { font-family: var(--display); font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem; }
-  .bp-empty-sub { font-size: 12px; color: var(--text-muted); }
-
-  /* Newsletter strip */
-  .bp-newsletter { margin-top: 2rem; padding: 2rem; background: var(--bg-card); border: 1px solid var(--purple-border); display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; }
-  .nl-icon { font-size: 2rem; flex-shrink: 0; }
-  .nl-text { flex: 1; min-width: 200px; }
-  .nl-text strong { color: var(--purple-bright); font-family: var(--display); font-size: 1rem; display: block; margin-bottom: 4px; }
-  .nl-text span { font-size: 12px; color: var(--text-muted); }
-  .nl-form { display: flex; gap: 8px; flex-shrink: 0; }
-  .nl-input { background: var(--bg); border: 1px solid var(--purple-border); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 16px; width: 220px; outline: none; transition: border-color 0.2s; }
-  .nl-input::placeholder { color: var(--text-dim); }
-  .nl-input:focus { border-color: var(--purple); }
-  .nl-submit { padding: 10px 20px; background: var(--purple-dim); color: #fff; border: 1px solid var(--purple); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
-  .nl-submit:hover { background: var(--purple); }
-
-  /* Post count badge */
-  .bp-post-count { font-size: 11px; color: var(--text-dim); padding: 4px 10px; border: 1px solid var(--border); background: var(--bg-card); }
-
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
@@ -383,14 +260,6 @@
     #about, #audits, #blog, #challenges, #contact { padding: 5rem 0; }
     .blog-featured { grid-template-columns: 1fr; }
     .blog-featured-visual { min-height: 130px; }
-    .bp-nav { padding: 1rem 1.5rem; }
-    .bp-hero { padding: 3rem 1.5rem 2rem; }
-    .bp-body { padding: 2rem 1.5rem 4rem; }
-    .bp-feat { grid-template-columns: 1fr; }
-    .bp-feat-visual { min-height: 130px; }
-    .bp-list-row { grid-template-columns: 36px 1fr auto; gap: 0.8rem; }
-    .bp-newsletter { flex-direction: column; }
-    .nl-input { width: 100%; }
   }
 </style>
 </head>
@@ -538,7 +407,7 @@
   </div>
 </section>
 
-<!-- ==================== BLOG (preview on main page) ==================== -->
+<!-- BLOG -->
 <section id="blog">
   <div class="container">
     <div class="section-header fade-up">
@@ -547,7 +416,7 @@
     </div>
 
     <!-- Featured -->
-    <a href="https://medium.com/@rathisrishti/the-ethereum-execution-blueprint-c47557e87895" onclick="openBlog(event,'evm')" class="blog-featured fade-up">
+    <a href="https://medium.com/@rathisrishti/the-ethereum-execution-blueprint-c47557e87895" target="_blank" class="blog-featured fade-up">
       <div class="blog-featured-visual"></div>
       <div class="blog-featured-body">
         <div>
@@ -557,26 +426,26 @@
         </div>
         <div class="feat-footer">
           <div class="feat-meta"><span>Apr 15, 2025</span><span class="dot">·</span><span>12 min read</span></div>
-          <div class="read-more">Read Post</div>
+          <div class="read-more">Read on Medium</div>
         </div>
       </div>
     </a>
 
     <!-- 3 preview cards -->
     <div class="blog-grid fade-up">
-      <a href="#" onclick="openBlog(event,'security')" class="blog-card">
+      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
         <div class="blog-card-header"><span class="blog-topic-tag topic-security">Vulnerability Breakdown</span><span class="blog-read-time">8 min</span></div>
         <div class="blog-card-title">Reentrancy in 2025: It's Not Dead, It's Evolved</div>
         <div class="blog-card-excerpt">Classic reentrancy is well-known. But cross-function, cross-contract, and read-only reentrancy variants are still catching protocols off guard.</div>
         <div class="blog-card-footer"><span class="blog-date">Mar 28, 2025</span><span class="blog-arrow">→</span></div>
       </a>
-      <a href="#" onclick="openBlog(event,'defi')" class="blog-card">
+      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
         <div class="blog-card-header"><span class="blog-topic-tag topic-defi">DeFi Concepts</span><span class="blog-read-time">10 min</span></div>
         <div class="blog-card-title">Flash Loans: From Arbitrage Tool to Attack Vector</div>
         <div class="blog-card-excerpt">Flash loans are atomic, uncollateralized, and settled in one transaction. A deep dive into how they're weaponized against DeFi protocols.</div>
         <div class="blog-card-footer"><span class="blog-date">Mar 10, 2025</span><span class="blog-arrow">→</span></div>
       </a>
-      <a href="#" onclick="openBlog(event,'evm')" class="blog-card">
+      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
         <div class="blog-card-header"><span class="blog-topic-tag topic-evm">EVM Internals</span><span class="blog-read-time">7 min</span></div>
         <div class="blog-card-title">Storage Slots, Packing, and Why They Matter for Security</div>
         <div class="blog-card-excerpt">The EVM stores state in 32-byte slots. How Solidity packs variables — and how proxy patterns can collide them — is one of the most underrated audit skills.</div>
@@ -586,7 +455,7 @@
 
     <div style="margin-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;" class="fade-up">
       <span style="font-size:11px;color:var(--text-dim);">// 6 posts total · more coming soon</span>
-      <button class="btn-ghost" onclick="openBlog(event,'all')">Read All Posts ↗</button>
+      <a href="https://medium.com/@rathisrishti" target="_blank" class="btn-ghost">Read All Posts on Medium ↗</a>
     </div>
   </div>
 </section>
@@ -688,154 +557,6 @@
   </div>
 </footer>
 
-
-<!-- ======================= BLOG PAGE OVERLAY ======================= -->
-<div id="blog-page">
-  <div class="grid-bg"></div>
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
-
-  <!-- Nav -->
-  <nav class="bp-nav">
-    <div class="bp-brand">Srishti <span>/ Security Blog</span></div>
-    <button class="bp-close" onclick="closeBlog()">
-      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l9 9M10 1L1 10"/></svg>
-      Close
-    </button>
-  </nav>
-
-  <!-- Hero -->
-  <div class="bp-hero">
-    <div class="bp-hero-tag">Security Writing</div>
-    <h1 class="bp-hero-title">Deep Dives &amp;<br><span class="accent">Exploit Breakdowns</span></h1>
-    <p class="bp-hero-sub">Technical write-ups on EVM internals, DeFi vulnerabilities, CTF solutions, and smart contract security — written from an attacker's mindset.</p>
-    <div class="bp-hero-stats">
-      <div><span class="bp-stat-num">6</span><span class="bp-stat-label">Total Posts</span></div>
-      <div><span class="bp-stat-num">4</span><span class="bp-stat-label">Topics</span></div>
-      <div><span class="bp-stat-num">~50</span><span class="bp-stat-label">Min of Reading</span></div>
-    </div>
-  </div>
-
-  <!-- Body -->
-  <div class="bp-body">
-
-    <!-- Controls -->
-    <div class="bp-controls">
-      <div class="bp-search-wrap">
-        <input type="text" class="bp-search" id="bp-search" placeholder="Search posts..." oninput="applyFilters()">
-      </div>
-      <div class="bp-filter-strip" id="bp-filters">
-        <button class="filter-btn active" data-cat="all" onclick="setCat('all',this)">All</button>
-        <button class="filter-btn" data-cat="evm" onclick="setCat('evm',this)">EVM</button>
-        <button class="filter-btn" data-cat="defi" onclick="setCat('defi',this)">DeFi</button>
-        <button class="filter-btn" data-cat="security" onclick="setCat('security',this)">Security</button>
-        <button class="filter-btn" data-cat="ctf" onclick="setCat('ctf',this)">CTF</button>
-        <button class="filter-btn" data-cat="tooling" onclick="setCat('tooling',this)">Tooling</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-        <span class="bp-post-count" id="bp-count">7 posts</span>
-        <div class="view-toggle">
-          <button class="view-btn active" id="vbtn-grid" onclick="setView('grid')" title="Grid">⊞</button>
-          <button class="view-btn" id="vbtn-list" onclick="setView('list')" title="List">☰</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Featured post -->
-    <a href="#" class="bp-feat" data-cat="evm" data-title="How the EVM Actually Executes Your Solidity Code">
-      <div class="bp-feat-body">
-        <div>
-          <div class="feat-label"><span>EVM Internals</span><span class="featured-badge">Featured</span></div>
-          <div class="feat-title">How the EVM Actually Executes Your Solidity Code</div>
-          <div class="feat-excerpt" style="font-size:12px;color:var(--text-muted);line-height:1.8;margin-bottom:1.5rem;">Most devs write Solidity. Few understand what the EVM does with it. This post goes deep into opcodes, the stack, memory layout, and storage slots — and why this mental model is essential for finding real vulnerabilities. We'll trace exactly what happens from function selector dispatch to SSTORE and SLOAD, and why certain patterns open up storage collision bugs in upgradeable contracts.</div>
-        </div>
-        <div class="feat-footer">
-          <div class="feat-meta"><span>Apr 15, 2025</span><span class="dot">·</span><span>12 min read</span></div>
-          <div class="read-more">Read Post</div>
-        </div>
-      </div>
-      <div class="bp-feat-visual"><div class="bp-feat-icon">⚡</div></div>
-    </a>
-
-    <!-- Grid view -->
-    <div id="bp-grid-view" style="margin-top:1px;">
-      <div class="bp-posts-grid" id="bp-grid">
-        <a href="#" class="blog-card" data-cat="security" data-title="Reentrancy in 2025: It's Not Dead, It's Evolved">
-          <div class="blog-card-header"><span class="blog-topic-tag topic-security">Vulnerability Breakdown</span><span class="blog-read-time">8 min</span></div>
-          <div class="blog-card-title">Reentrancy in 2025: It's Not Dead, It's Evolved</div>
-          <div class="blog-card-excerpt">Classic reentrancy is well-known. But cross-function, cross-contract, and read-only reentrancy variants are still catching protocols off guard. Here's how to spot them.</div>
-          <div class="blog-card-footer"><span class="blog-date">Mar 28, 2025</span><span class="blog-arrow">→</span></div>
-        </a>
-        <a href="#" class="blog-card" data-cat="defi" data-title="Flash Loans: From Arbitrage Tool to Attack Vector">
-          <div class="blog-card-header"><span class="blog-topic-tag topic-defi">DeFi Concepts</span><span class="blog-read-time">10 min</span></div>
-          <div class="blog-card-title">Flash Loans: From Arbitrage Tool to Attack Vector</div>
-          <div class="blog-card-excerpt">Flash loans are atomic, uncollateralized, and settled in one transaction. A deep dive into how they're weaponized against DeFi protocols.</div>
-          <div class="blog-card-footer"><span class="blog-date">Mar 10, 2025</span><span class="blog-arrow">→</span></div>
-        </a>
-        <a href="#" class="blog-card" data-cat="evm" data-title="Storage Slots, Packing, and Why They Matter for Security">
-          <div class="blog-card-header"><span class="blog-topic-tag topic-evm">EVM Internals</span><span class="blog-read-time">7 min</span></div>
-          <div class="blog-card-title">Storage Slots, Packing, and Why They Matter for Security</div>
-          <div class="blog-card-excerpt">The EVM stores state in 32-byte slots. How Solidity packs variables — and how proxy patterns can collide them — is one of the most underrated audit skills.</div>
-          <div class="blog-card-footer"><span class="blog-date">Feb 22, 2025</span><span class="blog-arrow">→</span></div>
-        </a>
-        <a href="#" class="blog-card" data-cat="ctf" data-title="Ethernaut Level 25 (Motorbike): UUPS Proxy Destruction">
-          <div class="blog-card-header"><span class="blog-topic-tag topic-ctf">CTF Write-up</span><span class="blog-read-time">6 min</span></div>
-          <div class="blog-card-title">Ethernaut Level 25 (Motorbike): UUPS Proxy Destruction</div>
-          <div class="blog-card-excerpt">How an uninitialized UUPS implementation contract can be selfdestruct'd, bricking the proxy permanently and locking all funds forever.</div>
-          <div class="blog-card-footer"><span class="blog-date">Feb 5, 2025</span><span class="blog-arrow">→</span></div>
-        </a>
-        <a href="#" class="blog-card" data-cat="security" data-title="Price Oracle Manipulation: The Most Profitable Bug Class">
-          <div class="blog-card-header"><span class="blog-topic-tag topic-security">Vulnerability Breakdown</span><span class="blog-read-time">9 min</span></div>
-          <div class="blog-card-title">Price Oracle Manipulation: The Most Profitable Bug Class</div>
-          <div class="blog-card-excerpt">From Cream Finance to Mango Markets, oracle manipulation has drained hundreds of millions. Understanding spot vs TWAP vs Chainlink — and their failure modes.</div>
-          <div class="blog-card-footer"><span class="blog-date">Jan 18, 2025</span><span class="blog-arrow">→</span></div>
-        </a>
-        <a href="#" class="blog-card" data-cat="tooling" data-title="My Foundry Setup for Smart Contract Auditing">
-          <div class="blog-card-header"><span class="blog-topic-tag topic-tooling">Tooling</span><span class="blog-read-time">5 min</span></div>
-          <div class="blog-card-title">My Foundry Setup for Smart Contract Auditing</div>
-          <div class="blog-card-excerpt">Foundry is the best thing to happen to Solidity development. Here's exactly how I configure it: fork testing, fuzzing campaigns, invariant tests, and gas profiling.</div>
-          <div class="blog-card-footer"><span class="blog-date">Jan 4, 2025</span><span class="blog-arrow">→</span></div>
-        </a>
-      </div>
-    </div>
-
-    <!-- List view -->
-    <div id="bp-list-view" style="display:none;margin-top:1px;">
-      <div class="bp-list" id="bp-list">
-        <a href="#" class="bp-list-row" data-cat="security" data-title="Reentrancy in 2025: It's Not Dead, It's Evolved"><div class="bp-list-num">01</div><div><div class="bp-list-title">Reentrancy in 2025: It's Not Dead, It's Evolved</div><div class="bp-list-meta"><span class="blog-topic-tag topic-security" style="font-size:9px;padding:2px 7px;">Vulnerability</span><span>8 min</span></div></div><div class="bp-list-right"><span class="bp-list-date">Mar 28, 2025</span><span class="bp-list-arrow">→</span></div></a>
-        <a href="#" class="bp-list-row" data-cat="defi" data-title="Flash Loans: From Arbitrage Tool to Attack Vector"><div class="bp-list-num">02</div><div><div class="bp-list-title">Flash Loans: From Arbitrage Tool to Attack Vector</div><div class="bp-list-meta"><span class="blog-topic-tag topic-defi" style="font-size:9px;padding:2px 7px;">DeFi</span><span>10 min</span></div></div><div class="bp-list-right"><span class="bp-list-date">Mar 10, 2025</span><span class="bp-list-arrow">→</span></div></a>
-        <a href="#" class="bp-list-row" data-cat="evm" data-title="Storage Slots, Packing, and Why They Matter for Security"><div class="bp-list-num">03</div><div><div class="bp-list-title">Storage Slots, Packing, and Why They Matter for Security</div><div class="bp-list-meta"><span class="blog-topic-tag topic-evm" style="font-size:9px;padding:2px 7px;">EVM</span><span>7 min</span></div></div><div class="bp-list-right"><span class="bp-list-date">Feb 22, 2025</span><span class="bp-list-arrow">→</span></div></a>
-        <a href="#" class="bp-list-row" data-cat="ctf" data-title="Ethernaut Level 25 (Motorbike): UUPS Proxy Destruction"><div class="bp-list-num">04</div><div><div class="bp-list-title">Ethernaut Level 25 (Motorbike): UUPS Proxy Destruction</div><div class="bp-list-meta"><span class="blog-topic-tag topic-ctf" style="font-size:9px;padding:2px 7px;">CTF</span><span>6 min</span></div></div><div class="bp-list-right"><span class="bp-list-date">Feb 5, 2025</span><span class="bp-list-arrow">→</span></div></a>
-        <a href="#" class="bp-list-row" data-cat="security" data-title="Price Oracle Manipulation: The Most Profitable Bug Class"><div class="bp-list-num">05</div><div><div class="bp-list-title">Price Oracle Manipulation: The Most Profitable Bug Class</div><div class="bp-list-meta"><span class="blog-topic-tag topic-security" style="font-size:9px;padding:2px 7px;">Vulnerability</span><span>9 min</span></div></div><div class="bp-list-right"><span class="bp-list-date">Jan 18, 2025</span><span class="bp-list-arrow">→</span></div></a>
-        <a href="#" class="bp-list-row" data-cat="tooling" data-title="My Foundry Setup for Smart Contract Auditing"><div class="bp-list-num">06</div><div><div class="bp-list-title">My Foundry Setup for Smart Contract Auditing</div><div class="bp-list-meta"><span class="blog-topic-tag topic-tooling" style="font-size:9px;padding:2px 7px;">Tooling</span><span>5 min</span></div></div><div class="bp-list-right"><span class="bp-list-date">Jan 4, 2025</span><span class="bp-list-arrow">→</span></div></a>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div class="bp-empty" id="bp-empty">
-      <div class="bp-empty-icon">🔍</div>
-      <div class="bp-empty-title">No posts found</div>
-      <div class="bp-empty-sub">Try a different search or filter</div>
-    </div>
-
-    <!-- Newsletter -->
-    <div class="bp-newsletter">
-      <div class="nl-icon">📡</div>
-      <div class="nl-text">
-        <strong>Get new posts in your inbox</strong>
-        <span>Security breakdowns, EVM deep-dives, and CTF write-ups. No spam. Unsubscribe anytime.</span>
-      </div>
-      <div class="nl-form">
-        <input type="email" class="nl-input" id="nl-email" placeholder="your@email.com">
-        <button class="nl-submit" onclick="subscribe()">Subscribe</button>
-      </div>
-    </div>
-
-  </div><!-- /bp-body -->
-</div><!-- /blog-page -->
-
-
 <script>
   /* ---- Tabs ---- */
   function switchTab(tab) {
@@ -862,90 +583,6 @@
       });
     });
   });
-
-  /* ---- Blog page open / close ---- */
-  let bpCat = 'all';
-  let bpView = 'grid';
-
-  function openBlog(e, cat) {
-    if (e) e.preventDefault();
-    document.getElementById('blog-page').classList.add('open');
-    document.body.style.overflow = 'hidden';
-    document.getElementById('bp-search').value = '';
-    setCat(cat || 'all', document.querySelector(`[data-cat="${cat || 'all'}"]`));
-    document.getElementById('blog-page').scrollTo(0, 0);
-  }
-
-  function closeBlog() {
-    document.getElementById('blog-page').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBlog(); });
-
-  /* ---- Blog page filter ---- */
-  function setCat(cat, btn) {
-    bpCat = cat;
-    document.querySelectorAll('#bp-filters .filter-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    else {
-      const found = document.querySelector(`#bp-filters [data-cat="${cat}"]`);
-      if (found) found.classList.add('active');
-    }
-    applyFilters();
-  }
-
-  function applyFilters() {
-    const q = document.getElementById('bp-search').value.toLowerCase().trim();
-    let total = 0;
-
-    /* Featured */
-    const feat = document.querySelector('.bp-feat');
-    const featMatch = (bpCat === 'all' || feat.dataset.cat === bpCat) && feat.dataset.title.toLowerCase().includes(q);
-    feat.style.display = featMatch ? '' : 'none';
-    if (featMatch) total++;
-
-    /* Grid cards */
-    document.querySelectorAll('#bp-grid .blog-card').forEach(c => {
-      const m = (bpCat === 'all' || c.dataset.cat === bpCat) && c.dataset.title.toLowerCase().includes(q);
-      c.style.display = m ? '' : 'none';
-      if (m) total++;
-    });
-
-    /* List rows */
-    document.querySelectorAll('#bp-list .bp-list-row').forEach(r => {
-      const m = (bpCat === 'all' || r.dataset.cat === bpCat) && r.dataset.title.toLowerCase().includes(q);
-      r.style.display = m ? '' : 'none';
-    });
-
-    document.getElementById('bp-count').textContent = total + (total === 1 ? ' post' : ' posts');
-    document.getElementById('bp-empty').style.display = total === 0 ? '' : 'none';
-  }
-
-  /* ---- View toggle ---- */
-  function setView(v) {
-    bpView = v;
-    document.getElementById('bp-grid-view').style.display = v === 'grid' ? '' : 'none';
-    document.getElementById('bp-list-view').style.display = v === 'list' ? '' : 'none';
-    document.getElementById('vbtn-grid').classList.toggle('active', v === 'grid');
-    document.getElementById('vbtn-list').classList.toggle('active', v === 'list');
-  }
-
-  /* ---- Newsletter ---- */
-  function subscribe() {
-    const input = document.getElementById('nl-email');
-    const btn = input.nextElementSibling;
-    if (!input.value.trim() || !input.value.includes('@')) {
-      input.style.borderColor = '#ef4444';
-      setTimeout(() => input.style.borderColor = '', 1500);
-      return;
-    }
-    btn.textContent = '✓ Subscribed';
-    btn.style.cssText += 'background:rgba(163,230,53,0.15);border-color:#a3e635;color:#a3e635;';
-    btn.disabled = true;
-    input.value = '';
-    input.disabled = true;
-  }
 </script>
 </body>
 </html>
