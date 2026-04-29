@@ -3,25 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Srishti | Web3 Security Researcher</title>
+<title>Srishti | Rust & Blockchain Security Engineer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --bg-card: #10101a;
-    --bg-card2: #14141f;
-    --purple: #a78bfa;
-    --purple-dim: #7c3aed;
-    --purple-bright: #c4b5fd;
-    --purple-glow: rgba(167,139,250,0.15);
-    --purple-border: rgba(167,139,250,0.25);
-    --text: #e2e0f0;
-    --text-muted: #8b87a8;
-    --text-dim: #55526e;
-    --border: rgba(255,255,255,0.06);
-    --mono: 'Space Mono', monospace;
-    --display: 'Syne', sans-serif;
+    --bg: #07080d;
+    --bg-card: #0d0f18;
+    --bg-card2: #12141f;
+    --orange: #f97316;
+    --orange-dim: #c2410c;
+    --orange-bright: #fb923c;
+    --orange-glow: rgba(249,115,22,0.12);
+    --orange-border: rgba(249,115,22,0.22);
+    --rust: #b45309;
+    --rust-light: #fbbf24;
+    --teal: #14b8a6;
+    --teal-glow: rgba(20,184,166,0.10);
+    --teal-border: rgba(20,184,166,0.2);
+    --text: #e8e4d9;
+    --text-muted: #857f72;
+    --text-dim: #4a4540;
+    --border: rgba(255,255,255,0.055);
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Fraunces', serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,236 +35,459 @@
     background: var(--bg);
     color: var(--text);
     font-family: var(--mono);
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 13px;
+    line-height: 1.75;
     overflow-x: hidden;
   }
 
+  /* Texture overlays */
   body::before {
     content: '';
     position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0; opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
   }
+
+  /* Subtle scan lines */
   body::after {
     content: '';
     position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.025) 3px, rgba(0,0,0,0.025) 4px);
     pointer-events: none; z-index: 0;
   }
 
+  /* Diagonal grid - rust themed */
   .grid-bg {
     position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(167,139,250,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.04) 1px, transparent 1px);
-    background-size: 60px 60px;
+    background-image: linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
     pointer-events: none; z-index: 0;
   }
 
-  .blob { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
-  .blob-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(109,40,217,0.18) 0%, transparent 70%); top: -150px; left: -100px; }
-  .blob-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(167,139,250,0.10) 0%, transparent 70%); top: 40%; right: -100px; }
-  .blob-3 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(76,29,149,0.15) 0%, transparent 70%); bottom: 0; left: 30%; }
+  /* Atmospheric blobs */
+  .blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+  .blob-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(180,83,9,0.14) 0%, transparent 65%); top: -200px; right: -150px; }
+  .blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(20,184,166,0.08) 0%, transparent 70%); top: 50%; left: -100px; }
+  .blob-3 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(249,115,22,0.07) 0%, transparent 70%); bottom: -100px; right: 20%; }
 
   /* NAV */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 1.25rem 4rem;
+    padding: 1.2rem 4rem;
     border-bottom: 1px solid var(--border);
-    background: rgba(10,10,15,0.85);
-    backdrop-filter: blur(12px);
+    background: rgba(7,8,13,0.88);
+    backdrop-filter: blur(16px);
   }
-  .nav-logo { font-family: var(--display); font-size: 1.1rem; font-weight: 800; color: var(--purple-bright); letter-spacing: -0.02em; text-decoration: none; }
-  .nav-logo span { color: var(--text-muted); font-weight: 400; }
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 1.2rem;
+    font-weight: 900;
+    font-style: italic;
+    color: var(--orange-bright);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .nav-logo span { color: var(--text-muted); font-weight: 300; font-style: normal; }
   .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-  .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; position: relative; }
-  .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; right: 0; height: 1px; background: var(--purple); transform: scaleX(0); transition: transform 0.2s; }
-  .nav-links a:hover { color: var(--purple-bright); }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none; font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    transition: color 0.2s; position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+    height: 1px; background: var(--orange); transform: scaleX(0); transition: transform 0.2s;
+  }
+  .nav-links a:hover { color: var(--orange-bright); }
   .nav-links a:hover::after { transform: scaleX(1); }
 
+  /* Version badge */
+  .nav-badge {
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 10px; border: 1px solid var(--orange-border);
+    color: var(--orange); background: var(--orange-glow);
+  }
+
   section { position: relative; z-index: 1; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 3rem; }
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 3rem; }
 
   /* HERO */
   #hero { min-height: 100vh; display: flex; align-items: center; padding: 8rem 0 5rem; }
-  .hero-inner { max-width: 1100px; margin: 0 auto; padding: 0 3rem; }
+  .hero-inner { max-width: 1120px; margin: 0 auto; padding: 0 3rem; position: relative; z-index: 1; }
 
-  .hero-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple); border: 1px solid var(--purple-border); padding: 6px 14px; border-radius: 2px; margin-bottom: 2rem; background: var(--purple-glow); }
-  .hero-tag::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--teal); border: 1px solid var(--teal-border);
+    padding: 5px 14px; margin-bottom: 2.5rem; background: var(--teal-glow);
+  }
+  .hero-tag::before {
+    content: ''; display: inline-block; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--teal); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
 
-  .hero-title { font-family: var(--display); font-size: clamp(3.5rem, 8vw, 7rem); font-weight: 800; line-height: 0.95; letter-spacing: -0.03em; margin-bottom: 1.5rem; color: #fff; }
-  .hero-title .accent { color: var(--purple-bright); display: block; }
-  .hero-subtitle { font-size: 13px; color: var(--text-muted); max-width: 540px; line-height: 1.9; margin-bottom: 2.5rem; }
-  .hero-subtitle .highlight { color: var(--purple-bright); }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--orange); text-transform: uppercase; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--orange); }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(3.8rem, 8.5vw, 7.5rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    margin-bottom: 1.75rem;
+    color: #fff;
+  }
+  .hero-title .line2 {
+    color: var(--orange-bright);
+    font-style: italic;
+    font-weight: 300;
+    display: block;
+  }
+  .hero-title .line3 {
+    color: var(--text-muted);
+    font-size: 0.55em;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: -0.02em;
+    display: block;
+    margin-top: 0.3em;
+  }
+
+  .hero-subtitle {
+    font-size: 13px; color: var(--text-muted);
+    max-width: 560px; line-height: 1.9; margin-bottom: 2.5rem;
+  }
+  .hero-subtitle .hl { color: var(--orange-bright); }
+  .hero-subtitle .hl2 { color: var(--teal); }
+
   .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
 
-  .btn-primary { display: inline-block; padding: 12px 28px; background: var(--purple-dim); color: #fff; text-decoration: none; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--purple); transition: background 0.2s, box-shadow 0.2s; clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%); }
-  .btn-primary:hover { background: var(--purple); box-shadow: 0 0 30px rgba(167,139,250,0.3); }
-  .btn-ghost { display: inline-block; padding: 12px 28px; background: transparent; color: var(--purple-bright); text-decoration: none; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--purple-border); transition: border-color 0.2s, background 0.2s; clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%); cursor: pointer; }
-  .btn-ghost:hover { border-color: var(--purple); background: var(--purple-glow); }
+  .btn-primary {
+    display: inline-block; padding: 13px 30px;
+    background: var(--orange-dim); color: #fff;
+    text-decoration: none; font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--orange); transition: background 0.2s, box-shadow 0.2s;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  }
+  .btn-primary:hover { background: var(--orange); box-shadow: 0 0 35px rgba(249,115,22,0.3); }
 
-  .hero-stats { display: flex; gap: 3rem; margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--border); }
-  .stat-num { font-family: var(--display); font-size: 2rem; font-weight: 800; color: var(--purple-bright); display: block; line-height: 1; }
-  .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+  .btn-ghost {
+    display: inline-block; padding: 13px 30px;
+    background: transparent; color: var(--orange-bright);
+    text-decoration: none; font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--orange-border); transition: border-color 0.2s, background 0.2s;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%); cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--orange); background: var(--orange-glow); }
 
-  .hero-terminal { position: absolute; right: 3rem; top: 50%; transform: translateY(-50%); width: 400px; background: var(--bg-card); border: 1px solid var(--purple-border); padding: 1.5rem; font-family: var(--mono); font-size: 12px; display: none; }
-  @media (min-width: 1100px) { .hero-terminal { display: block; } #hero { position: relative; } }
+  /* Stats row */
+  .hero-stats {
+    display: flex; gap: 3.5rem; margin-top: 4.5rem;
+    padding-top: 2.5rem; border-top: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .stat-num { font-family: var(--display); font-size: 2.2rem; font-weight: 900; color: var(--orange-bright); display: block; line-height: 1; font-style: italic; }
+  .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px; }
 
-  .terminal-bar { display: flex; gap: 6px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  /* Terminal float */
+  .hero-terminal {
+    position: absolute; right: 3rem; top: 50%; transform: translateY(-50%);
+    width: 420px; background: var(--bg-card);
+    border: 1px solid var(--orange-border); padding: 1.5rem;
+    font-family: var(--mono); font-size: 12px; display: none;
+    box-shadow: 0 0 60px rgba(249,115,22,0.08);
+  }
+  @media (min-width: 1150px) { .hero-terminal { display: block; } #hero { position: relative; } }
+
+  .terminal-bar { display: flex; gap: 6px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); align-items: center; }
   .t-dot { width: 10px; height: 10px; border-radius: 50%; }
   .t-dot:nth-child(1) { background: #ff5f57; }
   .t-dot:nth-child(2) { background: #ffbd2e; }
   .t-dot:nth-child(3) { background: #28ca41; }
-  .t-line { line-height: 1.8; }
-  .t-prompt { color: var(--purple); }
+  .t-title { font-size: 10px; color: var(--text-dim); margin-left: auto; letter-spacing: 0.05em; }
+  .t-line { line-height: 1.9; }
+  .t-prompt { color: var(--orange); }
+  .t-cmd { color: var(--text); }
   .t-out { color: var(--text-muted); }
   .t-success { color: #a3e635; }
-  .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--purple); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
+  .t-rust { color: var(--rust-light); }
+  .t-teal { color: var(--teal); }
+  .t-comment { color: var(--text-dim); }
+  .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--orange); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* SHARED */
-  .section-header { margin-bottom: 3rem; }
-  .section-tag { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--purple); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 10px; }
-  .section-tag::before { content: ''; display: block; width: 30px; height: 1px; background: var(--purple); }
-  .section-title { font-family: var(--display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; line-height: 1.1; }
-  .skills-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.5rem; }
-  .skill-tag { font-size: 11px; padding: 5px 12px; border: 1px solid var(--purple-border); color: var(--purple-bright); background: var(--purple-glow); letter-spacing: 0.05em; }
-  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .filter-btn { font-size: 11px; padding: 5px 14px; border: 1px solid var(--purple-border); border-radius: 2px; background: transparent; color: var(--text-dim); cursor: pointer; font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; transition: all 0.15s; }
-  .filter-btn:hover { color: var(--purple-bright); background: var(--purple-glow); }
-  .filter-btn.active { background: var(--purple-dim); color: #fff; border-color: var(--purple); }
+  /* SHARED SECTION */
+  .section-header { margin-bottom: 3.5rem; }
+  .section-tag {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-tag::before { content: ''; display: block; width: 32px; height: 1px; background: var(--orange); }
+  .section-title {
+    font-family: var(--display); font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+    font-weight: 900; color: #fff; letter-spacing: -0.03em; line-height: 1.05;
+  }
+  .section-title em { font-style: italic; color: var(--orange-bright); font-weight: 300; }
+
+  .skill-tag {
+    font-size: 11px; padding: 4px 12px;
+    border: 1px solid var(--orange-border); color: var(--orange-bright);
+    background: var(--orange-glow); letter-spacing: 0.04em;
+  }
+  .skill-tag.rust { border-color: rgba(251,191,36,0.25); color: var(--rust-light); background: rgba(251,191,36,0.07); }
+  .skill-tag.teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-glow); }
 
   /* ABOUT */
-  #about { padding: 8rem 0; border-top: 1px solid var(--border); }
-  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
-  .about-text p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.9; font-size: 13px; }
-  .about-text p .hl { color: var(--purple-bright); }
-  .info-box { background: var(--bg-card); border: 1px solid var(--border); border-left: 2px solid var(--purple); padding: 1.5rem; margin-bottom: 1rem; }
-  .info-box-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); margin-bottom: 0.5rem; }
+  #about { padding: 9rem 0; border-top: 1px solid var(--border); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
+  .about-text p { color: var(--text-muted); margin-bottom: 1.4rem; line-height: 1.9; font-size: 13px; }
+  .about-text p .hl { color: var(--orange-bright); }
+  .about-text p .hl2 { color: var(--teal); }
+  .skills-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2rem; }
+
+  .info-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-left: 2px solid var(--orange); padding: 1.4rem; margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+  .info-box:hover { border-left-color: var(--orange-bright); }
+  .info-box-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--orange); margin-bottom: 6px; }
   .info-box-value { color: var(--text); font-size: 13px; }
 
+  /* PROJECTS */
+  #projects { padding: 9rem 0; border-top: 1px solid var(--border); }
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .project-card {
+    background: var(--bg-card); padding: 2rem; position: relative;
+    transition: background 0.2s; text-decoration: none; display: block;
+  }
+  .project-card:hover { background: var(--bg-card2); }
+  .project-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--orange-dim), var(--orange));
+    transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
+  }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  /* Featured project (full width) */
+  .project-card.featured {
+    grid-column: 1 / -1;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    background: var(--bg-card);
+  }
+  .project-card.featured::before { background: linear-gradient(90deg, var(--orange-dim), var(--teal)); }
+  .project-feat-left { padding: 2.5rem; }
+  .project-feat-right {
+    border-left: 1px solid var(--border);
+    padding: 2.5rem; background: rgba(249,115,22,0.03);
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .project-feat-right code {
+    display: block; font-size: 11px; color: var(--text-dim);
+    line-height: 1.8; background: rgba(0,0,0,0.3);
+    padding: 1rem; border-left: 2px solid var(--orange-dim);
+  }
+  .code-comment { color: var(--text-dim); }
+  .code-keyword { color: var(--orange); }
+  .code-type { color: var(--rust-light); }
+  .code-fn { color: var(--teal); }
+  .code-str { color: #86efac; }
+
+  .project-lang {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 10px; margin-bottom: 0.5rem; font-weight: 700; border-radius: 2px;
+  }
+  .project-lang::before { content: ''; display: block; width: 7px; height: 7px; border-radius: 50%; }
+  .lang-rust { background: rgba(249,115,22,0.12); color: var(--orange-bright); border: 1px solid var(--orange-border); }
+  .lang-rust::before { background: var(--orange); }
+  .lang-sol { background: rgba(20,184,166,0.1); color: var(--teal); border: 1px solid var(--teal-border); }
+  .lang-sol::before { background: var(--teal); }
+  .lang-multi { background: rgba(251,191,36,0.08); color: var(--rust-light); border: 1px solid rgba(251,191,36,0.2); }
+  .lang-multi::before { background: var(--rust-light); }
+
+  .project-title { font-family: var(--display); font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.6rem; line-height: 1.25; letter-spacing: -0.02em; }
+  .project-desc { font-size: 12px; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.5rem; flex: 1; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
+  .p-tag { font-size: 10px; padding: 2px 8px; border: 1px solid var(--border); color: var(--text-dim); }
+  .project-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 1.25rem; }
+  .project-stars { display: flex; align-items: center; gap: 5px; }
+  .project-stars::before { content: '★'; color: var(--rust-light); font-size: 12px; }
+  .project-link { color: var(--orange); font-size: 11px; }
+  .project-link::after { content: ' ↗'; }
+
   /* AUDITS */
-  #audits { padding: 8rem 0; border-top: 1px solid var(--border); }
-  .research-note { font-size: 12px; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border); border-left: 2px solid var(--purple-dim); padding: 12px 16px; margin-bottom: 2rem; line-height: 1.7; }
-  .research-note span { color: var(--purple-bright); }
+  #audits { padding: 9rem 0; border-top: 1px solid var(--border); }
+  .research-note {
+    font-size: 12px; color: var(--text-muted); background: var(--bg-card);
+    border: 1px solid var(--border); border-left: 2px solid var(--orange-dim);
+    padding: 12px 18px; margin-bottom: 2rem; line-height: 1.7;
+  }
+  .research-note span { color: var(--orange-bright); }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .filter-btn {
+    font-size: 10px; padding: 5px 14px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim); cursor: pointer;
+    font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s;
+  }
+  .filter-btn:hover { color: var(--orange-bright); background: var(--orange-glow); border-color: var(--orange-border); }
+  .filter-btn.active { background: var(--orange-dim); color: #fff; border-color: var(--orange); }
+
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .audit-card { background: var(--bg-card); padding: 2rem; position: relative; transition: background 0.2s; text-decoration: none; display: block; }
+  .audit-card {
+    background: var(--bg-card); padding: 2rem; position: relative;
+    transition: background 0.2s; text-decoration: none; display: block;
+  }
   .audit-card:hover { background: var(--bg-card2); }
-  .audit-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--purple-dim); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
+  .audit-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--orange-dim); transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
+  }
   .audit-card:hover::before { transform: scaleX(1); }
-  .card-cat { display: inline-block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; margin-bottom: 0.5rem; font-weight: 700; border-radius: 2px; }
-  .cat-defi { background: rgba(56,130,221,0.15); color: #93c5fd; border: 1px solid rgba(56,130,221,0.3); }
-  .cat-staking { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
-  .cat-infra { background: rgba(156,163,175,0.12); color: #d1d5db; border: 1px solid rgba(156,163,175,0.2); }
-  .card-tag { display: inline-block; font-size: 10px; padding: 2px 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 0.75rem; margin-left: 6px; }
-  .card-title { font-family: var(--display); font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; line-height: 1.3; }
-  .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
+  .card-cat { display: inline-block; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; margin-bottom: 0.5rem; font-weight: 700; }
+  .cat-defi { background: rgba(20,184,166,0.1); color: var(--teal); border: 1px solid var(--teal-border); }
+  .cat-staking { background: rgba(163,230,53,0.08); color: #86efac; border: 1px solid rgba(163,230,53,0.2); }
+  .cat-infra { background: rgba(156,163,175,0.1); color: #d1d5db; border: 1px solid rgba(156,163,175,0.18); }
+  .cat-rust { background: var(--orange-glow); color: var(--orange-bright); border: 1px solid var(--orange-border); }
+  .card-tag { display: inline-block; font-size: 9px; padding: 2px 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 0.75rem; margin-left: 6px; }
+  .card-title { font-family: var(--display); font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; line-height: 1.3; letter-spacing: -0.02em; }
+  .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.5rem; }
   .card-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
   .card-meta .protocol { display: flex; align-items: center; gap: 6px; }
-  .card-meta .protocol::before { content: ''; display: block; width: 8px; height: 8px; border: 1px solid var(--purple); transform: rotate(45deg); }
-  .card-link { color: var(--purple); font-size: 11px; display: flex; align-items: center; gap: 4px; }
-  .card-link::after { content: '↗'; }
+  .card-meta .protocol::before { content: ''; display: block; width: 7px; height: 7px; border: 1px solid var(--orange); transform: rotate(45deg); }
+  .card-link { color: var(--orange); font-size: 11px; }
+  .card-link::after { content: ' ↗'; }
 
   /* BLOG */
-  #blog { padding: 8rem 0; border-top: 1px solid var(--border); }
+  #blog { padding: 9rem 0; border-top: 1px solid var(--border); }
 
-  .blog-featured { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg-card); border: 1px solid var(--purple-border); margin-bottom: 1px; text-decoration: none; position: relative; overflow: hidden; transition: background 0.2s; }
+  .blog-featured {
+    display: grid; grid-template-columns: 1fr 1.3fr;
+    background: var(--bg-card); border: 1px solid var(--orange-border);
+    margin-bottom: 1px; text-decoration: none; position: relative; overflow: hidden; transition: background 0.2s;
+  }
   .blog-featured:hover { background: var(--bg-card2); }
-  .blog-featured::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--purple-dim), var(--purple-bright)); }
-  .blog-featured-visual { background: linear-gradient(135deg, rgba(109,40,217,0.25) 0%, rgba(76,29,149,0.4) 50%, rgba(10,10,15,0.8) 100%); border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center; padding: 3rem; min-height: 260px; position: relative; overflow: hidden; }
-  .blog-featured-visual::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(167,139,250,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.08) 1px, transparent 1px); background-size: 24px 24px; }
-  .blog-featured-visual .feat-icon { font-size: 5rem; position: relative; z-index: 1; filter: drop-shadow(0 0 30px rgba(167,139,250,0.4)); animation: float 4s ease-in-out infinite; }
-  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  .blog-featured-body { padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between; }
-  .feat-label { display: flex; align-items: center; gap: 10px; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--purple); margin-bottom: 1rem; }
-  .featured-badge { background: var(--purple-dim); color: #fff; padding: 2px 8px; font-size: 9px; letter-spacing: 0.12em; }
-  .feat-title { font-family: var(--display); font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 1rem; letter-spacing: -0.02em; }
-  .feat-excerpt { font-size: 12px; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.5rem; }
+  .blog-featured::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--orange-dim), var(--orange-bright), var(--teal)); }
+
+  .blog-featured-visual {
+    background: linear-gradient(135deg, rgba(180,83,9,0.2) 0%, rgba(7,8,13,0.9) 100%);
+    border-right: 1px solid var(--border); display: flex; align-items: center;
+    justify-content: center; padding: 3rem; min-height: 280px; position: relative; overflow: hidden;
+  }
+  .blog-featured-visual::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(249,115,22,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  .feat-code-block {
+    position: relative; z-index: 1; font-family: var(--mono); font-size: 11px;
+    color: var(--text-muted); line-height: 1.8; background: rgba(0,0,0,0.5);
+    padding: 1.25rem; border: 1px solid var(--orange-border); width: 100%;
+  }
+
+  .blog-featured-body { padding: 2.75rem; display: flex; flex-direction: column; justify-content: space-between; }
+  .feat-label { display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange); margin-bottom: 1.25rem; }
+  .featured-badge { background: var(--orange-dim); color: #fff; padding: 2px 9px; font-size: 9px; letter-spacing: 0.12em; }
+  .feat-title { font-family: var(--display); font-size: 1.65rem; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 1rem; letter-spacing: -0.02em; }
+  .feat-excerpt { font-size: 12px; color: var(--text-muted); line-height: 1.85; margin-bottom: 1.75rem; }
   .feat-footer { display: flex; align-items: center; justify-content: space-between; }
   .feat-meta { font-size: 11px; color: var(--text-dim); }
   .feat-meta .dot { margin: 0 6px; }
-  .read-more { font-size: 11px; color: var(--purple); display: flex; align-items: center; gap: 5px; }
+  .read-more { font-size: 11px; color: var(--orange); display: flex; align-items: center; gap: 5px; }
   .read-more::after { content: '→'; transition: transform 0.2s; }
   .blog-featured:hover .read-more::after { transform: translateX(4px); }
 
   .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1px; }
   .blog-card { background: var(--bg-card); padding: 1.75rem; text-decoration: none; display: flex; flex-direction: column; position: relative; transition: background 0.2s; overflow: hidden; }
   .blog-card:hover { background: var(--bg-card2); }
-  .blog-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--purple-dim); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+  .blog-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--orange-dim); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
   .blog-card:hover::before { transform: scaleX(1); }
   .blog-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; }
-  .blog-topic-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; font-weight: 700; border-radius: 2px; white-space: nowrap; }
-  .topic-evm      { background: rgba(56,130,221,0.15); color: #93c5fd; border: 1px solid rgba(56,130,221,0.3); }
-  .topic-defi     { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
-  .topic-security { background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
-  .topic-ctf      { background: rgba(251,191,36,0.12); color: #fcd34d; border: 1px solid rgba(251,191,36,0.3); }
-  .topic-tooling  { background: rgba(156,163,175,0.12); color: #d1d5db; border: 1px solid rgba(156,163,175,0.2); }
+  .blog-topic-tag { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; font-weight: 700; white-space: nowrap; }
+  .topic-evm      { background: rgba(20,184,166,0.1); color: var(--teal); border: 1px solid var(--teal-border); }
+  .topic-rust     { background: var(--orange-glow); color: var(--orange-bright); border: 1px solid var(--orange-border); }
+  .topic-security { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.22); }
+  .topic-ctf      { background: rgba(251,191,36,0.08); color: #fcd34d; border: 1px solid rgba(251,191,36,0.25); }
+  .topic-defi     { background: rgba(163,230,53,0.08); color: #86efac; border: 1px solid rgba(163,230,53,0.18); }
   .blog-read-time { font-size: 10px; color: var(--text-dim); white-space: nowrap; }
-  .blog-card-title { font-family: var(--display); font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 0.6rem; }
-  .blog-card-excerpt { font-size: 11px; color: var(--text-muted); line-height: 1.75; flex: 1; margin-bottom: 1.25rem; }
+  .blog-card-title { font-family: var(--display); font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 0.6rem; letter-spacing: -0.01em; }
+  .blog-card-excerpt { font-size: 11px; color: var(--text-muted); line-height: 1.8; flex: 1; margin-bottom: 1.25rem; }
   .blog-card-footer { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 1rem; }
-  .blog-date::before { content: '//'; color: var(--purple-dim); font-size: 10px; margin-right: 5px; }
-  .blog-arrow { color: var(--purple); transition: transform 0.2s; }
+  .blog-date::before { content: '//'; color: var(--orange-dim); font-size: 10px; margin-right: 5px; }
+  .blog-arrow { color: var(--orange); transition: transform 0.2s; }
   .blog-card:hover .blog-arrow { transform: translateX(4px); }
 
   /* CHALLENGES */
-  #challenges { padding: 8rem 0; border-top: 1px solid var(--border); }
+  #challenges { padding: 9rem 0; border-top: 1px solid var(--border); }
   .challenges-tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
-  .tab-btn { padding: 10px 24px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; background: none; border: none; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; }
-  .tab-btn.active { color: var(--purple-bright); border-bottom-color: var(--purple); }
+  .tab-btn { padding: 10px 24px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: none; border: none; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; }
+  .tab-btn.active { color: var(--orange-bright); border-bottom-color: var(--orange); }
   .tab-btn:hover { color: var(--text-muted); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
   .challenge-list { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .challenge-item { background: var(--bg-card); padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 1.25rem; text-decoration: none; transition: background 0.15s; }
+  .challenge-item { background: var(--bg-card); padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 1.25rem; text-decoration: none; transition: background 0.15s; }
   .challenge-item:hover { background: var(--bg-card2); }
-  .ch-num { font-family: var(--display); font-size: 1.1rem; font-weight: 800; color: var(--purple-dim); text-align: center; }
+  .ch-num { font-family: var(--display); font-size: 1.1rem; font-weight: 900; color: var(--orange-dim); text-align: center; font-style: italic; }
   .ch-name { color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
   .ch-topic { font-size: 11px; color: var(--text-dim); }
-  .ch-badge { font-size: 10px; padding: 3px 10px; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(163,230,53,0.1); color: #a3e635; border: 1px solid rgba(163,230,53,0.25); }
+  .ch-badge { font-size: 9px; padding: 3px 10px; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(163,230,53,0.08); color: #a3e635; border: 1px solid rgba(163,230,53,0.22); }
 
   /* CONTACT */
-  #contact { padding: 8rem 0; border-top: 1px solid var(--border); }
+  #contact { padding: 9rem 0; border-top: 1px solid var(--border); }
   .contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
-  .contact-intro { font-size: 13px; color: var(--text-muted); line-height: 1.9; margin-top: 1.5rem; }
-  .social-links { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 12px; }
+  .contact-intro { font-size: 13px; color: var(--text-muted); line-height: 1.9; margin-top: 1.75rem; }
+  .social-links { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 10px; }
   .social-link { display: flex; align-items: center; gap: 14px; text-decoration: none; padding: 14px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 12px; transition: border-color 0.2s, color 0.2s, background 0.2s; }
-  .social-link:hover { border-color: var(--purple-border); color: var(--purple-bright); background: var(--purple-glow); }
-  .social-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--purple-border); color: var(--purple); font-size: 16px; flex-shrink: 0; }
+  .social-link:hover { border-color: var(--orange-border); color: var(--orange-bright); background: var(--orange-glow); }
+  .social-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--orange-border); color: var(--orange); font-size: 16px; flex-shrink: 0; }
   .social-detail { flex: 1; }
   .social-name { font-weight: 700; color: #fff; font-size: 12px; display: block; margin-bottom: 2px; }
   .social-handle { font-size: 11px; color: var(--text-dim); }
-  .social-arrow { color: var(--purple-dim); font-size: 14px; }
-  .pgp-box { background: var(--bg-card); border: 1px solid var(--purple-border); padding: 1.5rem; }
-  .pgp-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-  .pgp-label::before { content: '🔐'; font-size: 13px; }
-  .pgp-text { font-size: 11px; color: var(--text-dim); line-height: 1.8; }
-  .availability { margin-top: 1.5rem; padding: 1.25rem; background: rgba(163,230,53,0.05); border: 1px solid rgba(163,230,53,0.2); display: flex; align-items: center; gap: 10px; }
+  .social-arrow { color: var(--orange-dim); font-size: 14px; }
+
+  .availability { margin-top: 1.5rem; padding: 1.25rem; background: rgba(163,230,53,0.04); border: 1px solid rgba(163,230,53,0.18); display: flex; align-items: center; gap: 10px; }
   .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: #a3e635; animation: pulse 2s infinite; flex-shrink: 0; }
   .avail-text { font-size: 12px; color: #a3e635; }
 
-  footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 2rem 0; }
-  .footer-inner { max-width: 1100px; margin: 0 auto; padding: 0 3rem; display: flex; align-items: center; justify-content: space-between; }
-  .footer-text { font-size: 11px; color: var(--text-dim); }
-  .footer-text .hl { color: var(--purple); }
+  .info-panel { background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1.5rem; }
+  .info-panel-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--orange); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .info-panel-text { font-size: 12px; color: var(--text-muted); }
+  .info-panel-row { margin-bottom: 12px; }
+  .info-panel-row span { color: var(--orange); }
 
-  .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 2rem 0; }
+  .footer-inner { max-width: 1120px; margin: 0 auto; padding: 0 3rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-text { font-size: 11px; color: var(--text-dim); }
+  .footer-text .hl { color: var(--orange); }
+  .footer-rs { font-size: 10px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; }
+  .footer-rs::before { content: '🦀'; }
+
+  .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
   .fade-up.visible { opacity: 1; transform: translateY(0); }
 
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
-    .nav-links { display: none; }
+    .nav-links, .nav-badge { display: none; }
     .container { padding: 0 1.5rem; }
     .hero-inner { padding: 0 1.5rem; }
-    .hero-title { font-size: 3rem; }
+    .hero-title { font-size: 3.2rem; }
     .hero-stats { gap: 2rem; flex-wrap: wrap; }
-    .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-    .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
-    .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
-    #about, #audits, #blog, #challenges, #contact { padding: 5rem 0; }
-    .blog-featured { grid-template-columns: 1fr; }
-    .blog-featured-visual { min-height: 130px; }
+    .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+    footer .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
+    #about, #projects, #audits, #blog, #challenges, #contact { padding: 5rem 0; }
+    .blog-featured, .project-card.featured { grid-template-columns: 1fr; }
+    .blog-featured-visual, .project-feat-right { display: none; }
   }
 </style>
 </head>
@@ -272,52 +500,66 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo"><span>Srishti</span></a>
+  <a href="#" class="nav-logo"><span>~/</span>srishti</a>
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
     <li><a href="#audits">Research</a></li>
     <li><a href="#blog">Blog</a></li>
-    <li><a href="#challenges">Challenges</a></li>
+    <li><a href="#challenges">CTF</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
+  <div class="nav-badge">Rust + Blockchain</div>
 </nav>
 
 <!-- HERO -->
 <section id="hero">
-  <div class="hero-inner" style="position:relative;z-index:1;">
-    <div class="hero-tag">Web3 Security Researcher &amp; Auditor</div>
-    <h1 class="hero-title">Breaking things<br><span class="accent">to keep them safe.</span></h1>
+  <div class="hero-inner">
+    <div class="hero-tag">Rust Engineer · Blockchain Security · Smart Contract Auditor</div>
+    <div class="hero-eyebrow">Systems-level thinking for Web3</div>
+    <h1 class="hero-title">
+      Built in Rust,
+      <span class="line2">Secured on-chain.</span>
+      <span class="line3">Breaking protocols to keep them safe.</span>
+    </h1>
     <p class="hero-subtitle">
-      I audit smart contracts, find vulnerabilities before exploiters do, and document everything.
-      Specializing in <span class="highlight">DeFi security</span>, <span class="highlight">flash loan attacks</span>, and <span class="highlight">EVM-level exploits</span>.
+      I write <span class="hl">memory-safe Rust</span> for blockchain infrastructure, audit DeFi protocols for critical vulnerabilities, and document everything from <span class="hl2">EVM internals</span> to <span class="hl">Solana program exploits</span>.
     </p>
     <div class="hero-cta">
-      <a href="#audits" class="btn-primary">View Research</a>
-      <a href="https://github.com/SrishtiCode" class="btn-ghost" target="_blank">GitHub ↗</a>
+      <a href="#projects" class="btn-primary">View Projects</a>
+      <a href="#audits" class="btn-ghost">Security Research ↗</a>
     </div>
     <div class="hero-stats">
-      <div class="stat-item"><span class="stat-num">6+</span><span class="stat-label">Protocols Audits and Researched</span></div>
+      <div class="stat-item"><span class="stat-num">8+</span><span class="stat-label">Rust Projects Shipped</span></div>
+      <div class="stat-item"><span class="stat-num">6+</span><span class="stat-num" style="font-size:1.2rem;margin-left:2px;"></span><span class="stat-label" style="display:block;">Protocol Audits</span></div>
       <div class="stat-item"><span class="stat-num">18</span><span class="stat-label">Ethernaut Solved</span></div>
       <div class="stat-item"><span class="stat-num">15</span><span class="stat-label">DVDeFi Completed</span></div>
       <div class="stat-item"><span class="stat-num">∞</span><span class="stat-label">Bugs to Find</span></div>
     </div>
   </div>
+
   <div class="hero-terminal">
-    <div class="terminal-bar"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div>
-    <div class="t-line"><span class="t-prompt">~$</span> <span>whoami</span></div>
-    <div class="t-line t-out">srishti@web3-auditor</div>
+    <div class="terminal-bar">
+      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+      <span class="t-title">srishti@rust-forge — zsh</span>
+    </div>
+    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">cargo new --lib defi-auditor</span></div>
+    <div class="t-line" style="color:#a3e635;">   Compiling defi-auditor v0.1.0</div>
+    <div class="t-line t-comment">     // Built with zero unsafe blocks</div>
     <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-prompt">~$</span> <span>cat specializations.txt</span></div>
-    <div class="t-line t-out">► Reentrancy &amp; Flash Loan Attacks</div>
-    <div class="t-line t-out">► Price Oracle Manipulation</div>
-    <div class="t-line t-out">► Access Control Vulnerabilities</div>
-    <div class="t-line t-out">► Governance Exploits</div>
-    <div class="t-line t-out">► Integer Overflow / Underflow</div>
+    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">cat expertise.rs</span></div>
+    <div class="t-line t-rust">fn <span class="t-teal">specializations</span>() -> Vec&lt;&amp;str&gt; {</div>
+    <div class="t-line t-out">&nbsp;&nbsp;<span class="t-rust">vec!</span>[</div>
+    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"Rust blockchain clients"</span>,</div>
+    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"EVM security research"</span>,</div>
+    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"Flash loan attack modeling"</span>,</div>
+    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"DeFi protocol auditing"</span>,</div>
+    <div class="t-line t-out">&nbsp;&nbsp;]</div>
+    <div class="t-line t-rust">}</div>
     <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-prompt">~$</span> <span>status</span></div>
-    <div class="t-line t-success">✓ Available for audits</div>
-    <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-prompt">~$</span> <span class="t-cursor"></span></div>
+    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">status --audit</span></div>
+    <div class="t-line" style="color:#a3e635;">✓ Available for engagements</div>
+    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cursor"></span></div>
   </div>
 </section>
 
@@ -326,37 +568,179 @@
   <div class="container">
     <div class="section-header fade-up">
       <div class="section-tag">01 — About Me</div>
-      <h2 class="section-title">The Researcher<br>Behind the Exploits</h2>
+      <h2 class="section-title">The Engineer<br>Behind the <em>Exploits</em></h2>
     </div>
     <div class="about-grid">
       <div class="about-text fade-up">
-        <p>Hi, I'm <span class="hl">Srishti</span> — a Web3 security researcher passionate about finding and documenting vulnerabilities in DeFi protocols before malicious actors do.</p>
-        <p>My journey started with <span class="hl">Ethernaut</span>, where I developed a deep understanding of EVM internals and common Solidity pitfalls. I then moved on to <span class="hl">Damn Vulnerable DeFi</span>, tackling complex multi-contract exploit scenarios involving flash loans, price manipulation, and governance attacks.</p>
-        <p>Today, I conduct in-depth protocol research — reading live codebases, mapping attack surfaces, and documenting potential vulnerabilities across DeFi, governance, NFT, and infrastructure contracts.</p>
+        <p>Hi, I'm <span class="hl">Srishti</span> — a Rust engineer and Web3 security researcher who builds blockchain infrastructure and breaks DeFi protocols (responsibly).</p>
+        <p>My engineering work lives in <span class="hl">Rust</span> — writing zero-copy parsers, EVM bytecode analyzers, on-chain data indexers, and CLI tooling for security workflows. I care deeply about <span class="hl2">memory safety</span>, performance, and correctness at the systems level.</p>
+        <p>On the security side, I started with <span class="hl">Ethernaut</span> and <span class="hl">Damn Vulnerable DeFi</span>, building intuition for EVM internals and attack patterns. Today I conduct in-depth protocol research — tracing reentrancy paths, modeling oracle manipulation, and analyzing cross-contract trust boundaries.</p>
+        <p>The intersection of <span class="hl2">Rust's type system</span> and <span class="hl">blockchain security</span> is where I feel most at home — proving invariants by construction, not by hope.</p>
         <div class="skills-list">
-          <span class="skill-tag">Solidity</span><span class="skill-tag">Foundry</span><span class="skill-tag">Hardhat</span>
-          <span class="skill-tag">EVM Internals</span><span class="skill-tag">Reentrancy</span><span class="skill-tag">Flash Loans</span>
-          <span class="skill-tag">DeFi Protocols</span><span class="skill-tag">Slither</span><span class="skill-tag">Mythril</span>
-          <span class="skill-tag">Echidna</span><span class="skill-tag">Web3.py</span><span class="skill-tag">Ethers.js</span>
+          <span class="skill-tag rust">Rust</span>
+          <span class="skill-tag rust">Tokio / Async</span>
+          <span class="skill-tag rust">Serde</span>
+          <span class="skill-tag rust">Alloy-rs</span>
+          <span class="skill-tag rust">Anchor (Solana)</span>
+          <span class="skill-tag">Solidity</span>
+          <span class="skill-tag">Foundry</span>
+          <span class="skill-tag">Hardhat</span>
+          <span class="skill-tag">EVM Internals</span>
+          <span class="skill-tag">Flash Loans</span>
+          <span class="skill-tag">Slither</span>
+          <span class="skill-tag teal">Echidna</span>
+          <span class="skill-tag teal">Mythril</span>
+          <span class="skill-tag teal">Web3.py</span>
+          <span class="skill-tag teal">Ethers.js</span>
         </div>
       </div>
       <div class="about-right fade-up">
-        <div class="info-box"><div class="info-box-label">Focus Area</div><div class="info-box-value">DeFi Security / Smart Contract Research</div></div>
-        <div class="info-box"><div class="info-box-label">Primary Tools</div><div class="info-box-value">Foundry · Slither · Hardhat · Echidna</div></div>
-        <div class="info-box"><div class="info-box-label">Platforms</div><div class="info-box-value">Code4rena · Sherlock · Cantina · Immunefi</div></div>
-        <div class="info-box"><div class="info-box-label">Languages</div><div class="info-box-value">Solidity · Python · JavaScript · Rust (learning)</div></div>
-        <div class="info-box"><div class="info-box-label">Status</div><div class="info-box-value" style="color:#a3e635;">✓ Available for audit engagements</div></div>
+        <div class="info-box"><div class="info-box-label">Primary Language</div><div class="info-box-value">🦀 Rust — safe, fast, concurrent</div></div>
+        <div class="info-box"><div class="info-box-label">Domain Expertise</div><div class="info-box-value">Blockchain Infra · DeFi Security · EVM</div></div>
+        <div class="info-box"><div class="info-box-label">Audit Tools</div><div class="info-box-value">Foundry · Slither · Echidna · Mythril</div></div>
+        <div class="info-box"><div class="info-box-label">Blockchain Ecosystems</div><div class="info-box-value">Ethereum · Solana · Cosmos (learning)</div></div>
+        <div class="info-box"><div class="info-box-label">Audit Platforms</div><div class="info-box-value">Code4rena · Sherlock · Cantina · Immunefi</div></div>
+        <div class="info-box"><div class="info-box-label">Status</div><div class="info-box-value" style="color:#a3e635;">✓ Available for audit &amp; infra engagements</div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- RESEARCH -->
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="section-header fade-up">
+      <div class="section-tag">02 — Projects</div>
+      <h2 class="section-title">Things I've<br><em>Actually Built</em></h2>
+    </div>
+
+    <!-- Featured Project -->
+    <div class="projects-grid fade-up">
+
+      <div class="project-card featured">
+        <div class="project-feat-left">
+          <div style="margin-bottom:0.5rem;">
+            <span class="project-lang lang-rust">Rust</span>
+            <span class="project-lang lang-sol" style="margin-left:6px;">EVM</span>
+          </div>
+          <div class="project-title" style="font-size:1.5rem;">evm-scout — Bytecode Security Analyzer</div>
+          <div class="project-desc" style="font-size:13px;max-width:480px;">A CLI tool written in Rust that disassembles EVM bytecode, detects dangerous opcode patterns (DELEGATECALL, SELFDESTRUCT, unchecked CALL), and flags potential vulnerability classes. Processes raw hex or Etherscan-fetched bytecode. Outputs annotated opcode streams with severity markers.</div>
+          <div class="project-tags">
+            <span class="p-tag">EVM Bytecode</span>
+            <span class="p-tag">Static Analysis</span>
+            <span class="p-tag">clap CLI</span>
+            <span class="p-tag">hex parsing</span>
+            <span class="p-tag">Tokio</span>
+          </div>
+          <div class="project-meta">
+            <span class="project-stars">Featured project</span>
+            <a href="https://github.com/SrishtiCode" target="_blank" class="project-link">View on GitHub</a>
+          </div>
+        </div>
+        <div class="project-feat-right">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--orange);margin-bottom:0.5rem;">// main.rs snippet</div>
+          <code>
+            <span class="code-comment">// Detect dangerous opcodes in bytecode</span><br>
+            <span class="code-keyword">fn</span> <span class="code-fn">analyze_bytecode</span>(bytes: &[<span class="code-type">u8</span>]) -> <span class="code-type">Vec</span>&lt;Finding&gt; {<br>
+            &nbsp;&nbsp;<span class="code-keyword">let mut</span> findings = <span class="code-type">Vec</span>::new();<br>
+            &nbsp;&nbsp;<span class="code-keyword">for</span> (i, &op) <span class="code-keyword">in</span> bytes.iter().enumerate() {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">match</span> op {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-str">0xf4</span> => findings.push(Finding::DelegateCall(i)),<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-str">0xff</span> => findings.push(Finding::SelfDestruct(i)),<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-str">0xf1</span> => findings.push(Finding::ExternalCall(i)),<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_ => {}<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;findings<br>
+            }
+          </code>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
+        <div><span class="project-lang lang-rust">Rust</span></div>
+        <div class="project-title">chain-watcher — Real-time Event Indexer</div>
+        <div class="project-desc">Async EVM event indexer using alloy-rs and Tokio. Subscribes to contract logs, decodes ABI-encoded events, and streams parsed data to PostgreSQL. Handles reorgs gracefully with a checkpoint-based cursor.</div>
+        <div class="project-tags">
+          <span class="p-tag">alloy-rs</span><span class="p-tag">Tokio</span><span class="p-tag">PostgreSQL</span><span class="p-tag">WebSocket</span>
+        </div>
+        <div class="project-meta">
+          <span class="project-stars">Event streaming</span>
+          <span class="project-link">GitHub</span>
+        </div>
+      </a>
+
+      <!-- Project 3 -->
+      <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
+        <div><span class="project-lang lang-rust">Rust</span><span class="project-lang lang-sol" style="margin-left:6px;">Solidity</span></div>
+        <div class="project-title">flashloan-sim — Attack Simulation Harness</div>
+        <div class="project-desc">Rust-based harness that forks a mainnet state via Anvil, constructs flash loan attack transactions, and runs them against a target protocol. Compares pre/post balances to detect exploitable profit paths.</div>
+        <div class="project-tags">
+          <span class="p-tag">Anvil fork</span><span class="p-tag">ethers-rs</span><span class="p-tag">Foundry</span><span class="p-tag">Simulation</span>
+        </div>
+        <div class="project-meta">
+          <span class="project-stars">Security tooling</span>
+          <span class="project-link">GitHub</span>
+        </div>
+      </a>
+
+      <!-- Project 4 -->
+      <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
+        <div><span class="project-lang lang-rust">Rust</span></div>
+        <div class="project-title">slot-lens — Storage Layout Inspector</div>
+        <div class="project-desc">CLI that computes Solidity storage slot layouts for arbitrary contracts, detects packing inefficiencies, and flags proxy collision risks between implementation and proxy contracts. Built with clap and serde.</div>
+        <div class="project-tags">
+          <span class="p-tag">Storage slots</span><span class="p-tag">Proxy patterns</span><span class="p-tag">ABI parsing</span>
+        </div>
+        <div class="project-meta">
+          <span class="project-stars">Dev tooling</span>
+          <span class="project-link">GitHub</span>
+        </div>
+      </a>
+
+      <!-- Project 5 -->
+      <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
+        <div><span class="project-lang lang-multi">Rust + Anchor</span></div>
+        <div class="project-title">sol-vault — Solana SPL Token Vault</div>
+        <div class="project-desc">An Anchor-based Solana program implementing a permissioned token vault with time-locked withdrawals and multisig authorization. Includes a Rust client library for program interaction and a full test suite.</div>
+        <div class="project-tags">
+          <span class="p-tag">Anchor</span><span class="p-tag">SPL Token</span><span class="p-tag">Multisig</span><span class="p-tag">PDA</span>
+        </div>
+        <div class="project-meta">
+          <span class="project-stars">Solana ecosystem</span>
+          <span class="project-link">GitHub</span>
+        </div>
+      </a>
+
+      <!-- Project 6 -->
+      <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
+        <div><span class="project-lang lang-rust">Rust</span></div>
+        <div class="project-title">abi-fuzz — Smart Contract Fuzzer</div>
+        <div class="project-desc">Property-based fuzzer for Solidity contracts. Generates structured calldata from ABI definitions and tests invariants by running mutations against Anvil. Inspired by Echidna but scriptable from Rust.</div>
+        <div class="project-tags">
+          <span class="p-tag">Fuzzing</span><span class="p-tag">proptest</span><span class="p-tag">Invariant testing</span>
+        </div>
+        <div class="project-meta">
+          <span class="project-stars">Security research</span>
+          <span class="project-link">GitHub</span>
+        </div>
+      </a>
+
+    </div>
+
+    <div style="margin-top:1.5rem;text-align:right;" class="fade-up">
+      <a href="https://github.com/SrishtiCode" target="_blank" class="btn-ghost">All Projects on GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH / AUDITS -->
 <section id="audits">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-tag">02 — Audits and Research</div>
-      <h2 class="section-title">Protocols Audits Research &amp;<br>Attack Surface Analysis</h2>
+      <div class="section-tag">03 — Audits and Research</div>
+      <h2 class="section-title">Protocol Security<br><em>Research</em></h2>
     </div>
     <div class="research-note fade-up"><span>Independent research write-ups and audits</span> — deep dives into live protocol code, architecture review, threat modeling, invariant analysis, and attacker mindset modeling. Not paid audit engagements.</div>
     <div class="filter-row fade-up" id="filters">
@@ -364,6 +748,7 @@
       <button class="filter-btn" data-filter="defi">DeFi</button>
       <button class="filter-btn" data-filter="staking">Staking</button>
       <button class="filter-btn" data-filter="infra">Infrastructure</button>
+      <button class="filter-btn" data-filter="rust">Rust / Native</button>
     </div>
     <div class="cards-grid fade-up" id="research-grid">
       <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/VenusPrime.md" target="_blank" class="audit-card" data-cat="defi">
@@ -372,27 +757,27 @@
         <div class="card-desc">Mapped the withdraw mechanism and traced a theoretical cross-function reentrancy path via flash loan. Analyzed how lending and collateral module interactions could enable treasury exposure.</div>
         <div class="card-meta"><div class="protocol">Venus Prime v2</div><span class="card-link">Write-up</span></div>
       </a>
-     <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/SukukFi.md" class="audit-card" data-cat="defi">
+      <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/SukukFi.md" class="audit-card" data-cat="defi">
         <div><span class="card-cat cat-defi">DeFi</span><span class="card-tag">Settlement Layer</span></div>
-        <div class="card-title">SukukFi — WERC7575 Telecom Settlement & Investment Layer</div>
-        <div class="card-desc">Audited a two-layer blockchain settlement system for inter-carrier wholesale voice traffic. Analysed the dual-authorization withdrawal model, batch netting logic via a trusted validator, and the async ERC-7540 investment flow.</div>
+        <div class="card-title">SukukFi — WERC7575 Telecom Settlement Layer</div>
+        <div class="card-desc">Audited a two-layer blockchain settlement system for inter-carrier wholesale voice traffic. Analysed the dual-authorization withdrawal model, batch netting logic, and the async ERC-7540 investment flow.</div>
         <div class="card-meta"><div class="protocol">WERC7575 / ERC-7540</div><span class="card-link">Write-up</span></div>
       </a>
-     <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/Panoptic.md" class="audit-card" data-cat="defi">
-       <div><span class="card-cat cat-defi">DeFi</span><span class="card-tag">Oracle Manipulation</span></div>
-       <div class="card-title">Panoptic — On-Chain Options Protocol & Risk Engine</div>
-       <div class="card-desc">Reviewed a permissionless options protocol built on Uniswap V3/V4, covering the full position lifecycle across the SFPM, PanopticPool, RiskEngine, and CollateralTracker. </div>
-       <div class="card-meta"><div class="protocol">Panoptic v2</div><span class="card-link">Write-up</span></div>
+      <a href="https://github.com/SrishtiCode/my-audit-reports/blob/main/Panoptic.md" class="audit-card" data-cat="defi">
+        <div><span class="card-cat cat-defi">DeFi</span><span class="card-tag">Oracle Manipulation</span></div>
+        <div class="card-title">Panoptic — On-Chain Options Protocol</div>
+        <div class="card-desc">Reviewed a permissionless options protocol built on Uniswap V3/V4, covering the full position lifecycle across SFPM, PanopticPool, RiskEngine, and CollateralTracker.</div>
+        <div class="card-meta"><div class="protocol">Panoptic v2</div><span class="card-link">Write-up</span></div>
       </a>
       <a href="#" class="audit-card" data-cat="staking">
         <div><span class="card-cat cat-staking">Staking</span><span class="card-tag">Rebasing Logic</span></div>
-        <div class="card-title">Lido — stETH Rebasing & Withdrawal Queue</div>
+        <div class="card-title">Lido — stETH Rebasing &amp; Withdrawal Queue</div>
         <div class="card-desc">Analyzed stETH rebasing mechanism and validator reward distribution. Explored edge cases where delayed oracle updates or withdrawal queue imbalances could affect peg stability.</div>
         <div class="card-meta"><div class="protocol">Lido</div><span class="card-link">Write-up</span></div>
       </a>
       <a href="#" class="audit-card" data-cat="infra">
         <div><span class="card-cat cat-infra">Infrastructure</span><span class="card-tag">Accounting</span></div>
-        <div class="card-title">Yearn Vaults — Share Accounting & Strategy Risk</div>
+        <div class="card-title">Yearn Vaults — Share Accounting &amp; Strategy Risk</div>
         <div class="card-desc">Studied vault-to-strategy fund flows and share minting logic. Identified potential inconsistencies between totalAssets and totalSupply during strategy harvest cycles.</div>
         <div class="card-meta"><div class="protocol">Yearn Finance</div><span class="card-link">Write-up</span></div>
       </a>
@@ -402,8 +787,14 @@
         <div class="card-desc">Mapped endpoint, oracle, and relayer interactions. Identified trust assumptions and analyzed potential attack vectors including message spoofing and misconfigured trusted remote addresses.</div>
         <div class="card-meta"><div class="protocol">LayerZero</div><span class="card-link">Write-up</span></div>
       </a>
+      <a href="#" class="audit-card" data-cat="rust">
+        <div><span class="card-cat cat-rust">Rust / Native</span><span class="card-tag">Memory Safety</span></div>
+        <div class="card-title">Anchor Program Security Patterns</div>
+        <div class="card-desc">Research into common Solana/Anchor program vulnerabilities: account confusion, missing signer checks, integer arithmetic in token math, and PDA seed collisions. Written from a Rust ownership model perspective.</div>
+        <div class="card-meta"><div class="protocol">Solana / Anchor</div><span class="card-link">Write-up</span></div>
+      </a>
     </div>
-    <div style="margin-top:1.5rem;text-align:right;"><a href="https://github.com/SrishtiCode/my-audit-reports" target="_blank" class="btn-ghost">All Write-ups on GitHub ↗</a></div>
+    <div style="margin-top:1.5rem;text-align:right;" class="fade-up"><a href="https://github.com/SrishtiCode/my-audit-reports" target="_blank" class="btn-ghost">All Write-ups on GitHub ↗</a></div>
   </div>
 </section>
 
@@ -411,50 +802,67 @@
 <section id="blog">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-tag">03 — Writing</div>
-      <h2 class="section-title">The Security<br>Blog</h2>
+      <div class="section-tag">04 — Writing</div>
+      <h2 class="section-title">The Security<br><em>Blog</em></h2>
     </div>
 
-    <!-- Featured -->
     <a href="https://medium.com/@rathisrishti/the-ethereum-execution-blueprint-c47557e87895" target="_blank" class="blog-featured fade-up">
-      <div class="blog-featured-visual"></div>
+      <div class="blog-featured-visual">
+        <div class="feat-code-block">
+          <span style="color:var(--orange);">// EVM execution pipeline</span><br>
+          <span style="color:var(--rust-light);">fn</span> <span style="color:var(--teal);">execute_call</span>(ctx: &mut Context) {<br>
+          &nbsp;&nbsp;<span style="color:var(--rust-light);">let</span> bytecode = ctx.load_code();<br>
+          &nbsp;&nbsp;<span style="color:var(--rust-light);">let</span> <span style="color:var(--rust-light);">mut</span> pc = <span style="color:#86efac;">0usize</span>;<br>
+          &nbsp;&nbsp;<span style="color:var(--rust-light);">loop</span> {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--rust-light);">let</span> op = bytecode[pc];<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ctx.stack.execute(op)?;<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;pc += <span style="color:#86efac;">1</span>;<br>
+          &nbsp;&nbsp;}<br>
+          }
+        </div>
+      </div>
       <div class="blog-featured-body">
         <div>
           <div class="feat-label"><span>EVM Internals</span><span class="featured-badge">Featured</span></div>
           <div class="feat-title">How the EVM Actually Executes Your Solidity Code</div>
-          <div class="feat-excerpt">A step-by-step, first-principles walkthrough of how a single line of Solidity code becomes permanent state on Ethereum. From compilation and transaction formation to EVM execution, mempool dynamics, and state storage, this guide explains the entire pipeline using a simple post office analogy—making complex blockchain internals intuitive and visual.</div>
+          <div class="feat-excerpt">A step-by-step, first-principles walkthrough of how a single line of Solidity code becomes permanent state on Ethereum — from compilation and transaction formation to EVM execution, mempool dynamics, and state storage, explained using a simple post office analogy.</div>
         </div>
         <div class="feat-footer">
-          <div class="feat-meta"><span></span><span class="dot">·</span><span>12 min read</span></div>
+          <div class="feat-meta"><span>12 min read</span></div>
           <div class="read-more">Read on Medium</div>
         </div>
       </div>
     </a>
 
-    <!-- 3 preview cards -->
     <div class="blog-grid fade-up">
-       <a href="https://medium.com/@rathisrishti/storage-slots-packing-and-why-they-matter-for-security-74e398784dc6" target="_blank" class="blog-card">
+      <a href="https://medium.com/@rathisrishti/storage-slots-packing-and-why-they-matter-for-security-74e398784dc6" target="_blank" class="blog-card">
         <div class="blog-card-header"><span class="blog-topic-tag topic-evm">EVM Internals</span><span class="blog-read-time">7 min</span></div>
         <div class="blog-card-title">Storage Slots, Packing, and Why They Matter for Security</div>
         <div class="blog-card-excerpt">The EVM stores state in 32-byte slots. How Solidity packs variables — and how proxy patterns can collide them — is one of the most underrated audit skills.</div>
-        <div class="blog-card-footer"><span class="blog-date">April, 2026</span><span class="blog-arrow">→</span></div>
+        <div class="blog-card-footer"><span class="blog-date">April 2026</span><span class="blog-arrow">→</span></div>
+      </a>
+      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
+        <div class="blog-card-header"><span class="blog-topic-tag topic-rust">Rust + Blockchain</span><span class="blog-read-time">9 min</span></div>
+        <div class="blog-card-title">Writing a Zero-Copy EVM Log Decoder in Rust</div>
+        <div class="blog-card-excerpt">Why alloy-rs and zero-copy parsing make Rust the natural choice for high-throughput EVM event processing. A walkthrough of building a production indexer.</div>
+        <div class="blog-card-footer"><span class="blog-date">May 2026</span><span class="blog-arrow">→</span></div>
       </a>
       <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
         <div class="blog-card-header"><span class="blog-topic-tag topic-security">Vulnerability Breakdown</span><span class="blog-read-time">8 min</span></div>
-        <div class="blog-card-title">The Complete Smart Contract Vulnerability Guide (From Basics to Advanced)</div>
-        <div class="blog-card-excerpt">Classic reentrancy is well-known. But cross-function, cross-contract, and read-only reentrancy variants are still catching protocols off guard.</div>
-        <div class="blog-card-footer"><span class="blog-date">May, 2026</span><span class="blog-arrow">→</span></div>
+        <div class="blog-card-title">The Complete Smart Contract Vulnerability Guide</div>
+        <div class="blog-card-excerpt">Classic reentrancy is well-known. Cross-function, cross-contract, and read-only reentrancy variants are still catching protocols off guard in 2025.</div>
+        <div class="blog-card-footer"><span class="blog-date">May 2026</span><span class="blog-arrow">→</span></div>
       </a>
       <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
         <div class="blog-card-header"><span class="blog-topic-tag topic-defi">DeFi Concepts</span><span class="blog-read-time">10 min</span></div>
         <div class="blog-card-title">Flash Loans: From Arbitrage Tool to Attack Vector</div>
-        <div class="blog-card-excerpt">Flash loans are atomic, uncollateralized, and settled in one transaction. A deep dive into how they're weaponized against DeFi protocols.</div>
-        <div class="blog-card-footer"><span class="blog-date">May, 2026</span><span class="blog-arrow">→</span></div>
+        <div class="blog-card-excerpt">Flash loans are atomic, uncollateralized, and settled in one transaction. A deep dive into how they're weaponized against DeFi protocols — and how to simulate them in Rust.</div>
+        <div class="blog-card-footer"><span class="blog-date">June 2026</span><span class="blog-arrow">→</span></div>
       </a>
     </div>
 
     <div style="margin-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;" class="fade-up">
-      <span style="font-size:11px;color:var(--text-dim);">// 4 posts total · more coming soon</span>
+      <span style="font-size:11px;color:var(--text-dim);">// 5 posts total · more dropping soon</span>
       <a href="https://medium.com/@rathisrishti" target="_blank" class="btn-ghost">Read All Posts on Medium ↗</a>
     </div>
   </div>
@@ -464,8 +872,8 @@
 <section id="challenges">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-tag">04 — CTF Solutions</div>
-      <h2 class="section-title">Challenge<br>Writeups</h2>
+      <div class="section-tag">05 — CTF Solutions</div>
+      <h2 class="section-title">Challenge<br><em>Writeups</em></h2>
     </div>
     <div class="challenges-tabs fade-up">
       <button class="tab-btn active" onclick="switchTab('ethernaut')">Ethernaut</button>
@@ -502,12 +910,12 @@
 <section id="contact">
   <div class="container">
     <div class="section-header fade-up">
-      <div class="section-tag">05 — Contact</div>
-      <h2 class="section-title">Let's Find<br>Bugs Together</h2>
+      <div class="section-tag">06 — Contact</div>
+      <h2 class="section-title">Let's Build and<br><em>Break Things</em></h2>
     </div>
     <div class="contact-inner">
       <div class="contact-text fade-up">
-        <p class="contact-intro">Looking for a security researcher to audit your protocol? I'm available for smart contract audits, security consultations, and bug bounty collaborations. Reach out through any of the channels below.</p>
+        <p class="contact-intro">Looking for a Rust engineer to build blockchain infra, or a security researcher to audit your protocol? I do both. Available for smart contract audits, Rust system design, security consultations, and bug bounty collaborations.</p>
         <div class="social-links">
           <a href="https://github.com/SrishtiCode" target="_blank" class="social-link">
             <div class="social-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></div>
@@ -528,21 +936,27 @@
         </div>
       </div>
       <div class="contact-right fade-up">
-        <div class="availability"><div class="avail-dot"></div><div class="avail-text">Currently available for audit engagements</div></div>
-        <div class="pgp-box" style="margin-top:1.5rem;">
-          <div class="pgp-label">Quick Info</div>
-          <div class="pgp-text">
-            <div style="margin-bottom:12px;color:var(--text-muted);"><span style="color:var(--purple);">Platforms:</span><br>Code4rena · Sherlock · Cantina · Immunefi</div>
-            <div style="margin-bottom:12px;color:var(--text-muted);"><span style="color:var(--purple);">Response time:</span><br>Usually within 24 hours</div>
-            <div style="color:var(--text-muted);"><span style="color:var(--purple);">Available for:</span><br>Solo audits · Contest reviews · Bug bounty · Consulting</div>
+        <div class="availability"><div class="avail-dot"></div><div class="avail-text">Available for audit &amp; engineering engagements</div></div>
+        <div class="info-panel" style="margin-top:1.5rem;">
+          <div class="info-panel-label">🦀 Quick Info</div>
+          <div class="info-panel-text">
+            <div class="info-panel-row"><span>Rust expertise:</span><br>Systems programming, async, blockchain clients, CLI tooling</div>
+            <div class="info-panel-row"><span>Audit platforms:</span><br>Code4rena · Sherlock · Cantina · Immunefi</div>
+            <div class="info-panel-row"><span>Response time:</span><br>Usually within 24 hours</div>
+            <div class="info-panel-row" style="margin-bottom:0;"><span>Available for:</span><br>Solo audits · Rust infra · Bug bounty · Consulting</div>
           </div>
         </div>
         <div style="margin-top:1.5rem;padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--purple);margin-bottom:0.75rem;">Audit Scope I Cover</div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.14em;color:var(--orange);margin-bottom:0.75rem;">I Work On</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span class="skill-tag">DeFi Protocols</span><span class="skill-tag">Lending / Borrowing</span><span class="skill-tag">AMMs</span>
-            <span class="skill-tag">Governance</span><span class="skill-tag">NFT Contracts</span><span class="skill-tag">Bridges</span>
-            <span class="skill-tag">Staking</span><span class="skill-tag">Proxies</span>
+            <span class="skill-tag rust">Rust blockchain clients</span>
+            <span class="skill-tag rust">EVM indexers</span>
+            <span class="skill-tag rust">Security tooling</span>
+            <span class="skill-tag">DeFi Protocols</span>
+            <span class="skill-tag">Lending / AMMs</span>
+            <span class="skill-tag">Governance</span>
+            <span class="skill-tag">Bridges</span>
+            <span class="skill-tag teal">Solana Programs</span>
           </div>
         </div>
       </div>
@@ -552,13 +966,12 @@
 
 <footer>
   <div class="footer-inner">
-    <div class="footer-text"><span class="hl">Srishti</span> · Web3 Security Researcher · Built for GitHub Pages</div>
-    <div class="footer-text"><span style="color:var(--text-dim);">// </span>no vulnerabilities were harmed in the making of this site</div>
+    <div class="footer-text"><span class="hl">Srishti</span> · Rust &amp; Blockchain Security Engineer · Built for GitHub Pages</div>
+    <div class="footer-rs">no unsafe blocks were harmed in the making of this site</div>
   </div>
 </footer>
 
 <script>
-  /* ---- Tabs ---- */
   function switchTab(tab) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -566,13 +979,13 @@
     document.getElementById('tab-' + tab).classList.add('active');
   }
 
-  /* ---- Fade-up ---- */
   const io = new IntersectionObserver((entries) => {
-    entries.forEach((e, i) => { if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 80); });
-  }, { threshold: 0.1 });
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 70);
+    });
+  }, { threshold: 0.08 });
   document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
 
-  /* ---- Audit filter ---- */
   document.querySelectorAll('#filters .filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
