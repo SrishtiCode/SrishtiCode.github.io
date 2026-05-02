@@ -672,15 +672,15 @@
       </a>
 
       <!-- Project 3 -->
-      <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
+      <a href="https://github.com/SrishtiCode/async-proxy" target="_blank" class="project-card">
         <div><span class="project-lang lang-rust">Rust</span></div>
        <div class="project-title">Async HTTP Proxy</div>
-       <div class="project-desc">A multi-threaded reverse proxy with rate limiting, request logging, and header manipulation. Built with Tokio and Hyper — supports HTTPS passthrough.</div>
+       <div class="project-desc"> A multi-threaded reverse proxy built on Tokio and Hyper. Each TCP connection runs in its own async task. Enforces per-IP token bucket rate limiting, strips hop-by-hop headers, injects X-Forwarded-For, and tunnels HTTPS via the CONNECT method — no TLS decryption.</div>
         <div class="project-tags">
-          <span class="p-tag">tokio</span><span class="p-tag">hyper</span><span class="p-tag">async/await</span><span class="p-tag">rate limiting</span><span class="p-tag">concurrency</span>
+          <span class="p-tag">tokio</span><span class="p-tag">hyper</span><span class="p-tag">async/await</span><span class="p-tag">rate limiting</span><span class="p-tag">CONNECT tunnel</span><span class="p-tag">tracing</span>
         </div>
         <div class="project-meta">
-          <span class="project-stars">Async Rust</span>
+          <span class="project-stars">Built from scratch</span>
           <span class="project-link">GitHub</span>
         </div>
       </a>
