@@ -660,69 +660,69 @@
       <!-- Project 2 -->
       <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
         <div><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">chain-watcher — Real-time Event Indexer</div>
-        <div class="project-desc">Async EVM event indexer using alloy-rs and Tokio. Subscribes to contract logs, decodes ABI-encoded events, and streams parsed data to PostgreSQL. Handles reorgs gracefully with a checkpoint-based cursor.</div>
+        <div class="project-title">CLI Key-Value Store</div>
+        <div class="project-desc">A persistent, file-backed key-value database with a CLI. Supports get, set, delete, and scan commands. Uses a log-structured storage engine with compaction.</div>
         <div class="project-tags">
-          <span class="p-tag">alloy-rs</span><span class="p-tag">Tokio</span><span class="p-tag">PostgreSQL</span><span class="p-tag">WebSocket</span>
+          <span class="p-tag">serde</span><span class="p-tag">clap</span><span class="p-tag">log-structured</span><span class="p-tag">compaction</span><span class="p-tag">error handling</span>
         </div>
         <div class="project-meta">
-          <span class="project-stars">Event streaming</span>
+          <span class="project-stars">Ownership mode</span>
           <span class="project-link">GitHub</span>
         </div>
       </a>
 
       <!-- Project 3 -->
       <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span><span class="project-lang lang-sol" style="margin-left:6px;">Solidity</span></div>
-        <div class="project-title">flashloan-sim — Attack Simulation Harness</div>
-        <div class="project-desc">Rust-based harness that forks a mainnet state via Anvil, constructs flash loan attack transactions, and runs them against a target protocol. Compares pre/post balances to detect exploitable profit paths.</div>
+        <div><span class="project-lang lang-rust">Rust</span>
+        <div class="project-title">Async HTTP Proxy</div>
+        <div class="project-desc">A multi-threaded reverse proxy with rate limiting, request logging, and header manipulation. Built with Tokio and Hyper — supports HTTPS passthrough.</div>
         <div class="project-tags">
-          <span class="p-tag">Anvil fork</span><span class="p-tag">ethers-rs</span><span class="p-tag">Foundry</span><span class="p-tag">Simulation</span>
+          <span class="p-tag">tokio</span><span class="p-tag">hyper</span><span class="p-tag">async/await</span><span class="p-tag">rate limiting</span><span class="p-tag">concurrency</span>
         </div>
         <div class="project-meta">
-          <span class="project-stars">Security tooling</span>
+          <span class="project-stars">Async Rust</span>
           <span class="project-link">GitHub</span>
         </div>
       </a>
 
       <!-- Project 4 -->
       <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">slot-lens — Storage Layout Inspector</div>
-        <div class="project-desc">CLI that computes Solidity storage slot layouts for arbitrary contracts, detects packing inefficiencies, and flags proxy collision risks between implementation and proxy contracts. Built with clap and serde.</div>
+        <div><span class="project-lang lang-rust">Solana</span><span class="project-lang lang-rust">Rust</span></div>
+        <div class="project-title">SPL Token Staking Program</div>
+        <div class="project-desc">An on-chain staking contract where users deposit SPL tokens and earn yield over time. Includes lock-up periods, reward calculation, and early withdrawal penalties.</div>
         <div class="project-tags">
-          <span class="p-tag">Storage slots</span><span class="p-tag">Proxy patterns</span><span class="p-tag">ABI parsing</span>
+          <span class="p-tag">Anchor</span><span class="p-tag">SPL Token</span><span class="p-tag">PDAs</span><span class="p-tag">stacking</span><span class="p-tag">CPI</span>
         </div>
         <div class="project-meta">
-          <span class="project-stars">Dev tooling</span>
+          <span class="project-stars">Core DeFi primitive</span>
           <span class="project-link">GitHub</span>
         </div>
       </a>
 
       <!-- Project 5 -->
       <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
-        <div><span class="project-lang lang-multi">Rust + Anchor</span></div>
-        <div class="project-title">sol-vault — Solana SPL Token Vault</div>
-        <div class="project-desc">An Anchor-based Solana program implementing a permissioned token vault with time-locked withdrawals and multisig authorization. Includes a Rust client library for program interaction and a full test suite.</div>
+        <div><span class="project-lang lang-multi">Solana</span></div>
+        <div class="project-title">NFT Minting + Whitelist</div>
+        <div class="project-desc">A Candy Machine v3-style minting program with Merkle-tree-based whitelist verification. Includes mint limits per wallet, treasury collection, and a minimal React mint UI.</div>
         <div class="project-tags">
-          <span class="p-tag">Anchor</span><span class="p-tag">SPL Token</span><span class="p-tag">Multisig</span><span class="p-tag">PDA</span>
+          <span class="p-tag">Metaplex</span><span class="p-tag">Merkle tree</span><span class="p-tag">NFT</span><span class="p-tag">React</span><span class="p-tag">wallet adapter</span>
         </div>
         <div class="project-meta">
-          <span class="project-stars">Solana ecosystem</span>
+          <span class="project-stars">NFT tooling</span>
           <span class="project-link">GitHub</span>
         </div>
       </a>
 
       <!-- Project 6 -->
       <a href="https://github.com/SrishtiCode" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">abi-fuzz — Smart Contract Fuzzer</div>
-        <div class="project-desc">Property-based fuzzer for Solidity contracts. Generates structured calldata from ABI definitions and tests invariants by running mutations against Anvil. Inspired by Echidna but scriptable from Rust.</div>
+        <div><span class="project-lang lang-rust">Solana</span></div>
+        <div class="project-title">On-chain Order Book DEX</div>
+        <div class="project-desc">A simplified central limit order book (CLOB) with limit and market orders, order matching engine, and trade history. Uses Anchor with custom account structures for order storage.</div>
         <div class="project-tags">
-          <span class="p-tag">Fuzzing</span><span class="p-tag">proptest</span><span class="p-tag">Invariant testing</span>
+          <span class="p-tag">Anchor</span><span class="p-tag">CLOB</span><span class="p-tag">order matching</span><span class="p-tag">account design</span><span class="p-tag">DeFi</span>
         </div>
         <div class="project-meta">
-          <span class="project-stars">Security research</span>
+          <span class="project-stars">DEX</span>
           <span class="project-link">GitHub</span>
         </div>
       </a>
