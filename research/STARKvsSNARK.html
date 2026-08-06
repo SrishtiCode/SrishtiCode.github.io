@@ -1,1 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SNARK vs STARK — a practical comparison of two major zero-knowledge proof families." />
+  <title>SNARK vs STARK — Srishti Rathi</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper: #111111;
+      --ink: #eeeeea;
+      --ink-soft: #b5b5ae;
+      --ink-faint: #777770;
+      --accent: #8eadd4;
+      --rule: rgba(255,255,255,0.15);
+      --rule-soft: rgba(255,255,255,0.08);
+      --serif: "Source Serif 4", Georgia, serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 19px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: var(--paper);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { color: var(--ink); }
+
+    .top-rule { border-top: 2px solid var(--ink); }
+
+    .wrap {
+      width: min(100% - 48px, 900px);
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 38px 0 20px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .site-name {
+      font-size: 22px;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    .site-name a { color: var(--ink); }
+
+    nav {
+      font-family: var(--mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    nav a { color: var(--ink-soft); }
+    nav a:hover { color: var(--accent); }
+
+    article {
+      max-width: 720px;
+      padding: 72px 0 90px;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 66px);
+      line-height: 1.05;
+      letter-spacing: -.025em;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+
+    .subtitle {
+      color: var(--ink-soft);
+      font-size: 21px;
+      line-height: 1.55;
+      max-width: 650px;
+      margin-bottom: 24px;
+    }
+
+    .meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-faint);
+      padding-bottom: 42px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    h2 {
+      font-size: 29px;
+      line-height: 1.25;
+      font-weight: 600;
+      margin: 58px 0 18px;
+      letter-spacing: -.01em;
+    }
+
+    h3 {
+      font-size: 21px;
+      margin: 34px 0 10px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 21px;
+      color: var(--ink-soft);
+    }
+
+    strong { color: var(--ink); }
+
+    code {
+      font-family: var(--mono);
+      font-size: .86em;
+      color: var(--ink);
+      background: rgba(255,255,255,.055);
+      padding: 2px 6px;
+    }
+
+    .flow {
+      margin: 30px 0;
+      padding: 22px 24px;
+      border: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 2;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .flow .arrow { color: var(--accent); }
+
+    .comparison {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 30px 0 38px;
+      font-size: 16px;
+    }
+
+    .comparison th,
+    .comparison td {
+      padding: 15px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+
+    .comparison th {
+      font-family: var(--mono);
+      color: var(--ink);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom-color: var(--rule);
+    }
+
+    .comparison td {
+      color: var(--ink-soft);
+    }
+
+    .comparison td:first-child {
+      color: var(--ink);
+      width: 28%;
+    }
+
+    .note {
+      margin: 32px 0;
+      border-left: 2px solid var(--accent);
+      padding: 4px 0 4px 22px;
+      color: var(--ink-soft);
+      font-style: italic;
+    }
+
+    .takeaway {
+      margin-top: 54px;
+      padding: 28px 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .takeaway h2 { margin-top: 0; }
+
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 30px 0 60px;
+      font-family: var(--mono);
+      color: var(--ink-faint);
+      font-size: 12px;
+    }
+
+    @media (max-width: 650px) {
+      body { font-size: 17px; }
+      article { padding-top: 52px; }
+      h2 { font-size: 25px; }
+
+      .comparison {
+        font-size: 14px;
+        display: block;
+        overflow-x: auto;
+      }
+
+      .comparison th,
+      .comparison td {
+        min-width: 150px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-rule"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="site-name">
+        <a href="index.html">srishti rathi.</a>
+      </div>
+      <nav>
+        <a href="index.html">← back to home</a>
+      </nav>
+    </header>
+
+    <article>
+      <div class="eyebrow">Technical Notes · Zero Knowledge</div>
+
+      <h1>SNARK vs. STARK</h1>
+
+      <p class="subtitle">
+        Both let a prover convince a verifier that a computation was performed
+        correctly without forcing the verifier to repeat the entire computation.
+        The important difference is how they achieve that succinct verification.
+      </p>
+
+      <div class="meta">Srishti Rathi · Technical Notes</div>
+
+      <h2>Start with the problem</h2>
+
+      <p>
+        Suppose I execute a large computation and get some result. Instead of
+        asking you to execute the whole program again, I want to give you a
+        cryptographic proof that the computation was performed correctly.
+      </p>
+
+      <div class="flow">
+        computation
+        <span class="arrow">→</span>
+        witness / execution
+        <span class="arrow">→</span>
+        proof
+        <span class="arrow">→</span>
+        verifier
+        <span class="arrow">→</span>
+        accept / reject
+      </div>
+
+      <p>
+        SNARKs and STARKs are two major approaches to building such proof
+        systems. They share the same broad goal, but their cryptographic
+        machinery and engineering trade-offs are different.
+      </p>
+
+      <h2>What is a SNARK?</h2>
+
+      <p>
+        <strong>SNARK</strong> stands for
+        <strong>Succinct Non-interactive Argument of Knowledge</strong>.
+        “Succinct” means that the proof is small and verification is much
+        cheaper than repeating the original computation. “Non-interactive”
+        means that after the proof is produced, the verifier can check it
+        without an ongoing conversation with the prover.
+      </p>
+
+      <p>
+        Many well-known SNARK constructions transform computation into
+        algebraic constraints and ultimately into statements about
+        polynomials. Depending on the proving system, polynomial commitments
+        and elliptic-curve cryptography can then be used to create a compact
+        proof.
+      </p>
+
+      <div class="flow">
+        program
+        <span class="arrow">→</span>
+        constraints
+        <span class="arrow">→</span>
+        polynomials
+        <span class="arrow">→</span>
+        commitments
+        <span class="arrow">→</span>
+        succinct proof
+      </div>
+
+      <h3>Why are SNARK proofs so small?</h3>
+
+      <p>
+        A verifier does not receive every intermediate value from the
+        computation. The proving system compresses the claim into a small
+        cryptographic proof. In pairing-based systems such as Groth16, the
+        verifier can check a few elliptic-curve elements using pairing
+        equations rather than replaying the computation.
+      </p>
+
+      <p>
+        The trade-off is that some SNARK constructions require a
+        <strong>trusted setup</strong>. If secret setup randomness is retained
+        and compromised, the security of that particular setup can fail.
+        This is not a property of every SNARK, so “SNARK = trusted setup”
+        should not be treated as a universal rule.
+      </p>
+
+      <h2>What is a STARK?</h2>
+
+      <p>
+        <strong>STARK</strong> stands for
+        <strong>Scalable Transparent Argument of Knowledge</strong>.
+        The word <em>transparent</em> is one of the most important differences:
+        STARK constructions avoid a secret trusted setup.
+      </p>
+
+      <p>
+        A STARK commonly represents a computation as an
+        <strong>execution trace</strong>. Algebraic constraints describe how
+        valid rows of that trace must relate to each other. Those constraints
+        are transformed into polynomial identities, committed to with hashes,
+        and checked using low-degree testing.
+      </p>
+
+      <div class="flow">
+        execution trace
+        <span class="arrow">→</span>
+        AIR constraints
+        <span class="arrow">→</span>
+        polynomials
+        <span class="arrow">→</span>
+        Merkle commitments
+        <span class="arrow">→</span>
+        FRI
+      </div>
+
+      <p>
+        Instead of sending an entire polynomial to the verifier, the prover
+        commits to evaluations of the polynomial. The verifier then checks a
+        small number of positions and uses a protocol such as
+        <strong>FRI</strong> to gain confidence that the committed evaluations
+        correspond to a polynomial of sufficiently low degree.
+      </p>
+
+      <h2>The practical comparison</h2>
+
+      <table class="comparison">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>SNARK</th>
+            <th>STARK</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Proof size</td>
+            <td>Typically very small</td>
+            <td>Typically larger</td>
+          </tr>
+          <tr>
+            <td>Verification</td>
+            <td>Usually very fast</td>
+            <td>Fast, but proofs carry more data</td>
+          </tr>
+          <tr>
+            <td>Trusted setup</td>
+            <td>Required by some constructions</td>
+            <td>Transparent; no secret setup</td>
+          </tr>
+          <tr>
+            <td>Common machinery</td>
+            <td>Polynomial commitments, often elliptic curves</td>
+            <td>Finite fields, hashes, Merkle trees, FRI</td>
+          </tr>
+          <tr>
+            <td>Post-quantum direction</td>
+            <td>Depends on the construction</td>
+            <td>Hash-based STARKs avoid elliptic-curve assumptions</td>
+          </tr>
+          <tr>
+            <td>Prover scaling</td>
+            <td>Depends strongly on the proving system</td>
+            <td>Designed around large computations and scalable proving</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        “SNARK” and “STARK” are families, not single protocols. Comparing them
+        always hides details: Groth16, PLONK-style systems, and different STARK
+        implementations can have very different performance characteristics.
+      </div>
+
+      <h2>The biggest conceptual difference</h2>
+
+      <p>
+        A useful way to build intuition is to look at what gives the verifier
+        confidence.
+      </p>
+
+      <p>
+        In many pairing-based SNARKs, succinct verification comes from
+        algebraic commitments and elliptic-curve pairing relations.
+        In a STARK, the verifier relies heavily on polynomial identities,
+        cryptographic hashes, Merkle commitments, random sampling, and
+        low-degree testing.
+      </p>
+
+      <div class="flow">
+        SNARK: algebraic constraints
+        <span class="arrow">→</span>
+        polynomial commitment machinery
+        <span class="arrow">→</span>
+        compact verification
+      </div>
+
+      <div class="flow">
+        STARK: execution trace
+        <span class="arrow">→</span>
+        polynomial constraints
+        <span class="arrow">→</span>
+        commitments + FRI
+        <span class="arrow">→</span>
+        probabilistic verification
+      </div>
+
+      <h2>Why STARK proofs are larger</h2>
+
+      <p>
+        STARK verification usually needs authentication paths for queried
+        values, polynomial evaluations, and information from FRI rounds.
+        Merkle authentication paths consist of multiple hashes, so the proof
+        naturally contains more data.
+      </p>
+
+      <p>
+        That larger proof is part of the trade-off for transparency and a
+        hash-oriented design.
+      </p>
+
+      <h2>Which one should you use?</h2>
+
+      <p>
+        There is no universal winner. If extremely small proofs and cheap
+        on-chain verification dominate your requirements, a SNARK construction
+        may be attractive. If transparency, hash-based assumptions, and
+        scalable proving are priorities, a STARK may be a better fit.
+      </p>
+
+      <p>
+        In real systems the decision also depends on prover time, verifier
+        cost, recursion, hardware, proof aggregation, implementation maturity,
+        and where verification happens.
+      </p>
+
+      <div class="takeaway">
+        <h2>Takeaway</h2>
+        <p>
+          SNARKs and STARKs solve the same high-level problem: proving
+          computation without making the verifier repeat it.
+        </p>
+        <p>
+          The interesting difference is not simply “small proof versus big
+          proof.” It is the cryptographic path each family takes to make
+          computation verifiable.
+        </p>
+        <p>
+          Understanding constraints, polynomials, commitments, and low-degree
+          testing makes that difference much easier to see.
+        </p>
+      </div>
+    </article>
+
+    <footer>
+      srishti rathi. zero-knowledge engineering notes.
+    </footer>
+  </div>
+</body>
+</html>
