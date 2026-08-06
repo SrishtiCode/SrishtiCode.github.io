@@ -3,1017 +3,467 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Srishti | Zero-Knowledge Engineer & Rust Developer</title>
+<title>Srishti Rathi — Zero-Knowledge Engineer</title>
+<meta name="description" content="Srishti Rathi. Zero-knowledge engineer building proving systems in Rust.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
   :root {
-    --bg: #07080d;
-    --bg-card: #0d0f18;
-    --bg-card2: #12141f;
-    --orange: #f97316;
-    --orange-dim: #c2410c;
-    --orange-bright: #fb923c;
-    --orange-glow: rgba(249,115,22,0.12);
-    --orange-border: rgba(249,115,22,0.22);
-    --rust: #b45309;
-    --rust-light: #fbbf24;
-    --teal: #14b8a6;
-    --teal-glow: rgba(20,184,166,0.10);
-    --teal-border: rgba(20,184,166,0.2);
-    --text: #e8e4d9;
-    --text-muted: #857f72;
-    --text-dim: #4a4540;
-    --border: rgba(255,255,255,0.055);
-    --mono: 'JetBrains Mono', monospace;
-    --display: 'Fraunces', serif;
+    --paper: #faf9f6;
+    --ink: #1a1a18;
+    --ink-soft: #56534c;
+    --ink-faint: #8b877d;
+    --accent: #1f3a5f;
+    --accent-soft: #3f5c82;
+    --rule: rgba(26,26,24,0.14);
+    --rule-soft: rgba(26,26,24,0.08);
+    --serif: 'Source Serif 4', Georgia, serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   html { scroll-behavior: smooth; }
+
   body {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--accent); color: var(--paper); }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--ink); }
+
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 72px 0 40px;
+  }
+  .site-name {
     font-family: var(--mono);
     font-size: 13px;
-    line-height: 1.75;
-    overflow-x: hidden;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
   }
-
-  /* Texture overlays */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 0;
-  }
-
-  /* Subtle scan lines */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.025) 3px, rgba(0,0,0,0.025) 4px);
-    pointer-events: none; z-index: 0;
-  }
-
-  /* Diagonal grid - rust themed */
-  .grid-bg {
-    position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none; z-index: 0;
-  }
-
-  /* Atmospheric blobs */
-  .blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
-  .blob-1 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(180,83,9,0.14) 0%, transparent 65%); top: -200px; right: -150px; }
-  .blob-2 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(20,184,166,0.08) 0%, transparent 70%); top: 50%; left: -100px; }
-  .blob-3 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(249,115,22,0.07) 0%, transparent 70%); bottom: -100px; right: 20%; }
-
-  /* NAV */
+  .site-name a { color: var(--ink); }
+  .site-name a:hover { color: var(--accent); }
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1.2rem 4rem;
-    border-bottom: 1px solid var(--border);
-    background: rgba(7,8,13,0.88);
-    backdrop-filter: blur(16px);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.01em;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
   }
-  .nav-logo {
-    font-family: var(--display);
-    font-size: 1.2rem;
-    font-weight: 900;
-    font-style: italic;
-    color: var(--orange-bright);
+  nav a { color: var(--ink-soft); }
+  nav a:hover { color: var(--accent); }
+  nav .sep { margin: 0 10px; color: var(--rule); }
+
+  /* HERO / INTRO */
+  #intro { padding: 8px 0 56px; }
+  .intro-lede {
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+    margin-bottom: 26px;
+    max-width: 560px;
+  }
+  .intro-body p {
+    color: var(--ink-soft);
+    font-size: 16px;
+    max-width: 560px;
+    margin-bottom: 16px;
+  }
+  .intro-body em { font-style: italic; color: var(--ink); }
+  .status-line {
+    margin-top: 26px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--rule);
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* SECTION SHARED */
+  section { padding: 52px 0; border-top: 1px solid var(--rule); }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-bottom: 28px;
+  }
+
+  /* FUNDAMENTALS */
+  .fund-note {
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 560px;
+    margin-bottom: 24px;
+  }
+  .fund-list {
+    columns: 2;
+    column-gap: 36px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 2.1;
+  }
+  .fund-list div { break-inside: avoid; }
+  .fund-list div::before { content: "· "; color: var(--accent); }
+
+  /* ENTRY LIST (projects / research / writing) */
+  .entry-list { display: flex; flex-direction: column; }
+  .entry {
+    display: block;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--rule-soft);
     text-decoration: none;
-    letter-spacing: -0.02em;
+    color: inherit;
+    transition: padding-left 0.15s ease;
   }
-  .nav-logo span { color: var(--text-muted); font-weight: 300; font-style: normal; }
-  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-  .nav-links a {
-    color: var(--text-muted); text-decoration: none; font-size: 11px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    transition: color 0.2s; position: relative;
+  .entry:last-child { border-bottom: none; }
+  .entry:hover { color: inherit; padding-left: 6px; }
+  .entry-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
   }
-  .nav-links a::after {
-    content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
-    height: 1px; background: var(--orange); transform: scaleX(0); transition: transform 0.2s;
+  .entry-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
   }
-  .nav-links a:hover { color: var(--orange-bright); }
-  .nav-links a:hover::after { transform: scaleX(1); }
+  .entry:hover .entry-title { color: var(--accent); }
+  .entry-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 3px;
+  }
+  .entry-desc {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    max-width: 560px;
+    line-height: 1.6;
+  }
+  .entry-tags {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+  .entry-tags span:not(:last-child)::after { content: " / "; color: var(--rule); }
 
-  /* Version badge */
-  .nav-badge {
-    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 3px 10px; border: 1px solid var(--orange-border);
-    color: var(--orange); background: var(--orange-glow);
+  /* CTF */
+  .ctf-row {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
   }
-
-  section { position: relative; z-index: 1; }
-  .container { max-width: 1120px; margin: 0 auto; padding: 0 3rem; }
-
-  /* HERO */
-  #hero { min-height: 100vh; display: flex; align-items: center; padding: 8rem 0 5rem; }
-  .hero-inner { max-width: 1120px; margin: 0 auto; padding: 0 3rem; position: relative; z-index: 1; }
-
-  .hero-tag {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--teal); border: 1px solid var(--teal-border);
-    padding: 5px 14px; margin-bottom: 2.5rem; background: var(--teal-glow);
-  }
-  .hero-tag::before {
-    content: ''; display: inline-block; width: 5px; height: 5px;
-    border-radius: 50%; background: var(--teal); animation: pulse 2s infinite;
-  }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
-
-  .hero-eyebrow {
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
-    color: var(--orange); text-transform: uppercase; margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--orange); }
-
-  .hero-title {
-    font-family: var(--display);
-    font-size: clamp(3.8rem, 8.5vw, 7.5rem);
-    font-weight: 900;
-    line-height: 0.92;
-    letter-spacing: -0.04em;
-    margin-bottom: 1.75rem;
-    color: #fff;
-  }
-  .hero-title .line2 {
-    color: var(--orange-bright);
-    font-style: italic;
-    font-weight: 300;
+  .ctf-stat .num {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--accent);
     display: block;
+    line-height: 1;
   }
-  .hero-title .line3 {
-    color: var(--text-muted);
-    font-size: 0.55em;
-    font-weight: 700;
-    font-style: normal;
-    letter-spacing: -0.02em;
-    display: block;
-    margin-top: 0.3em;
+  .ctf-stat .label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-top: 6px;
   }
-
-  .hero-subtitle {
-    font-size: 13px; color: var(--text-muted);
-    max-width: 560px; line-height: 1.9; margin-bottom: 2.5rem;
+  .ctf-list {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 2;
   }
-  .hero-subtitle .hl { color: var(--orange-bright); }
-  .hero-subtitle .hl2 { color: var(--teal); }
-
-  .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
-
-  .btn-primary {
-    display: inline-block; padding: 13px 30px;
-    background: var(--orange-dim); color: #fff;
-    text-decoration: none; font-family: var(--mono);
-    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    border: 1px solid var(--orange); transition: background 0.2s, box-shadow 0.2s;
-    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
-  }
-  .btn-primary:hover { background: var(--orange); box-shadow: 0 0 35px rgba(249,115,22,0.3); }
-
-  .btn-ghost {
-    display: inline-block; padding: 13px 30px;
-    background: transparent; color: var(--orange-bright);
-    text-decoration: none; font-family: var(--mono);
-    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    border: 1px solid var(--orange-border); transition: border-color 0.2s, background 0.2s;
-    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%); cursor: pointer;
-  }
-  .btn-ghost:hover { border-color: var(--orange); background: var(--orange-glow); }
-
-  /* Stats row */
-  .hero-stats {
-    display: flex; gap: 3.5rem; margin-top: 4.5rem;
-    padding-top: 2.5rem; border-top: 1px solid var(--border); flex-wrap: wrap;
-  }
-  .stat-num { font-family: var(--display); font-size: 2.2rem; font-weight: 900; color: var(--orange-bright); display: block; line-height: 1; font-style: italic; }
-  .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 5px; }
-
-  /* Terminal float */
-  .hero-terminal {
-    position: absolute; right: 3rem; top: 50%; transform: translateY(-50%);
-    width: 420px; background: var(--bg-card);
-    border: 1px solid var(--orange-border); padding: 1.5rem;
-    font-family: var(--mono); font-size: 12px; display: none;
-    box-shadow: 0 0 60px rgba(249,115,22,0.08);
-  }
-  @media (min-width: 1150px) { .hero-terminal { display: block; } #hero { position: relative; } }
-
-  .terminal-bar { display: flex; gap: 6px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); align-items: center; }
-  .t-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .t-dot:nth-child(1) { background: #ff5f57; }
-  .t-dot:nth-child(2) { background: #ffbd2e; }
-  .t-dot:nth-child(3) { background: #28ca41; }
-  .t-title { font-size: 10px; color: var(--text-dim); margin-left: auto; letter-spacing: 0.05em; }
-  .t-line { line-height: 1.9; }
-  .t-prompt { color: var(--orange); }
-  .t-cmd { color: var(--text); }
-  .t-out { color: var(--text-muted); }
-  .t-success { color: #a3e635; }
-  .t-rust { color: var(--rust-light); }
-  .t-teal { color: var(--teal); }
-  .t-comment { color: var(--text-dim); }
-  .t-cursor { display: inline-block; width: 8px; height: 14px; background: var(--orange); vertical-align: text-bottom; animation: blink 1s step-end infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-
-  /* SHARED SECTION */
-  .section-header { margin-bottom: 3.5rem; }
-  .section-tag {
-    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--orange); margin-bottom: 1rem;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .section-tag::before { content: ''; display: block; width: 32px; height: 1px; background: var(--orange); }
-  .section-title {
-    font-family: var(--display); font-size: clamp(2.2rem, 4.5vw, 3.5rem);
-    font-weight: 900; color: #fff; letter-spacing: -0.03em; line-height: 1.05;
-  }
-  .section-title em { font-style: italic; color: var(--orange-bright); font-weight: 300; }
-
-  .skill-tag {
-    font-size: 11px; padding: 4px 12px;
-    border: 1px solid var(--orange-border); color: var(--orange-bright);
-    background: var(--orange-glow); letter-spacing: 0.04em;
-  }
-  .skill-tag.rust { border-color: rgba(251,191,36,0.25); color: var(--rust-light); background: rgba(251,191,36,0.07); }
-  .skill-tag.teal { border-color: var(--teal-border); color: var(--teal); background: var(--teal-glow); }
-
-  /* ABOUT */
-  #about { padding: 9rem 0; border-top: 1px solid var(--border); }
-  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
-  .about-text p { color: var(--text-muted); margin-bottom: 1.4rem; line-height: 1.9; font-size: 13px; }
-  .about-text p .hl { color: var(--orange-bright); }
-  .about-text p .hl2 { color: var(--teal); }
-  .skills-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2rem; }
-
-  .info-box {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-left: 2px solid var(--orange); padding: 1.4rem; margin-bottom: 10px;
-    transition: border-color 0.2s;
-  }
-  .info-box:hover { border-left-color: var(--orange-bright); }
-  .info-box-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--orange); margin-bottom: 6px; }
-  .info-box-value { color: var(--text); font-size: 13px; }
-
-  /* ZK FUNDAMENTALS */
-  #zk-fundamentals { padding: 9rem 0; border-top: 1px solid var(--border); }
-  .concepts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .concept-item { background: var(--bg-card); padding: 1.1rem 1.4rem; font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
-  .concept-item:hover { background: var(--bg-card2); }
-  .concept-check { color: var(--teal); font-size: 13px; flex-shrink: 0; }
-
-  /* PROJECTS */
-  #projects { padding: 9rem 0; border-top: 1px solid var(--border); }
-  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .project-card {
-    background: var(--bg-card); padding: 2rem; position: relative;
-    transition: background 0.2s; text-decoration: none; display: block;
-  }
-  .project-card:hover { background: var(--bg-card2); }
-  .project-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--orange-dim), var(--orange));
-    transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
-  }
-  .project-card:hover::before { transform: scaleX(1); }
-
-  /* Featured project (full width) */
-  .project-card.featured {
-    grid-column: 1 / -1;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-    background: var(--bg-card);
-  }
-  .project-card.featured::before { background: linear-gradient(90deg, var(--orange-dim), var(--teal)); }
-  .project-feat-left { padding: 2.5rem; }
-  .project-feat-right {
-    border-left: 1px solid var(--border);
-    padding: 2.5rem; background: rgba(249,115,22,0.03);
-    display: flex; flex-direction: column; gap: 1rem;
-  }
-  .project-feat-right code {
-    display: block; font-size: 11px; color: var(--text-dim);
-    line-height: 1.8; background: rgba(0,0,0,0.3);
-    padding: 1rem; border-left: 2px solid var(--orange-dim);
-  }
-  .code-comment { color: var(--text-dim); }
-  .code-keyword { color: var(--orange); }
-  .code-type { color: var(--rust-light); }
-  .code-fn { color: var(--teal); }
-  .code-str { color: #86efac; }
-
-  .project-lang {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
-    padding: 3px 10px; margin-bottom: 0.5rem; font-weight: 700; border-radius: 2px;
-  }
-  .project-lang::before { content: ''; display: block; width: 7px; height: 7px; border-radius: 50%; }
-  .lang-rust { background: rgba(249,115,22,0.12); color: var(--orange-bright); border: 1px solid var(--orange-border); }
-  .lang-rust::before { background: var(--orange); }
-  .lang-sol { background: rgba(20,184,166,0.1); color: var(--teal); border: 1px solid var(--teal-border); }
-  .lang-sol::before { background: var(--teal); }
-  .lang-multi { background: rgba(251,191,36,0.08); color: var(--rust-light); border: 1px solid rgba(251,191,36,0.2); }
-  .lang-multi::before { background: var(--rust-light); }
-
-  .project-title { font-family: var(--display); font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.6rem; line-height: 1.25; letter-spacing: -0.02em; }
-  .project-desc { font-size: 12px; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.5rem; flex: 1; }
-  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
-  .p-tag { font-size: 10px; padding: 2px 8px; border: 1px solid var(--border); color: var(--text-dim); }
-  .project-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 1.25rem; }
-  .project-stars { display: flex; align-items: center; gap: 5px; }
-  .project-stars::before { content: '★'; color: var(--rust-light); font-size: 12px; }
-  .project-link { color: var(--orange); font-size: 11px; }
-  .project-link::after { content: ' ↗'; }
-
-  /* AUDITS */
-  #audits { padding: 9rem 0; border-top: 1px solid var(--border); }
-  .research-note {
-    font-size: 12px; color: var(--text-muted); background: var(--bg-card);
-    border: 1px solid var(--border); border-left: 2px solid var(--orange-dim);
-    padding: 12px 18px; margin-bottom: 2rem; line-height: 1.7;
-  }
-  .research-note span { color: var(--orange-bright); }
-
-  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-  .filter-btn {
-    font-size: 10px; padding: 5px 14px; border: 1px solid var(--border);
-    background: transparent; color: var(--text-dim); cursor: pointer;
-    font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s;
-  }
-  .filter-btn:hover { color: var(--orange-bright); background: var(--orange-glow); border-color: var(--orange-border); }
-  .filter-btn.active { background: var(--orange-dim); color: #fff; border-color: var(--orange); }
-
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .audit-card {
-    background: var(--bg-card); padding: 2rem; position: relative;
-    transition: background 0.2s; text-decoration: none; display: block;
-  }
-  .audit-card:hover { background: var(--bg-card2); }
-  .audit-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--orange-dim); transform: scaleX(0); transition: transform 0.3s; transform-origin: left;
-  }
-  .audit-card:hover::before { transform: scaleX(1); }
-  .card-cat { display: inline-block; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; margin-bottom: 0.5rem; font-weight: 700; }
-  .cat-defi { background: rgba(20,184,166,0.1); color: var(--teal); border: 1px solid var(--teal-border); }
-  .cat-staking { background: rgba(163,230,53,0.08); color: #86efac; border: 1px solid rgba(163,230,53,0.2); }
-  .cat-infra { background: rgba(156,163,175,0.1); color: #d1d5db; border: 1px solid rgba(156,163,175,0.18); }
-  .cat-rust { background: var(--orange-glow); color: var(--orange-bright); border: 1px solid var(--orange-border); }
-  .card-tag { display: inline-block; font-size: 9px; padding: 2px 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.05em; margin-bottom: 0.75rem; margin-left: 6px; }
-  .card-title { font-family: var(--display); font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; line-height: 1.3; letter-spacing: -0.02em; }
-  .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.75; margin-bottom: 1.5rem; }
-  .card-meta { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
-  .card-meta .protocol { display: flex; align-items: center; gap: 6px; }
-  .card-meta .protocol::before { content: ''; display: block; width: 7px; height: 7px; border: 1px solid var(--orange); transform: rotate(45deg); }
-  .card-link { color: var(--orange); font-size: 11px; }
-  .card-link::after { content: ' ↗'; }
-
-  /* BLOG */
-  #blog { padding: 9rem 0; border-top: 1px solid var(--border); }
-
-  .blog-featured {
-    display: grid; grid-template-columns: 1fr 1.3fr;
-    background: var(--bg-card); border: 1px solid var(--orange-border);
-    margin-bottom: 1px; text-decoration: none; position: relative; overflow: hidden; transition: background 0.2s;
-  }
-  .blog-featured:hover { background: var(--bg-card2); }
-  .blog-featured::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--orange-dim), var(--orange-bright), var(--teal)); }
-
-  .blog-featured-visual {
-    background: linear-gradient(135deg, rgba(180,83,9,0.2) 0%, rgba(7,8,13,0.9) 100%);
-    border-right: 1px solid var(--border); display: flex; align-items: center;
-    justify-content: center; padding: 3rem; min-height: 280px; position: relative; overflow: hidden;
-  }
-  .blog-featured-visual::before {
-    content: ''; position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(249,115,22,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(249,115,22,0.06) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-  .feat-code-block {
-    position: relative; z-index: 1; font-family: var(--mono); font-size: 11px;
-    color: var(--text-muted); line-height: 1.8; background: rgba(0,0,0,0.5);
-    padding: 1.25rem; border: 1px solid var(--orange-border); width: 100%;
-  }
-
-  .blog-featured-body { padding: 2.75rem; display: flex; flex-direction: column; justify-content: space-between; }
-  .feat-label { display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange); margin-bottom: 1.25rem; }
-  .featured-badge { background: var(--orange-dim); color: #fff; padding: 2px 9px; font-size: 9px; letter-spacing: 0.12em; }
-  .feat-title { font-family: var(--display); font-size: 1.65rem; font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 1rem; letter-spacing: -0.02em; }
-  .feat-excerpt { font-size: 12px; color: var(--text-muted); line-height: 1.85; margin-bottom: 1.75rem; }
-  .feat-footer { display: flex; align-items: center; justify-content: space-between; }
-  .feat-meta { font-size: 11px; color: var(--text-dim); }
-  .feat-meta .dot { margin: 0 6px; }
-  .read-more { font-size: 11px; color: var(--orange); display: flex; align-items: center; gap: 5px; }
-  .read-more::after { content: '→'; transition: transform 0.2s; }
-  .blog-featured:hover .read-more::after { transform: translateX(4px); }
-
-  .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1px; }
-  .blog-card { background: var(--bg-card); padding: 1.75rem; text-decoration: none; display: flex; flex-direction: column; position: relative; transition: background 0.2s; overflow: hidden; }
-  .blog-card:hover { background: var(--bg-card2); }
-  .blog-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--orange-dim); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
-  .blog-card:hover::before { transform: scaleX(1); }
-  .blog-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; }
-  .blog-topic-tag { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; font-weight: 700; white-space: nowrap; }
-  .topic-evm      { background: rgba(20,184,166,0.1); color: var(--teal); border: 1px solid var(--teal-border); }
-  .topic-rust     { background: var(--orange-glow); color: var(--orange-bright); border: 1px solid var(--orange-border); }
-  .topic-security { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.22); }
-  .topic-ctf      { background: rgba(251,191,36,0.08); color: #fcd34d; border: 1px solid rgba(251,191,36,0.25); }
-  .topic-defi     { background: rgba(163,230,53,0.08); color: #86efac; border: 1px solid rgba(163,230,53,0.18); }
-  .blog-read-time { font-size: 10px; color: var(--text-dim); white-space: nowrap; }
-  .blog-card-title { font-family: var(--display); font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 0.6rem; letter-spacing: -0.01em; }
-  .blog-card-excerpt { font-size: 11px; color: var(--text-muted); line-height: 1.8; flex: 1; margin-bottom: 1.25rem; }
-  .blog-card-footer { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 1rem; }
-  .blog-date::before { content: '//'; color: var(--orange-dim); font-size: 10px; margin-right: 5px; }
-  .blog-arrow { color: var(--orange); transition: transform 0.2s; }
-  .blog-card:hover .blog-arrow { transform: translateX(4px); }
-
-  /* CHALLENGES */
-  #challenges { padding: 9rem 0; border-top: 1px solid var(--border); }
-  .challenges-tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
-  .tab-btn { padding: 10px 24px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: none; border: none; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s, border-color 0.2s; }
-  .tab-btn.active { color: var(--orange-bright); border-bottom-color: var(--orange); }
-  .tab-btn:hover { color: var(--text-muted); }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-  .challenge-list { display: grid; gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .challenge-item { background: var(--bg-card); padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 1.25rem; text-decoration: none; transition: background 0.15s; }
-  .challenge-item:hover { background: var(--bg-card2); }
-  .ch-num { font-family: var(--display); font-size: 1.1rem; font-weight: 900; color: var(--orange-dim); text-align: center; font-style: italic; }
-  .ch-name { color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-  .ch-topic { font-size: 11px; color: var(--text-dim); }
-  .ch-badge { font-size: 9px; padding: 3px 10px; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(163,230,53,0.08); color: #a3e635; border: 1px solid rgba(163,230,53,0.22); }
+  .ctf-list a { color: var(--ink-soft); border-bottom: 1px solid var(--rule); }
+  .ctf-list a:hover { color: var(--accent); border-color: var(--accent); }
+  .ctf-list .tag { color: var(--ink-faint); }
 
   /* CONTACT */
-  #contact { padding: 9rem 0; border-top: 1px solid var(--border); }
-  .contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
-  .contact-intro { font-size: 13px; color: var(--text-muted); line-height: 1.9; margin-top: 1.75rem; }
-  .social-links { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 10px; }
-  .social-link { display: flex; align-items: center; gap: 14px; text-decoration: none; padding: 14px 16px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 12px; transition: border-color 0.2s, color 0.2s, background 0.2s; }
-  .social-link:hover { border-color: var(--orange-border); color: var(--orange-bright); background: var(--orange-glow); }
-  .social-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--orange-border); color: var(--orange); font-size: 16px; flex-shrink: 0; }
-  .social-detail { flex: 1; }
-  .social-name { font-weight: 700; color: #fff; font-size: 12px; display: block; margin-bottom: 2px; }
-  .social-handle { font-size: 11px; color: var(--text-dim); }
-  .social-arrow { color: var(--orange-dim); font-size: 14px; }
-
-  .availability { margin-top: 1.5rem; padding: 1.25rem; background: rgba(163,230,53,0.04); border: 1px solid rgba(163,230,53,0.18); display: flex; align-items: center; gap: 10px; }
-  .avail-dot { width: 8px; height: 8px; border-radius: 50%; background: #a3e635; animation: pulse 2s infinite; flex-shrink: 0; }
-  .avail-text { font-size: 12px; color: #a3e635; }
-
-  .info-panel { background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; margin-top: 1.5rem; }
-  .info-panel-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--orange); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-  .info-panel-text { font-size: 12px; color: var(--text-muted); }
-  .info-panel-row { margin-bottom: 12px; }
-  .info-panel-row span { color: var(--orange); }
-
-  footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 2rem 0; }
-  .footer-inner { max-width: 1120px; margin: 0 auto; padding: 0 3rem; display: flex; align-items: center; justify-content: space-between; }
-  .footer-text { font-size: 11px; color: var(--text-dim); }
-  .footer-text .hl { color: var(--orange); }
-  .footer-rs { font-size: 10px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; }
-  .footer-rs::before { content: ''; }
-
-  .fade-up { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; }
-  .fade-up.visible { opacity: 1; transform: translateY(0); }
-
-  @media (max-width: 768px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links, .nav-badge { display: none; }
-    .container { padding: 0 1.5rem; }
-    .hero-inner { padding: 0 1.5rem; }
-    .hero-title { font-size: 3.2rem; }
-    .hero-stats { gap: 2rem; flex-wrap: wrap; }
-    .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 2.5rem; }
-    footer .footer-inner { flex-direction: column; gap: 1rem; text-align: center; }
-    #about, #zk-fundamentals, #projects, #audits, #blog, #challenges, #contact { padding: 5rem 0; }
-    .blog-featured, .project-card.featured { grid-template-columns: 1fr; }
-    .blog-featured-visual, .project-feat-right { display: none; }
+  #contact { padding-bottom: 40px; }
+  .contact-list {
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 2.3;
   }
+  .contact-list a { color: var(--ink); border-bottom: 1px solid var(--rule); }
+  .contact-list a:hover { color: var(--accent); border-color: var(--accent); }
+  .contact-list .k { color: var(--ink-faint); display: inline-block; width: 84px; }
+
+  footer {
+    padding: 30px 0 60px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--rule);
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    header { padding: 48px 0 32px; }
+    .intro-lede { font-size: 19px; }
+    .fund-list { columns: 1; }
+    .entry-top { flex-direction: column; gap: 4px; }
+    section { padding: 40px 0; }
+  }
+
 </style>
 </head>
 <body>
 
-<div class="grid-bg"></div>
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
-<div class="blob blob-3"></div>
+<div class="wrap">
 
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo"><span>~/</span>srishti</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#zk-fundamentals">ZK Fundamentals</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#audits">Research</a></li>
-    <li><a href="#blog">Blog</a></li>
-    <li><a href="#challenges">CTF</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-  <div class="nav-badge">Zero-Knowledge + Rust</div>
-</nav>
+  <header>
+    <div class="site-name"><a href="#">srishti rathi.</a></div>
+    <nav>
+      <a href="#intro">about</a><span class="sep">·</span>
+      <a href="#fundamentals">fundamentals</a><span class="sep">·</span>
+      <a href="#projects">projects</a><span class="sep">·</span>
+      <a href="#research">research</a><span class="sep">·</span>
+      <a href="#writing">writing</a><span class="sep">·</span>
+      <a href="#ctf">ctf</a><span class="sep">·</span>
+      <a href="#contact">contact</a>
+    </nav>
+  </header>
 
-<!-- HERO -->
-<section id="hero">
-  <div class="hero-inner">
-    <div class="hero-tag">Zero-Knowledge Engineer · Rust Developer · Protocol Security Researcher</div>
-    <div class="hero-eyebrow">Proving systems, built from first principles</div>
-    <h1 class="hero-title">
-      Built in Rust,
-      <span class="line2">Proven with math.</span>
-      <span class="line3">Building the prover-verifier pipeline from scratch.</span>
-    </h1>
-    <p class="hero-subtitle">
-      I build <span class="hl">zero-knowledge proving systems</span> in Rust — from finite-field arithmetic and FFTs up through FRI and STARK verification — and study production ZK codebases like <span class="hl2">zkSync's Airbender</span> to see how the theory becomes a real prover.
-    </p>
-    <div class="hero-cta">
-      <a href="#projects" class="btn-primary">View Projects</a>
-      <a href="#zk-fundamentals" class="btn-ghost">ZK Fundamentals ↗</a>
+  <section id="intro" style="border-top:none; padding-top:0;">
+    <div class="intro-lede">Zero-knowledge engineer building proving systems in Rust.</div>
+    <div class="intro-body">
+      <p>I'm a recent Computer Science graduate focused on zero-knowledge proof systems, cryptographic protocols, and systems programming in Rust. I build proving-system components from scratch — finite fields, FFTs, polynomial commitments, Fiat-Shamir transcripts, FRI folding — and study production ZK codebases to see how the theory holds up at implementation level.</p>
+      <p>I started with the fundamentals — fields, groups, polynomials — and built up to full proving pipelines: a <em>STARK prover</em> and a <em>KZG polynomial commitment scheme</em>, both from scratch. I've also studied <em>zkSync's Airbender</em>, a production RISC-V zkVM, to understand how these ideas scale in practice.</p>
     </div>
-    <div class="hero-stats">
-      <div class="stat-item"><span class="stat-num">2</span><span class="stat-label">ZK Systems Built From Scratch</span></div>
-      <div class="stat-item"><span class="stat-num">14+</span><span class="stat-label">ZK / Crypto Concepts Mastered</span></div>
-      <div class="stat-item"><span class="stat-num">18</span><span class="stat-label">Ethernaut Solved</span></div>
-      <div class="stat-item"><span class="stat-num">15</span><span class="stat-label">DVDeFi Completed</span></div>
-      <div class="stat-item"><span class="stat-num">∞</span><span class="stat-label">Constraints to Satisfy</span></div>
-    </div>
-  </div>
+    <div class="status-line"><span class="status-dot"></span>Open to Junior ZK / Prover / Cryptography Engineer roles</div>
+  </section>
 
-  <div class="hero-terminal">
-    <div class="terminal-bar">
-      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
-      <span class="t-title">srishti@zk-forge — zsh</span>
+  <section id="fundamentals">
+    <div class="section-label">Fundamentals</div>
+    <p class="fund-note">Concepts I can comfortably explain from the math through to the implementation — not just recite from memory.</p>
+    <div class="fund-list">
+      <div>Finite fields and modular arithmetic</div>
+      <div>Groups and roots of unity</div>
+      <div>Polynomials and interpolation</div>
+      <div>FFT / IFFT</div>
+      <div>Polynomial commitments</div>
+      <div>Merkle trees</div>
+      <div>Fiat–Shamir transform</div>
+      <div>Witness and public inputs</div>
+      <div>Arithmetic constraints</div>
+      <div>AIR or R1CS</div>
+      <div>SNARK vs. STARK</div>
+      <div>Soundness, completeness, zero knowledge</div>
+      <div>Basic FRI concepts</div>
     </div>
-    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">cargo new --lib stark-prover</span></div>
-    <div class="t-line" style="color:#a3e635;">   Compiling stark-prover v0.1.0</div>
-    <div class="t-line t-comment">     // Built with zero unsafe blocks</div>
-    <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">cat expertise.rs</span></div>
-    <div class="t-line t-rust">fn <span class="t-teal">specializations</span>() -> Vec&lt;&amp;str&gt; {</div>
-    <div class="t-line t-out">&nbsp;&nbsp;<span class="t-rust">vec!</span>[</div>
-    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"STARKs & FRI"</span>,</div>
-    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"KZG polynomial commitments"</span>,</div>
-    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"Finite fields & FFTs"</span>,</div>
-    <div class="t-line t-out">&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#86efac;">"AIR / R1CS constraint systems"</span>,</div>
-    <div class="t-line t-out">&nbsp;&nbsp;]</div>
-    <div class="t-line t-rust">}</div>
-    <div class="t-line">&nbsp;</div>
-    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cmd">status --open-to</span></div>
-    <div class="t-line" style="color:#a3e635;">✓ Junior ZK / Prover / Cryptography Engineer roles</div>
-    <div class="t-line"><span class="t-prompt">❯</span> <span class="t-cursor"></span></div>
-  </div>
-</section>
+  </section>
 
-<!-- ABOUT -->
-<section id="about">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">01 — About Me</div>
-      <h2 class="section-title">Zero-Knowledge,<br>From <em>First Principles</em></h2>
-    </div>
-    <div class="about-grid">
-      <div class="about-text fade-up">
-        <p>Hi, I'm <span class="hl">Srishti</span> — a recent Computer Science graduate focused on zero-knowledge proof systems, cryptographic protocols, and systems programming in Rust.</p>
-        <p>My engineering work lives in <span class="hl">Rust</span> — implementing proving-system components from scratch: finite-field arithmetic, FFT/IFFT, polynomial commitments, Merkle trees, Fiat-Shamir transcripts, and FRI folding. I care deeply about <span class="hl2">correctness</span>, performance, and building intuition at the implementation level rather than just the theory level.</p>
-        <p>I started with the fundamentals — fields, groups, polynomials — and built up to full proving pipelines: a STARK prover and a KZG polynomial commitment scheme, both from scratch. I've also studied production ZK codebases like <span class="hl">zkSync's Airbender</span> to see how these concepts hold up at scale.</p>
-        <p>The intersection of <span class="hl2">Rust's type system</span> and <span class="hl">provable computation</span> is where I feel most at home — proving correctness by construction, not by hope.</p>
-        <div class="skills-list">
-          <span class="skill-tag rust">Rust</span>
-          <span class="skill-tag rust">STARKs</span>
-          <span class="skill-tag rust">FRI</span>
-          <span class="skill-tag rust">KZG Commitments</span>
-          <span class="skill-tag">AIR / R1CS</span>
-          <span class="skill-tag">Finite Fields</span>
-          <span class="skill-tag">FFT / IFFT</span>
-          <span class="skill-tag">BLS12-381</span>
-          <span class="skill-tag">Bilinear Pairings</span>
-          <span class="skill-tag teal">Fiat-Shamir</span>
-          <span class="skill-tag teal">Merkle Commitments</span>
-          <span class="skill-tag teal">Solidity</span>
-          <span class="skill-tag teal">EVM Internals</span>
-          <span class="skill-tag teal">Foundry</span>
+  <section id="projects">
+    <div class="section-label">Projects</div>
+    <div class="entry-list">
+
+      <a class="entry" href="https://github.com/SrishtiCode/zkVM" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">zkVM / STARK Prover</div>
+          <div class="entry-meta">built from scratch</div>
         </div>
-      </div>
-      <div class="about-right fade-up">
-        <div class="info-box"><div class="info-box-label">Primary Language</div><div class="info-box-value">Rust — safe, fast, correct by construction</div></div>
-        <div class="info-box"><div class="info-box-label">Domain Expertise</div><div class="info-box-value">Zero-Knowledge Proofs · Proving Systems · Cryptography</div></div>
-        <div class="info-box"><div class="info-box-label">ZK Building Blocks</div><div class="info-box-value">STARKs · FRI · KZG · AIR · Polynomial IOPs</div></div>
-        <div class="info-box"><div class="info-box-label">Research</div><div class="info-box-value">zkSync Airbender (RISC-V zkVM) · Ethereum execution specs</div></div>
-        <div class="info-box"><div class="info-box-label">Background</div><div class="info-box-value">Smart India Hackathon Winner · TryHackMe Top 1% · 6 mo. SWE internship</div></div>
-        <div class="info-box"><div class="info-box-label">Status</div><div class="info-box-value" style="color:#a3e635;">✓ Open to Junior ZK / Prover / Cryptography Engineer roles</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ZK FUNDAMENTALS -->
-<section id="zk-fundamentals">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">02 — What I Can Explain</div>
-      <h2 class="section-title">ZK Fundamentals,<br><em>Confidently</em></h2>
-    </div>
-    <div class="research-note fade-up"><span>For junior ZK roles</span> — these are the core building blocks I can walk through clearly, from the math to the implementation, not just recite from memory.</div>
-    <div class="concepts-grid fade-up">
-      <div class="concept-item"><span class="concept-check">✓</span>Finite fields and modular arithmetic</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Groups and roots of unity</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Polynomials and interpolation</div>
-      <div class="concept-item"><span class="concept-check">✓</span>FFT / IFFT</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Polynomial commitments</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Merkle trees</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Fiat–Shamir transform</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Witness and public inputs</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Arithmetic constraints</div>
-      <div class="concept-item"><span class="concept-check">✓</span>AIR or R1CS</div>
-      <div class="concept-item"><span class="concept-check">✓</span>SNARK vs. STARK</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Soundness, completeness, and zero knowledge</div>
-      <div class="concept-item"><span class="concept-check">✓</span>Basic FRI concepts</div>
-    </div>
-  </div>
-</section>
-
-<!-- PROJECTS -->
-<section id="projects">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">03 — Projects</div>
-      <h2 class="section-title">Things I've<br><em>Actually Built</em></h2>
-    </div>
-
-    <!-- Featured Project -->
-    <div class="projects-grid fade-up">
-
-      <div class="project-card featured">
-        <div class="project-feat-left">
-          <div style="margin-bottom:0.5rem;">
-            <span class="project-lang lang-rust">Rust</span>
-            <span class="project-lang lang-sol" style="margin-left:6px;">ZK / STARKs</span>
-          </div>
-          <div class="project-title" style="font-size:1.5rem;">zkVM / STARK Prover — Built From Scratch</div>
-          <div class="project-desc" style="font-size:13px;max-width:480px;">An educational STARK proving system implemented from scratch in Rust to understand the complete prover-verifier pipeline at the implementation level. Covers finite-field arithmetic, polynomial interpolation, FFT/IFFT, low-degree extension, Merkle commitments, Fiat-Shamir transcripts, and FRI folding — working with execution traces, AIR constraints, composition polynomials, and low-degree testing.</div>
-          <div class="project-tags">
-            <span class="p-tag">STARKs</span>
-            <span class="p-tag">FRI</span>
-            <span class="p-tag">AIR</span>
-            <span class="p-tag">FFT</span>
-            <span class="p-tag">Finite Fields</span>
-            <span class="p-tag">Polynomial IOPs</span>
-          </div>
-          <div class="project-meta">
-            <span class="project-stars">Featured project · Built from scratch</span>
-            <a href="https://github.com/SrishtiCode/zkVM" target="_blank" class="project-link">View on GitHub</a>
-          </div>
-        </div>
-        <div class="project-feat-right">
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--orange);margin-bottom:0.5rem;">// prover pipeline sketch</div>
-          <code>
-            <span class="code-comment">// Prove correctness of an execution trace</span><br>
-            <span class="code-keyword">fn</span> <span class="code-fn">prove</span>(trace: <span class="code-type">Vec</span>&lt;FieldElement&gt;) -> StarkProof {<br>
-            &nbsp;&nbsp;<span class="code-keyword">let</span> poly = interpolate(&trace);<br>
-            &nbsp;&nbsp;<span class="code-keyword">let</span> lde = low_degree_extend(&poly);<br>
-            &nbsp;&nbsp;<span class="code-keyword">let</span> root = merkle_commit(&lde);<br>
-            &nbsp;&nbsp;<span class="code-keyword">let</span> comp = composition_poly(&poly, &constraints);<br>
-            &nbsp;&nbsp;fri_fold(comp, &<span class="code-keyword">mut</span> transcript)<br>
-            }
-          </code>
-        </div>
-      </div>
-
-      <!-- Project 2 -->
-      <a href="https://github.com/SrishtiCode/KZG-PCS" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">KZG Polynomial Commitment Scheme</div>
-        <div class="project-desc">Implemented a KZG polynomial commitment scheme from scratch in Rust — polynomial commitments, evaluation proofs, quotient polynomial construction, and pairing-based verification, using structured reference strings and bilinear pairings over BLS12-381.</div>
-        <div class="project-tags">
-          <span class="p-tag">KZG</span><span class="p-tag">Polynomial Commitments</span><span class="p-tag">BLS12-381</span><span class="p-tag">Bilinear Pairings</span><span class="p-tag">SRS / Trusted Setup</span>
-        </div>
-        <div class="project-meta">
-          <span class="project-stars">Built from scratch</span>
-          <span class="project-link">GitHub</span>
-        </div>
+        <div class="entry-desc">An educational STARK proving system implemented from scratch — finite-field arithmetic, FFT/IFFT, low-degree extension, Merkle commitments, Fiat-Shamir transcripts, and FRI folding. Working with execution traces, AIR constraints, and composition polynomials.</div>
+        <div class="entry-tags"><span>Rust</span><span>STARKs</span><span>FRI</span><span>AIR</span><span>Polynomial IOPs</span></div>
       </a>
 
-      <!-- Project 3 -->
-      <a href="https://github.com/SrishtiCode/evmdecode" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">evmdecode — EVM Transaction Analysis</div>
-        <div class="project-desc">A Rust toolkit implementing ABI calldata decoding, transaction simulation, bytecode disassembly, an 844-instruction EVM parser, and detection of Uniswap V2/V3 swaps, sandwich attacks, and arbitrage activity.</div>
-        <div class="project-tags">
-          <span class="p-tag">alloy-rs</span><span class="p-tag">tokio</span><span class="p-tag">EVM</span><span class="p-tag">MEV</span>
+      <a class="entry" href="https://github.com/SrishtiCode/KZG-PCS" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">KZG Polynomial Commitment Scheme</div>
+          <div class="entry-meta">built from scratch</div>
         </div>
-        <div class="project-meta">
-          <span class="project-stars">EVM tooling</span>
-          <span class="project-link">GitHub</span>
-        </div>
+        <div class="entry-desc">Polynomial commitments, evaluation proofs, quotient polynomial construction, and pairing-based verification — using structured reference strings and bilinear pairings over BLS12-381.</div>
+        <div class="entry-tags"><span>Rust</span><span>KZG</span><span>BLS12-381</span><span>Bilinear Pairings</span></div>
       </a>
 
-      <!-- Project 4 -->
-      <a href="https://github.com/SrishtiCode/ByteStore" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">ByteStore</div>
-        <div class="project-desc"> A persistent key-value store built in Rust from scratch. Implements a log-structured storage engine — every write is an append, reads resolve via an in-memory index, and stale entries are automatically garbage-collected through compaction.</div>
-        <div class="project-tags">
-          <span class="p-tag">serde</span><span class="p-tag">clap</span><span class="p-tag">log-structured</span><span class="p-tag">compaction</span><span class="p-tag">systems programming</span>
+      <a class="entry" href="https://github.com/SrishtiCode/evmdecode" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">evmdecode</div>
+          <div class="entry-meta">EVM tooling</div>
         </div>
-        <div class="project-meta">
-          <span class="project-stars">Built from scratch</span>
-          <span class="project-link">GitHub</span>
-        </div>
+        <div class="entry-desc">An EVM transaction analysis toolkit — ABI calldata decoding, transaction simulation, bytecode disassembly, an 844-instruction EVM parser, and detection of Uniswap swaps, sandwich attacks, and arbitrage activity.</div>
+        <div class="entry-tags"><span>Rust</span><span>alloy-rs</span><span>tokio</span><span>MEV</span></div>
       </a>
 
-      <!-- Project 5 -->
-      <a href="https://github.com/SrishtiCode/SPL-Token-Staking-Program" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Solana</span><span class="project-lang lang-rust">Rust</span></div>
-        <div class="project-title">SPL Token Staking Program</div>
-        <div class="project-desc">An on-chain staking contract where users deposit SPL tokens and earn yield over time. Includes lock-up periods, reward calculation, early withdrawal penalties, and cross-program invocations.</div>
-        <div class="project-tags">
-          <span class="p-tag">Anchor</span><span class="p-tag">SPL Token</span><span class="p-tag">PDAs</span><span class="p-tag">CPI</span>
+      <a class="entry" href="https://github.com/SrishtiCode/SPL-Token-Staking-Program" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">SPL Token Staking Program</div>
+          <div class="entry-meta">Solana</div>
         </div>
-        <div class="project-meta">
-          <span class="project-stars">Core DeFi primitive</span>
-          <span class="project-link">GitHub</span>
-        </div>
+        <div class="entry-desc">An on-chain staking contract — SPL token deposits, PDA-based access control, reward calculation, lock-up periods, early withdrawal penalties, and cross-program invocations.</div>
+        <div class="entry-tags"><span>Rust</span><span>Anchor</span><span>PDAs</span><span>CPI</span></div>
       </a>
 
-      <!-- Project 6 -->
-      <a href="https://github.com/SrishtiCode/async-proxy" target="_blank" class="project-card">
-        <div><span class="project-lang lang-rust">Rust</span></div>
-       <div class="project-title">Async HTTP Proxy</div>
-       <div class="project-desc"> A multi-threaded reverse proxy built on Tokio and Hyper. Each TCP connection runs in its own async task, with per-IP token bucket rate limiting and HTTPS tunneling via the CONNECT method.</div>
-        <div class="project-tags">
-          <span class="p-tag">tokio</span><span class="p-tag">hyper</span><span class="p-tag">async/await</span><span class="p-tag">rate limiting</span>
+      <a class="entry" href="https://github.com/SrishtiCode/ByteStore" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">ByteStore</div>
+          <div class="entry-meta">built from scratch</div>
         </div>
-        <div class="project-meta">
-          <span class="project-stars">Built from scratch</span>
-          <span class="project-link">GitHub</span>
+        <div class="entry-desc">A persistent key-value store built in Rust. Log-structured storage engine — every write is an append, reads resolve via an in-memory index, stale entries are garbage-collected through compaction.</div>
+        <div class="entry-tags"><span>Rust</span><span>serde</span><span>systems programming</span></div>
+      </a>
+
+      <a class="entry" href="https://github.com/SrishtiCode/async-proxy" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">Async HTTP Proxy</div>
+          <div class="entry-meta">built from scratch</div>
         </div>
+        <div class="entry-desc">A multi-threaded reverse proxy on Tokio and Hyper — per-IP token bucket rate limiting and HTTPS tunneling via the CONNECT method.</div>
+        <div class="entry-tags"><span>Rust</span><span>tokio</span><span>hyper</span></div>
       </a>
 
     </div>
+  </section>
 
-    <div style="margin-top:1.5rem;text-align:right;" class="fade-up">
-      <a href="https://github.com/SrishtiCode" target="_blank" class="btn-ghost">All Projects on GitHub ↗</a>
-    </div>
-  </div>
-</section>
+  <section id="research">
+    <div class="section-label">Research &amp; Notes</div>
+    <div class="entry-list">
 
-<!-- RESEARCH / AUDITS -->
-<section id="audits">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">04 — Research</div>
-      <h2 class="section-title">Proving Systems &amp;<br>Cryptography <em>Research</em></h2>
-    </div>
-    <div class="research-note fade-up"><span>Independent research write-ups</span> — proving-system deep dives, production ZK codebase studies, and cryptographic protocol analysis.</div>
-    <div class="filter-row fade-up" id="filters">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="zkvm">zkVM / Provers</button>
-      <button class="filter-btn" data-filter="crypto">Cryptography</button>
-      <button class="filter-btn" data-filter="ethereum">Ethereum</button>
-    </div>
-    <div class="cards-grid fade-up" id="research-grid">
-      <a href="https://github.com/SrishtiCode" target="_blank" class="audit-card" data-cat="zkvm">
-        <div><span class="card-cat cat-rust">zkVM / Provers</span><span class="card-tag">RISC-V zkVM</span></div>
-        <div class="card-title">zkSync Airbender — Prover Architecture Study</div>
-        <div class="card-desc">Studied the architecture and implementation of Airbender, a Rust-based RISC-V zkVM proving system. Traced execution and proving components to understand how ZK protocol concepts translate into production code.</div>
-        <div class="card-meta"><div class="protocol">zkSync / RISC-V</div><span class="card-link">Write-up</span></div>
-      </a>
-      <a href="https://github.com/SrishtiCode/zkVM" target="_blank" class="audit-card" data-cat="crypto">
-        <div><span class="card-cat cat-defi">Cryptography</span><span class="card-tag">FRI</span></div>
-        <div class="card-title">Building FRI From Scratch: Low-Degree Testing Explained</div>
-        <div class="card-desc">A from-first-principles breakdown of FRI folding — why low-degree testing works, how the commit-fold-query loop is structured, and how it plugs into the STARK proving pipeline.</div>
-        <div class="card-meta"><div class="protocol">FRI / STARKs</div><span class="card-link">Write-up</span></div>
-      </a>
-      <a href="https://github.com/SrishtiCode/KZG-PCS" target="_blank" class="audit-card" data-cat="crypto">
-        <div><span class="card-cat cat-defi">Cryptography</span><span class="card-tag">Pairings</span></div>
-        <div class="card-title">KZG Commitments — Trusted Setup and Pairing-Based Verification</div>
-        <div class="card-desc">Walks through how a structured reference string enables succinct polynomial opening proofs, and how bilinear pairings over BLS12-381 verify evaluations without revealing the polynomial.</div>
-        <div class="card-meta"><div class="protocol">KZG / BLS12-381</div><span class="card-link">Write-up</span></div>
-      </a>
-      <a href="#" class="audit-card" data-cat="crypto">
-        <div><span class="card-cat cat-staking">Cryptography</span><span class="card-tag">AIR</span></div>
-        <div class="card-title">AIR Constraints — From Execution Trace to Polynomial Constraints</div>
-        <div class="card-desc">How an execution trace becomes a set of algebraic constraints, why composition polynomials combine them, and how this differs from R1CS-style constraint systems.</div>
-        <div class="card-meta"><div class="protocol">AIR / STARKs</div><span class="card-link">Write-up</span></div>
-      </a>
-      <a href="#" class="audit-card" data-cat="crypto">
-        <div><span class="card-cat cat-infra">Cryptography</span><span class="card-tag">Comparison</span></div>
-        <div class="card-title">SNARK vs. STARK: A Practical Comparison</div>
-        <div class="card-desc">Trusted setup vs. transparency, proof size vs. verification cost, and where each proving system actually gets used in production today.</div>
-        <div class="card-meta"><div class="protocol">SNARKs / STARKs</div><span class="card-link">Write-up</span></div>
-      </a>
-      <a href="https://github.com/SrishtiCode/evmdecode" target="_blank" class="audit-card" data-cat="ethereum">
-        <div><span class="card-cat cat-rust">Ethereum</span><span class="card-tag">Differential Testing</span></div>
-        <div class="card-title">Ethereum Execution Spec Differential Testing</div>
-        <div class="card-desc">Investigated Ethereum execution behavior using execution-spec fixtures and differential testing — useful groundwork for understanding what a zkEVM prover actually needs to prove.</div>
-        <div class="card-meta"><div class="protocol">Ethereum / EVM</div><span class="card-link">Write-up</span></div>
-      </a>
-    </div>
-    <div style="margin-top:1.5rem;text-align:right;" class="fade-up"><a href="https://github.com/SrishtiCode" target="_blank" class="btn-ghost">All Write-ups on GitHub ↗</a></div>
-  </div>
-</section>
-
-<!-- BLOG -->
-<section id="blog">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">05 — Writing</div>
-      <h2 class="section-title">The Zero-Knowledge<br><em>Blog</em></h2>
-    </div>
-
-    <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-featured fade-up">
-      <div class="blog-featured-visual">
-        <div class="feat-code-block">
-          <span style="color:var(--orange);">// STARK prover, simplified</span><br>
-          <span style="color:var(--rust-light);">fn</span> <span style="color:var(--teal);">prove</span>(trace: Trace) -> Proof {<br>
-          &nbsp;&nbsp;<span style="color:var(--rust-light);">let</span> poly = interpolate(&trace);<br>
-          &nbsp;&nbsp;<span style="color:var(--rust-light);">let</span> lde = low_degree_extend(&poly);<br>
-          &nbsp;&nbsp;<span style="color:var(--rust-light);">let</span> root = merkle_commit(&lde);<br>
-          &nbsp;&nbsp;fri_fold(root, &<span style="color:var(--rust-light);">mut</span> transcript)<br>
-          }
+      <a class="entry" href="https://github.com/SrishtiCode" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">zkSync Airbender — Prover Architecture Study</div>
+          <div class="entry-meta">jun 2026</div>
         </div>
-      </div>
-      <div class="blog-featured-body">
-        <div>
-          <div class="feat-label"><span>STARKs</span><span class="featured-badge">Featured</span></div>
-          <div class="feat-title">How a STARK Prover Actually Works, End to End</div>
-          <div class="feat-excerpt">A first-principles walkthrough of the full STARK pipeline — turning an execution trace into a polynomial, extending it, committing via Merkle trees, and folding it down with FRI — written while building a prover from scratch.</div>
-        </div>
-        <div class="feat-footer">
-          <div class="feat-meta"><span>14 min read</span></div>
-          <div class="read-more">Read on Medium</div>
-        </div>
-      </div>
-    </a>
-
-    <div class="blog-grid fade-up">
-      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
-        <div class="blog-card-header"><span class="blog-topic-tag topic-evm">Polynomial Commitments</span><span class="blog-read-time">9 min</span></div>
-        <div class="blog-card-title">Polynomial Commitments Explained: From KZG to FRI</div>
-        <div class="blog-card-excerpt">Two very different ways to commit to a polynomial and prove things about it later — one relies on pairings and a trusted setup, the other on hashing and folding. Here's how each actually works.</div>
-        <div class="blog-card-footer"><span class="blog-date">June 2026</span><span class="blog-arrow">→</span></div>
+        <div class="entry-desc">Studied the architecture of Airbender, a Rust-based RISC-V zkVM, tracing execution and proving components to see how ZK protocol concepts translate into production code.</div>
       </a>
-      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
-        <div class="blog-card-header"><span class="blog-topic-tag topic-ctf">Finite Fields</span><span class="blog-read-time">7 min</span></div>
-        <div class="blog-card-title">Finite Fields and Why Every ZK Proof Needs Them</div>
-        <div class="blog-card-excerpt">Modular arithmetic, roots of unity, and why proving systems live inside a finite field instead of the real numbers — the foundation everything else in ZK is built on.</div>
-        <div class="blog-card-footer"><span class="blog-date">July 2026</span><span class="blog-arrow">→</span></div>
-      </a>
-      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
-        <div class="blog-card-header"><span class="blog-topic-tag topic-defi">SNARK vs STARK</span><span class="blog-read-time">8 min</span></div>
-        <div class="blog-card-title">SNARK vs. STARK: Choosing the Right Proof System</div>
-        <div class="blog-card-excerpt">Trusted setup vs. transparency, proof size vs. prover time, pairing-based vs. hash-based — a practical comparison of when each proving system actually makes sense.</div>
-        <div class="blog-card-footer"><span class="blog-date">July 2026</span><span class="blog-arrow">→</span></div>
-      </a>
-      <a href="https://medium.com/@rathisrishti" target="_blank" class="blog-card">
-        <div class="blog-card-header"><span class="blog-topic-tag topic-rust">Rust + ZK</span><span class="blog-read-time">10 min</span></div>
-        <div class="blog-card-title">Building a STARK Prover From Scratch in Rust: Lessons Learned</div>
-        <div class="blog-card-excerpt">What I got wrong the first time — field arithmetic overflow bugs, FFT edge cases, and why the Fiat-Shamir transcript is easier to mess up than it looks.</div>
-        <div class="blog-card-footer"><span class="blog-date">August 2026</span><span class="blog-arrow">→</span></div>
-      </a>
-    </div>
 
-    <div style="margin-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;" class="fade-up">
-      <span style="font-size:11px;color:var(--text-dim);">// zero-knowledge write-ups · more dropping soon</span>
-      <a href="https://medium.com/@rathisrishti" target="_blank" class="btn-ghost">Read All Posts on Medium ↗</a>
-    </div>
-  </div>
-</section>
-
-<!-- CHALLENGES -->
-<section id="challenges">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">06 — CTF Solutions</div>
-      <h2 class="section-title">Challenge<br><em>Writeups</em></h2>
-    </div>
-    <div class="challenges-tabs fade-up">
-      <button class="tab-btn active" onclick="switchTab('ethernaut')">Ethernaut</button>
-      <button class="tab-btn" onclick="switchTab('dvdefi')">Damn Vulnerable DeFi</button>
-    </div>
-    <div id="tab-ethernaut" class="tab-content active fade-up">
-      <div class="challenge-list">
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/Level0Solution.s.sol" target="_blank" class="challenge-item"><div class="ch-num">00</div><div class="ch-info"><div class="ch-name">Hello Ethernaut</div><div class="ch-topic">Basics · ABI Interaction</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/FallbackSolution.s.sol" target="_blank" class="challenge-item"><div class="ch-num">01</div><div class="ch-info"><div class="ch-name">Fallback</div><div class="ch-topic">Ownership · Fallback Functions</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/Telephone.s.sol" target="_blank" class="challenge-item"><div class="ch-num">04</div><div class="ch-info"><div class="ch-name">Telephone</div><div class="ch-topic">tx.origin vs msg.sender</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/DelegationSolution.s.sol" target="_blank" class="challenge-item"><div class="ch-num">06</div><div class="ch-info"><div class="ch-name">Delegation</div><div class="ch-topic">delegatecall · Storage Collision</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/ReentrancySolution.s.sol" target="_blank" class="challenge-item"><div class="ch-num">10</div><div class="ch-info"><div class="ch-name">Re-entrancy</div><div class="ch-topic">Classic Reentrancy Attack</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/PreservationSolution.s.sol" target="_blank" class="challenge-item"><div class="ch-num">16</div><div class="ch-info"><div class="ch-name">Preservation</div><div class="ch-topic">delegatecall · Slot Collision</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/Ethernaut-Solutions/blob/main/script/MotorbikeSolution.s.sol" target="_blank" class="challenge-item"><div class="ch-num">25</div><div class="ch-info"><div class="ch-name">Motorbike</div><div class="ch-topic">UUPS · Proxy Patterns</div></div><div class="ch-badge">Solved</div></a>
-      </div>
-      <div style="margin-top:1.5rem;text-align:right;"><a href="https://github.com/SrishtiCode/Ethernaut-Solutions" target="_blank" class="btn-ghost">All Ethernaut Solutions ↗</a></div>
-    </div>
-    <div id="tab-dvdefi" class="tab-content fade-up">
-      <div class="challenge-list">
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/unstoppable/Unstoppable.t.sol" target="_blank" class="challenge-item"><div class="ch-num">01</div><div class="ch-info"><div class="ch-name">Unstoppable</div><div class="ch-topic">Flash Loan · Assertion Breaking</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/naive-receiver/NaiveReceiver.t.sol" target="_blank" class="challenge-item"><div class="ch-num">02</div><div class="ch-info"><div class="ch-name">Naive Receiver</div><div class="ch-topic">Flash Loan · ETH Draining</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/side-entrance/SideEntrance.t.sol" target="_blank" class="challenge-item"><div class="ch-num">04</div><div class="ch-info"><div class="ch-name">Side Entrance</div><div class="ch-topic">Flash Loan · Balance Accounting</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/selfie/Selfie.t.sol" target="_blank" class="challenge-item"><div class="ch-num">06</div><div class="ch-info"><div class="ch-name">Selfie</div><div class="ch-topic">Flash Loan · Governance Hijack</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/compromised/Compromised.t.sol" target="_blank" class="challenge-item"><div class="ch-num">07</div><div class="ch-info"><div class="ch-name">Compromised</div><div class="ch-topic">Price Oracle · Off-chain Leakage</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/puppet/Puppet.t.sol" target="_blank" class="challenge-item"><div class="ch-num">09</div><div class="ch-info"><div class="ch-name">Puppet</div><div class="ch-topic">Uniswap v1 · Oracle Manipulation</div></div><div class="ch-badge">Solved</div></a>
-        <a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions/blob/main/test/backdoor/Backdoor.t.sol" target="_blank" class="challenge-item"><div class="ch-num">11</div><div class="ch-info"><div class="ch-name">Backdoor</div><div class="ch-topic">Gnosis Safe · Module Exploit</div></div><div class="ch-badge">Solved</div></a>
-      </div>
-      <div style="margin-top:1.5rem;text-align:right;"><a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions" target="_blank" class="btn-ghost">All DVDeFi Solutions ↗</a></div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact">
-  <div class="container">
-    <div class="section-header fade-up">
-      <div class="section-tag">07 — Contact</div>
-      <h2 class="section-title">Let's Build<br><em>Proving Systems</em></h2>
-    </div>
-    <div class="contact-inner">
-      <div class="contact-text fade-up">
-        <p class="contact-intro">Seeking Junior ZK Engineer, Prover Engineer, Cryptography Engineer, or Protocol Engineer opportunities where I can contribute to real proving systems and work alongside experienced ZK engineers. Happy to walk through any of the fundamentals above or the STARK prover code in detail.</p>
-        <div class="social-links">
-          <a href="https://github.com/SrishtiCode" target="_blank" class="social-link">
-            <div class="social-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></div>
-            <div class="social-detail"><span class="social-name">GitHub</span><span class="social-handle">SrishtiCode</span></div><span class="social-arrow">↗</span>
-          </a>
-          <a href="https://x.com/rRat1315" target="_blank" class="social-link">
-            <div class="social-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></div>
-            <div class="social-detail"><span class="social-name">Twitter / X</span><span class="social-handle">@rRat1315</span></div><span class="social-arrow">↗</span>
-          </a>
-          <a href="https://t.me/srishtirathi" target="_blank" class="social-link">
-            <div class="social-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></div>
-            <div class="social-detail"><span class="social-name">Telegram</span><span class="social-handle">@srishtirathi</span></div><span class="social-arrow">↗</span>
-          </a>
-          <a href="mailto:rathisrishti@gmail.com" class="social-link">
-            <div class="social-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
-            <div class="social-detail"><span class="social-name">Email</span><span class="social-handle">rathisrishti@gmail.com</span></div><span class="social-arrow">↗</span>
-          </a>
+      <a class="entry" href="https://github.com/SrishtiCode/zkVM" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">Building FRI From Scratch: Low-Degree Testing Explained</div>
+          <div class="entry-meta">may 2026</div>
         </div>
-      </div>
-      <div class="contact-right fade-up">
-        <div class="availability"><div class="avail-dot"></div><div class="avail-text">Open to Junior ZK / Prover / Cryptography Engineer roles</div></div>
-        <div class="info-panel" style="margin-top:1.5rem;">
-          <div class="info-panel-label">Quick Info</div>
-          <div class="info-panel-text">
-            <div class="info-panel-row"><span>ZK expertise:</span><br>STARKs, FRI, KZG, AIR, polynomial IOPs — implemented from scratch in Rust</div>
-            <div class="info-panel-row"><span>Research focus:</span><br>Production zkVM architecture (zkSync Airbender), Ethereum execution specs</div>
-            <div class="info-panel-row"><span>Response time:</span><br>Usually within 24 hours</div>
-            <div class="info-panel-row" style="margin-bottom:0;"><span>Available for:</span><br>Full-time junior roles · Collaboration · Technical discussions</div>
-          </div>
+        <div class="entry-desc">Why low-degree testing works, how the commit-fold-query loop is structured, and how it plugs into the STARK proving pipeline.</div>
+      </a>
+
+      <a class="entry" href="https://github.com/SrishtiCode/KZG-PCS" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">KZG Commitments — Trusted Setup and Pairing-Based Verification</div>
+          <div class="entry-meta">apr 2026</div>
         </div>
-        <div style="margin-top:1.5rem;padding:1.25rem;background:var(--bg-card);border:1px solid var(--border);">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.14em;color:var(--orange);margin-bottom:0.75rem;">I Work On</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span class="skill-tag rust">STARK provers</span>
-            <span class="skill-tag rust">KZG commitments</span>
-            <span class="skill-tag rust">Finite field arithmetic</span>
-            <span class="skill-tag">FRI / low-degree testing</span>
-            <span class="skill-tag">AIR constraint systems</span>
-            <span class="skill-tag teal">zkVM research</span>
-            <span class="skill-tag teal">EVM tooling</span>
-          </div>
+        <div class="entry-desc">How a structured reference string enables succinct polynomial opening proofs, verified via bilinear pairings over BLS12-381.</div>
+      </a>
+
+      <a class="entry" href="#">
+        <div class="entry-top">
+          <div class="entry-title">AIR Constraints — From Execution Trace to Polynomial Constraints</div>
+          <div class="entry-meta">mar 2026</div>
         </div>
-      </div>
+        <div class="entry-desc">How an execution trace becomes algebraic constraints, and why this differs from R1CS-style constraint systems.</div>
+      </a>
+
+      <a class="entry" href="#">
+        <div class="entry-top">
+          <div class="entry-title">SNARK vs. STARK: A Practical Comparison</div>
+          <div class="entry-meta">feb 2026</div>
+        </div>
+        <div class="entry-desc">Trusted setup vs. transparency, proof size vs. verification cost, and where each proving system gets used in production.</div>
+      </a>
+
     </div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-text"><span class="hl">Srishti</span> · Zero-Knowledge Engineer &amp; Rust Developer · Built for GitHub Pages</div>
-    <div class="footer-rs">no unsafe blocks were harmed in the making of this site</div>
-  </div>
-</footer>
+  <section id="writing">
+    <div class="section-label">Writing</div>
+    <div class="entry-list">
 
-<script>
-  function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
-    document.getElementById('tab-' + tab).classList.add('active');
-  }
+      <a class="entry" href="https://medium.com/@rathisrishti" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">How a STARK Prover Actually Works, End to End</div>
+          <div class="entry-meta">14 min</div>
+        </div>
+        <div class="entry-desc">Turning an execution trace into a polynomial, extending it, committing via Merkle trees, and folding it down with FRI — written while building a prover from scratch.</div>
+      </a>
 
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e, i) => {
-      if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 70);
-    });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+      <a class="entry" href="https://medium.com/@rathisrishti" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">Polynomial Commitments Explained: From KZG to FRI</div>
+          <div class="entry-meta">9 min</div>
+        </div>
+        <div class="entry-desc">Two ways to commit to a polynomial and prove things about it later — one relies on pairings and a trusted setup, the other on hashing and folding.</div>
+      </a>
 
-  document.querySelectorAll('#filters .filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#filters .filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const f = btn.dataset.filter;
-      document.querySelectorAll('#research-grid .audit-card').forEach(c => {
-        c.style.display = (f === 'all' || c.dataset.cat === f) ? '' : 'none';
-      });
-    });
-  });
-</script>
+      <a class="entry" href="https://medium.com/@rathisrishti" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">Finite Fields and Why Every ZK Proof Needs Them</div>
+          <div class="entry-meta">7 min</div>
+        </div>
+        <div class="entry-desc">Modular arithmetic, roots of unity, and why proving systems live inside a finite field instead of the real numbers.</div>
+      </a>
+
+      <a class="entry" href="https://medium.com/@rathisrishti" target="_blank">
+        <div class="entry-top">
+          <div class="entry-title">Building a STARK Prover From Scratch in Rust: Lessons Learned</div>
+          <div class="entry-meta">10 min</div>
+        </div>
+        <div class="entry-desc">What I got wrong the first time — field arithmetic overflow bugs, FFT edge cases, and a Fiat-Shamir transcript that's easier to mess up than it looks.</div>
+      </a>
+
+    </div>
+  </section>
+
+  <section id="ctf">
+    <div class="section-label">CTF</div>
+    <div class="ctf-row">
+      <div class="ctf-stat"><span class="num">18</span><span class="label">ETHERNAUT SOLVED</span></div>
+      <div class="ctf-stat"><span class="num">15</span><span class="label">DAMN VULNERABLE DEFI</span></div>
+      <div class="ctf-stat"><span class="num">TOP 1%</span><span class="label">TRYHACKME GLOBAL</span></div>
+    </div>
+    <div class="ctf-list">
+      <div><a href="https://github.com/SrishtiCode/Ethernaut-Solutions" target="_blank">Ethernaut solutions</a> <span class="tag">— reentrancy, delegatecall, proxy patterns</span></div>
+      <div><a href="https://github.com/SrishtiCode/DamnVulnDefiSolutions" target="_blank">Damn Vulnerable DeFi solutions</a> <span class="tag">— flash loans, oracle manipulation</span></div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="section-label">Contact</div>
+    <div class="contact-list">
+      <div><span class="k">email</span><a href="mailto:rathisrishti@gmail.com">rathisrishti@gmail.com</a></div>
+      <div><span class="k">github</span><a href="https://github.com/SrishtiCode" target="_blank">SrishtiCode</a></div>
+      <div><span class="k">twitter</span><a href="https://x.com/rRat1315" target="_blank">@rRat1315</a></div>
+      <div><span class="k">telegram</span><a href="https://t.me/srishtirathi" target="_blank">@srishtirathi</a></div>
+    </div>
+  </section>
+
+  <footer>
+    srishti rathi. zero-knowledge engineer. built with rust in mind.
+  </footer>
+
+</div>
+
 </body>
 </html>
