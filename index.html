@@ -8,19 +8,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-
-  :root {
-    --paper: #faf9f6;
-    --ink: #1a1a18;
-    --ink-soft: #56534c;
-    --ink-faint: #8b877d;
-    --accent: #1f3a5f;
-    --accent-soft: #3f5c82;
-    --rule: rgba(26,26,24,0.14);
-    --rule-soft: rgba(26,26,24,0.08);
-    --serif: 'Source Serif 4', Georgia, serif;
-    --mono: 'IBM Plex Mono', ui-monospace, monospace;
-  }
+  
+    :root {
+      --paper: #111111;
+      --ink: #eeeeea;
+      --ink-soft: #b5b5ae;
+      --ink-faint: #777770;
+    
+      --accent: #8eadd4;
+      --accent-soft: #6f91ba;
+    
+      --rule: rgba(255,255,255,0.15);
+      --rule-soft: rgba(255,255,255,0.08);
+    
+      --serif: 'Source Serif 4', Georgia, serif;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -35,7 +38,10 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  ::selection { background: var(--accent); color: var(--paper); }
+  ::selection {
+  background: #8eadd4;
+  color: #111111;
+  }
 
   a { color: var(--accent); text-decoration: none; }
   a:hover { color: var(--ink); }
