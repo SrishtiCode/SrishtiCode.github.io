@@ -1,1 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="KZG commitments — trusted setup and pairing-based verification, from structured reference string to succinct opening proofs." />
+  <title>KZG Commitments — Srishti Rathi</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper: #111111;
+      --ink: #eeeeea;
+      --ink-soft: #b5b5ae;
+      --ink-faint: #777770;
+      --accent: #8eadd4;
+      --rule: rgba(255,255,255,0.15);
+      --rule-soft: rgba(255,255,255,0.08);
+      --serif: "Source Serif 4", Georgia, serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 19px;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: var(--paper);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { color: var(--ink); }
+
+    .top-rule { border-top: 2px solid var(--ink); }
+
+    .wrap {
+      width: min(100% - 48px, 900px);
+      margin: 0 auto;
+    }
+
+    header {
+      padding: 38px 0 20px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .site-name {
+      font-size: 22px;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    .site-name a { color: var(--ink); }
+
+    nav {
+      font-family: var(--mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    nav a { color: var(--ink-soft); }
+    nav a:hover { color: var(--accent); }
+
+    article {
+      max-width: 720px;
+      padding: 72px 0 90px;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 66px);
+      line-height: 1.05;
+      letter-spacing: -.025em;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+
+    .subtitle {
+      color: var(--ink-soft);
+      font-size: 21px;
+      line-height: 1.55;
+      max-width: 650px;
+      margin-bottom: 24px;
+    }
+
+    .meta {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--ink-faint);
+      padding-bottom: 42px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    h2 {
+      font-size: 29px;
+      line-height: 1.25;
+      font-weight: 600;
+      margin: 58px 0 18px;
+      letter-spacing: -.01em;
+    }
+
+    h3 {
+      font-size: 21px;
+      margin: 34px 0 10px;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0 0 21px;
+      color: var(--ink-soft);
+    }
+
+    strong { color: var(--ink); }
+
+    code {
+      font-family: var(--mono);
+      font-size: .86em;
+      color: var(--ink);
+      background: rgba(255,255,255,.055);
+      padding: 2px 6px;
+    }
+
+    .flow {
+      margin: 30px 0;
+      padding: 22px 24px;
+      border: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 2;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .flow .arrow { color: var(--accent); }
+
+    .comparison {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 30px 0 38px;
+      font-size: 16px;
+    }
+
+    .comparison th,
+    .comparison td {
+      padding: 15px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--rule-soft);
+    }
+
+    .comparison th {
+      font-family: var(--mono);
+      color: var(--ink);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      border-bottom-color: var(--rule);
+    }
+
+    .comparison td {
+      color: var(--ink-soft);
+    }
+
+    .comparison td:first-child {
+      color: var(--ink);
+      width: 28%;
+    }
+
+    .note {
+      margin: 32px 0;
+      border-left: 2px solid var(--accent);
+      padding: 4px 0 4px 22px;
+      color: var(--ink-soft);
+      font-style: italic;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+      margin: 32px 0 38px;
+      padding: 26px 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .stat .num {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--accent);
+      display: block;
+      line-height: 1;
+    }
+
+    .stat .label {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--ink-faint);
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .takeaway {
+      margin-top: 54px;
+      padding: 28px 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .takeaway h2 { margin-top: 0; }
+
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 30px 0 60px;
+      font-family: var(--mono);
+      color: var(--ink-faint);
+      font-size: 12px;
+    }
+
+    @media (max-width: 650px) {
+      body { font-size: 17px; }
+      article { padding-top: 52px; }
+      h2 { font-size: 25px; }
+
+      .comparison {
+        font-size: 14px;
+        display: block;
+        overflow-x: auto;
+      }
+
+      .comparison th,
+      .comparison td {
+        min-width: 150px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="top-rule"></div>
+
+  <div class="wrap">
+    <header>
+      <div class="site-name">
+        <a href="../index.html">srishti rathi.</a>
+      </div>
+      <nav>
+        <a href="../index.html">← back to home</a>
+      </nav>
+    </header>
+
+    <article>
+      <div class="eyebrow">Technical Notes · Zero Knowledge</div>
+
+      <h1>KZG Commitments</h1>
+
+      <p class="subtitle">
+        How a structured reference string turns "prove you know a
+        polynomial" into a single group element, and how a pairing
+        equation lets a verifier check an opening in constant time.
+      </p>
+
+      <div class="meta">Srishti Rathi · Technical Notes · April 2026</div>
+
+      <h2>The problem a commitment solves</h2>
+
+      <p>
+        Say I have a polynomial and I want to convince you of two things
+        later: that I fixed it in advance and haven't changed it since,
+        and that it evaluates to some specific value at some specific
+        point — without ever sending you the whole polynomial. A
+        <strong>polynomial commitment scheme</strong> is exactly this: a
+        short, binding commitment now, and a small proof for each
+        evaluation claim later.
+      </p>
+
+      <div class="flow">
+        polynomial
+        <span class="arrow">→</span>
+        commitment (one group element)
+        <span class="arrow">→</span>
+        evaluation claim
+        <span class="arrow">→</span>
+        opening proof
+        <span class="arrow">→</span>
+        pairing check
+      </div>
+
+      <p>
+        <strong>KZG</strong> — named for Kate, Zaverucha, and Goldberg —
+        is one of the most widely used schemes for doing this, and it's
+        the commitment scheme behind Groth16, PLONK-style SNARKs, and
+        Ethereum's proto-danksharding blob commitments.
+      </p>
+
+      <h2>The structured reference string</h2>
+
+      <p>
+        KZG needs a shared setup before anyone commits to anything: a
+        <strong>structured reference string</strong> (SRS), which is a
+        sequence of powers of some secret value, each one multiplied
+        into a group generator — conceptually
+        <code>g, g^s, g^s², g^s³, …</code> up to whatever the maximum
+        polynomial degree needs to be.
+      </p>
+
+      <p>
+        The secret value <code>s</code> — sometimes called toxic waste
+        — must never be known to anyone after the setup finishes. If it
+        leaks, someone can forge false commitments and openings. This is
+        why KZG setups are usually run as multi-party ceremonies: many
+        participants each contribute randomness, and the setup stays
+        secure as long as at least one participant destroyed their
+        share honestly. No single party ever needs to be fully trusted
+        on their own.
+      </p>
+
+      <div class="stat-row">
+        <div class="stat">
+          <span class="num">1</span>
+          <span class="label">group element per commitment</span>
+        </div>
+        <div class="stat">
+          <span class="num">1</span>
+          <span class="label">group element per opening proof</span>
+        </div>
+        <div class="stat">
+          <span class="num">O(1)</span>
+          <span class="label">pairing checks to verify</span>
+        </div>
+      </div>
+
+      <h2>Committing and opening</h2>
+
+      <p>
+        Committing to a polynomial means evaluating it "in the exponent"
+        using the SRS — combining the SRS elements with the polynomial's
+        coefficients to produce a single group element. That one element
+        is binding: given the SRS, it's computationally infeasible to
+        find a different polynomial that produces the same commitment.
+      </p>
+
+      <p>
+        To later prove that the polynomial evaluates to some value at
+        some point, the prover uses a basic fact about polynomials — if
+        a polynomial takes a given value at a given point, then
+        subtracting that value leaves a polynomial with a root there,
+        which means it divides evenly by a simple linear factor. The
+        prover computes that quotient polynomial and commits to it. That
+        commitment to the quotient <em>is</em> the opening proof — again,
+        a single group element.
+      </p>
+
+      <div class="flow">
+        p(x) − y
+        <span class="arrow">→</span>
+        divisible by (x − z)
+        <span class="arrow">→</span>
+        quotient q(x)
+        <span class="arrow">→</span>
+        commit to q(x)
+        <span class="arrow">→</span>
+        opening proof
+      </div>
+
+      <h2>Why a pairing makes this checkable</h2>
+
+      <p>
+        The verifier can't just divide two group elements the way you'd
+        divide numbers, so KZG relies on a bilinear pairing — a function
+        that takes two group elements and maps them into a third group,
+        while respecting exponents in a way that lets multiplicative
+        relationships be checked "in the exponent."
+      </p>
+
+      <p>
+        Using a pairing, the verifier checks a single equation involving
+        the commitment, the opening proof, the claimed evaluation point,
+        and the claimed value. If that pairing equation holds, the
+        verifier is convinced the committed polynomial really does
+        evaluate to the claimed value at the claimed point — without
+        ever seeing the polynomial itself. This is what makes KZG
+        openings succinct: constant-size proofs, constant-time
+        verification, regardless of the polynomial's degree.
+      </p>
+
+      <h2>BLS12-381, briefly</h2>
+
+      <p>
+        KZG needs a pairing-friendly elliptic curve to work over, and
+        BLS12-381 is the curve most commonly paired with it in practice
+        — used across Ethereum's consensus layer and blob commitments,
+        and in most PLONK-style proving systems. Its main properties are
+        an efficient pairing operation and roughly 128 bits of security,
+        which is the combination that makes constant-size, fast-to-verify
+        proofs practical.
+      </p>
+
+      <h2>The trade-off, stated plainly</h2>
+
+      <table class="comparison">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>KZG</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Commitment size</td>
+            <td>One group element, regardless of polynomial degree</td>
+          </tr>
+          <tr>
+            <td>Opening proof size</td>
+            <td>One group element per evaluation</td>
+          </tr>
+          <tr>
+            <td>Verification</td>
+            <td>A constant number of pairing checks</td>
+          </tr>
+          <tr>
+            <td>Setup</td>
+            <td>Requires a structured reference string from a trusted (or multi-party) setup</td>
+          </tr>
+          <tr>
+            <td>Security assumption</td>
+            <td>Relies on elliptic-curve pairing hardness — not post-quantum</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="note">
+        This is the same trade-off that shows up whenever KZG is set
+        against a hash-based, transparent scheme like FRI: smaller,
+        faster-to-verify proofs in exchange for a setup that has to be
+        trusted, and a security assumption that a quantum computer
+        would eventually break.
+      </div>
+
+      <div class="takeaway">
+        <h2>Takeaway</h2>
+        <p>
+          KZG compresses "trust me, I know this polynomial and it
+          evaluates to this" into a single group element and a single
+          pairing check. The structured reference string is what makes
+          that compression possible — and also what makes the setup
+          ceremony the one part of the scheme that has to be trusted.
+        </p>
+        <p>
+          Everything downstream — small commitments, small proofs,
+          fast verification — falls out of treating polynomial division
+          as a fact that a pairing equation can check without ever
+          reconstructing the polynomial.
+        </p>
+      </div>
+    </article>
+
+    <footer>
+      srishti rathi. zero-knowledge engineering notes.
+    </footer>
+  </div>
+</body>
+</html>
