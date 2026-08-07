@@ -8,18 +8,25 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --paper: #111111;
-      --ink: #eeeeea;
-      --ink-soft: #b5b5ae;
-      --ink-faint: #777770;
-      --accent: #8eadd4;
-      --rule: rgba(255,255,255,0.15);
-      --rule-soft: rgba(255,255,255,0.08);
-      --serif: "Source Serif 4", Georgia, serif;
+      --paper: #f6f5f1;
+      --paper-raised: #fdfcfa;
+      --ink: #16171c;
+      --ink-soft: #4c4e58;
+      --ink-faint: #92939c;
+      --rule: #e2e0d8;
+      --rule-soft: #ece9e0;
+      --accent: #4b3b7c;
+      --accent-soft: #6e5a9e;
+      --accent-tint: #efebf8;
+      --teal: #2f6f62;
+      --teal-tint: #e8f1ee;
+
+      --serif: "Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+      --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
     }
 
@@ -30,15 +37,15 @@
     body {
       background: var(--paper);
       color: var(--ink);
-      font-family: var(--serif);
-      font-size: 19px;
+      font-family: var(--sans);
+      font-size: 17px;
       line-height: 1.75;
       -webkit-font-smoothing: antialiased;
     }
 
     ::selection {
-      background: var(--accent);
-      color: var(--paper);
+      background: var(--accent-tint);
+      color: var(--accent);
     }
 
     a {
@@ -46,7 +53,7 @@
       text-decoration: none;
     }
 
-    a:hover { color: var(--ink); }
+    a:hover { color: var(--accent-soft); }
 
     .top-rule { border-top: 2px solid var(--ink); }
 
@@ -66,9 +73,10 @@
     }
 
     .site-name {
-      font-size: 22px;
+      font-family: var(--serif);
+      font-size: 20px;
       font-style: italic;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .site-name a { color: var(--ink); }
@@ -90,7 +98,7 @@
 
     .eyebrow {
       font-family: var(--mono);
-      color: var(--ink-faint);
+      color: var(--teal);
       text-transform: uppercase;
       letter-spacing: .13em;
       font-size: 12px;
@@ -98,17 +106,19 @@
     }
 
     h1 {
-      font-size: clamp(42px, 7vw, 66px);
-      line-height: 1.05;
-      letter-spacing: -.025em;
-      font-weight: 600;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(38px, 6.5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -.02em;
       margin-bottom: 22px;
+      color: var(--ink);
     }
 
     .subtitle {
       color: var(--ink-soft);
-      font-size: 21px;
-      line-height: 1.55;
+      font-size: 19px;
+      line-height: 1.6;
       max-width: 650px;
       margin-bottom: 24px;
     }
@@ -122,58 +132,67 @@
     }
 
     h2 {
-      font-size: 29px;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 27px;
       line-height: 1.25;
-      font-weight: 600;
       margin: 58px 0 18px;
       letter-spacing: -.01em;
+      color: var(--ink);
     }
 
     h3 {
-      font-size: 21px;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 20px;
       margin: 34px 0 10px;
-      font-weight: 600;
+      color: var(--ink);
     }
 
     p {
       margin: 0 0 21px;
       color: var(--ink-soft);
+      font-size: 16.5px;
     }
 
-    strong { color: var(--ink); }
+    strong { color: var(--ink); font-weight: 600; }
+    em { font-style: italic; color: var(--accent); }
 
     code {
       font-family: var(--mono);
-      font-size: .86em;
-      color: var(--ink);
-      background: rgba(255,255,255,.055);
+      font-size: .85em;
+      color: var(--accent);
+      background: var(--accent-tint);
       padding: 2px 6px;
+      border-radius: 3px;
     }
 
     .flow {
       margin: 30px 0;
-      padding: 22px 24px;
+      padding: 20px 22px;
       border: 1px solid var(--rule);
+      background: var(--paper-raised);
+      border-radius: 4px;
       font-family: var(--mono);
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--ink-soft);
       line-height: 2;
       overflow-x: auto;
       white-space: nowrap;
     }
 
-    .flow .arrow { color: var(--accent); }
+    .flow .arrow { color: var(--teal); }
 
     .comparison {
       width: 100%;
       border-collapse: collapse;
       margin: 30px 0 38px;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .comparison th,
     .comparison td {
-      padding: 15px 14px;
+      padding: 14px 14px;
       text-align: left;
       vertical-align: top;
       border-bottom: 1px solid var(--rule-soft);
@@ -182,10 +201,10 @@
     .comparison th {
       font-family: var(--mono);
       color: var(--ink);
-      font-size: 12px;
+      font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: .05em;
-      border-bottom-color: var(--rule);
+      border-bottom: 1px solid var(--rule);
     }
 
     .comparison td {
@@ -194,13 +213,16 @@
 
     .comparison td:first-child {
       color: var(--ink);
+      font-weight: 500;
       width: 28%;
     }
 
     .note {
       margin: 32px 0;
       border-left: 2px solid var(--accent);
-      padding: 4px 0 4px 22px;
+      background: var(--accent-tint);
+      padding: 16px 20px;
+      border-radius: 0 4px 4px 0;
       color: var(--ink-soft);
       font-style: italic;
     }
@@ -235,9 +257,8 @@
 
     .takeaway {
       margin-top: 54px;
-      padding: 28px 0;
+      padding: 30px 0 4px;
       border-top: 1px solid var(--rule);
-      border-bottom: 1px solid var(--rule);
     }
 
     .takeaway h2 { margin-top: 0; }
@@ -251,12 +272,12 @@
     }
 
     @media (max-width: 650px) {
-      body { font-size: 17px; }
+      body { font-size: 16px; }
       article { padding-top: 52px; }
-      h2 { font-size: 25px; }
+      h2 { font-size: 23px; }
 
       .comparison {
-        font-size: 14px;
+        font-size: 13px;
         display: block;
         overflow-x: auto;
       }
@@ -298,10 +319,10 @@
       <h2>The problem a commitment solves</h2>
 
       <p>
-        Say I have a polynomial and I want to convince you of two things
+        Say I have a polynomial and want to convince you of two things
         later: that I fixed it in advance and haven't changed it since,
         and that it evaluates to some specific value at some specific
-        point — without ever sending you the whole polynomial. A
+        point — all without ever sending you the whole polynomial. A
         <strong>polynomial commitment scheme</strong> is exactly this: a
         short, binding commitment now, and a small proof for each
         evaluation claim later.
@@ -321,8 +342,8 @@
 
       <p>
         <strong>KZG</strong> — named for Kate, Zaverucha, and Goldberg —
-        is one of the most widely used schemes for doing this, and it's
-        the commitment scheme behind Groth16, PLONK-style SNARKs, and
+        is one of the most widely used schemes for doing this. It's the
+        commitment scheme behind Groth16, PLONK-style SNARKs, and
         Ethereum's proto-danksharding blob commitments.
       </p>
 
@@ -330,22 +351,22 @@
 
       <p>
         KZG needs a shared setup before anyone commits to anything: a
-        <strong>structured reference string</strong> (SRS), which is a
-        sequence of powers of some secret value, each one multiplied
-        into a group generator — conceptually
+        <strong>structured reference string</strong> (SRS) — a sequence
+        of powers of some secret value, each one multiplied into a group
+        generator. Conceptually, that's
         <code>g, g^s, g^s², g^s³, …</code> up to whatever the maximum
-        polynomial degree needs to be.
+        polynomial degree requires.
       </p>
 
       <p>
-        The secret value <code>s</code> — sometimes called toxic waste
-        — must never be known to anyone after the setup finishes. If it
-        leaks, someone can forge false commitments and openings. This is
+        The secret value <code>s</code> — sometimes called toxic waste —
+        must never be known to anyone once the setup finishes. If it
+        leaks, someone can forge false commitments and openings. That's
         why KZG setups are usually run as multi-party ceremonies: many
         participants each contribute randomness, and the setup stays
-        secure as long as at least one participant destroyed their
-        share honestly. No single party ever needs to be fully trusted
-        on their own.
+        secure as long as even one of them destroyed their share
+        honestly. No single party ever needs to be fully trusted on
+        their own.
       </p>
 
       <div class="stat-row">
@@ -374,14 +395,14 @@
       </p>
 
       <p>
-        To later prove that the polynomial evaluates to some value at
-        some point, the prover uses a basic fact about polynomials — if
-        a polynomial takes a given value at a given point, then
-        subtracting that value leaves a polynomial with a root there,
-        which means it divides evenly by a simple linear factor. The
-        prover computes that quotient polynomial and commits to it. That
-        commitment to the quotient <em>is</em> the opening proof — again,
-        a single group element.
+        To later prove the polynomial evaluates to some value at some
+        point, the prover leans on a basic fact about polynomials: if a
+        polynomial takes a given value at a given point, subtracting
+        that value leaves a polynomial with a root there — which means
+        it divides evenly by a simple linear factor. The prover computes
+        that quotient polynomial and commits to it. That commitment to
+        the quotient <em>is</em> the opening proof — again, a single
+        group element.
       </p>
 
       <div class="flow">
@@ -401,32 +422,32 @@
       <p>
         The verifier can't just divide two group elements the way you'd
         divide numbers, so KZG relies on a bilinear pairing — a function
-        that takes two group elements and maps them into a third group,
-        while respecting exponents in a way that lets multiplicative
+        that takes two group elements and maps them into a third group
+        while respecting exponents, in a way that lets multiplicative
         relationships be checked "in the exponent."
       </p>
 
       <p>
         Using a pairing, the verifier checks a single equation involving
         the commitment, the opening proof, the claimed evaluation point,
-        and the claimed value. If that pairing equation holds, the
-        verifier is convinced the committed polynomial really does
-        evaluate to the claimed value at the claimed point — without
-        ever seeing the polynomial itself. This is what makes KZG
-        openings succinct: constant-size proofs, constant-time
-        verification, regardless of the polynomial's degree.
+        and the claimed value. If that equation holds, the verifier is
+        convinced the committed polynomial really does evaluate to the
+        claimed value at the claimed point — without ever seeing the
+        polynomial itself. This is what makes KZG openings succinct:
+        constant-size proofs and constant-time verification, regardless
+        of the polynomial's degree.
       </p>
 
       <h2>BLS12-381, briefly</h2>
 
       <p>
         KZG needs a pairing-friendly elliptic curve to work over, and
-        BLS12-381 is the curve most commonly paired with it in practice
-        — used across Ethereum's consensus layer and blob commitments,
-        and in most PLONK-style proving systems. Its main properties are
-        an efficient pairing operation and roughly 128 bits of security,
-        which is the combination that makes constant-size, fast-to-verify
-        proofs practical.
+        BLS12-381 is the one most commonly paired with it in practice —
+        used across Ethereum's consensus layer and blob commitments, and
+        in most PLONK-style proving systems. Its main properties are an
+        efficient pairing operation and roughly 128 bits of security,
+        which together make constant-size, fast-to-verify proofs
+        practical.
       </p>
 
       <h2>The trade-off, stated plainly</h2>
@@ -466,8 +487,8 @@
         This is the same trade-off that shows up whenever KZG is set
         against a hash-based, transparent scheme like FRI: smaller,
         faster-to-verify proofs in exchange for a setup that has to be
-        trusted, and a security assumption that a quantum computer
-        would eventually break.
+        trusted, and a security assumption a quantum computer would
+        eventually break.
       </div>
 
       <div class="takeaway">
@@ -480,10 +501,10 @@
           ceremony the one part of the scheme that has to be trusted.
         </p>
         <p>
-          Everything downstream — small commitments, small proofs,
-          fast verification — falls out of treating polynomial division
-          as a fact that a pairing equation can check without ever
-          reconstructing the polynomial.
+          Everything downstream — small commitments, small proofs, fast
+          verification — falls out of treating polynomial division as a
+          fact a pairing equation can check without ever reconstructing
+          the polynomial.
         </p>
       </div>
     </article>
