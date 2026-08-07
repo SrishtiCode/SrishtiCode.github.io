@@ -3,23 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="zkSync Airbender — a study of a production RISC-V zkVM's prover architecture." />
+  <meta name="description" content="zkSync Airbender — a study of a production RISC-V zkVM's prover architecture, verified against the matter-labs/zksync-airbender source." />
   <title>zkSync Airbender — Srishti Rathi</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --paper: #111111;
-      --ink: #eeeeea;
-      --ink-soft: #b5b5ae;
-      --ink-faint: #777770;
-      --accent: #8eadd4;
-      --rule: rgba(255,255,255,0.15);
-      --rule-soft: rgba(255,255,255,0.08);
-      --serif: "Source Serif 4", Georgia, serif;
+      --paper: #f6f5f1;
+      --paper-raised: #fdfcfa;
+      --ink: #16171c;
+      --ink-soft: #4c4e58;
+      --ink-faint: #92939c;
+      --rule: #e2e0d8;
+      --rule-soft: #ece9e0;
+      --accent: #4b3b7c;
+      --accent-soft: #6e5a9e;
+      --accent-tint: #efebf8;
+      --teal: #2f6f62;
+      --teal-tint: #e8f1ee;
+
+      --serif: "Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+      --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
     }
 
@@ -30,15 +37,15 @@
     body {
       background: var(--paper);
       color: var(--ink);
-      font-family: var(--serif);
-      font-size: 19px;
+      font-family: var(--sans);
+      font-size: 17px;
       line-height: 1.75;
       -webkit-font-smoothing: antialiased;
     }
 
     ::selection {
-      background: var(--accent);
-      color: var(--paper);
+      background: var(--accent-tint);
+      color: var(--accent);
     }
 
     a {
@@ -46,7 +53,7 @@
       text-decoration: none;
     }
 
-    a:hover { color: var(--ink); }
+    a:hover { color: var(--accent-soft); }
 
     .top-rule { border-top: 2px solid var(--ink); }
 
@@ -66,9 +73,10 @@
     }
 
     .site-name {
-      font-size: 22px;
+      font-family: var(--serif);
+      font-size: 20px;
       font-style: italic;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .site-name a { color: var(--ink); }
@@ -90,7 +98,7 @@
 
     .eyebrow {
       font-family: var(--mono);
-      color: var(--ink-faint);
+      color: var(--teal);
       text-transform: uppercase;
       letter-spacing: .13em;
       font-size: 12px;
@@ -98,17 +106,19 @@
     }
 
     h1 {
-      font-size: clamp(42px, 7vw, 66px);
-      line-height: 1.05;
-      letter-spacing: -.025em;
-      font-weight: 600;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: clamp(38px, 6.5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: -.02em;
       margin-bottom: 22px;
+      color: var(--ink);
     }
 
     .subtitle {
       color: var(--ink-soft);
-      font-size: 21px;
-      line-height: 1.55;
+      font-size: 19px;
+      line-height: 1.6;
       max-width: 650px;
       margin-bottom: 24px;
     }
@@ -121,59 +131,71 @@
       border-bottom: 1px solid var(--rule);
     }
 
+    .meta a { color: var(--ink-faint); border-bottom: 1px solid var(--rule); }
+    .meta a:hover { color: var(--accent); border-color: var(--accent); }
+
     h2 {
-      font-size: 29px;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 27px;
       line-height: 1.25;
-      font-weight: 600;
       margin: 58px 0 18px;
       letter-spacing: -.01em;
+      color: var(--ink);
     }
 
     h3 {
-      font-size: 21px;
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 20px;
       margin: 34px 0 10px;
-      font-weight: 600;
+      color: var(--ink);
     }
 
     p {
       margin: 0 0 21px;
       color: var(--ink-soft);
+      font-size: 16.5px;
     }
 
-    strong { color: var(--ink); }
+    strong { color: var(--ink); font-weight: 600; }
+    em { font-style: italic; color: var(--accent); }
 
     code {
       font-family: var(--mono);
-      font-size: .86em;
-      color: var(--ink);
-      background: rgba(255,255,255,.055);
+      font-size: .85em;
+      color: var(--accent);
+      background: var(--accent-tint);
       padding: 2px 6px;
+      border-radius: 3px;
     }
 
     .flow {
       margin: 30px 0;
-      padding: 22px 24px;
+      padding: 20px 22px;
       border: 1px solid var(--rule);
+      background: var(--paper-raised);
+      border-radius: 4px;
       font-family: var(--mono);
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--ink-soft);
       line-height: 2;
       overflow-x: auto;
       white-space: nowrap;
     }
 
-    .flow .arrow { color: var(--accent); }
+    .flow .arrow { color: var(--teal); }
 
     .comparison {
       width: 100%;
       border-collapse: collapse;
       margin: 30px 0 38px;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .comparison th,
     .comparison td {
-      padding: 15px 14px;
+      padding: 14px 14px;
       text-align: left;
       vertical-align: top;
       border-bottom: 1px solid var(--rule-soft);
@@ -182,10 +204,10 @@
     .comparison th {
       font-family: var(--mono);
       color: var(--ink);
-      font-size: 12px;
+      font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: .05em;
-      border-bottom-color: var(--rule);
+      border-bottom: 1px solid var(--rule);
     }
 
     .comparison td {
@@ -194,13 +216,16 @@
 
     .comparison td:first-child {
       color: var(--ink);
-      width: 28%;
+      font-weight: 500;
+      width: 26%;
     }
 
     .note {
       margin: 32px 0;
       border-left: 2px solid var(--accent);
-      padding: 4px 0 4px 22px;
+      background: var(--accent-tint);
+      padding: 16px 20px;
+      border-radius: 0 4px 4px 0;
       color: var(--ink-soft);
       font-style: italic;
     }
@@ -217,7 +242,7 @@
 
     .stat .num {
       font-family: var(--mono);
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 500;
       color: var(--accent);
       display: block;
@@ -235,9 +260,8 @@
 
     .takeaway {
       margin-top: 54px;
-      padding: 28px 0;
+      padding: 30px 0 4px;
       border-top: 1px solid var(--rule);
-      border-bottom: 1px solid var(--rule);
     }
 
     .takeaway h2 { margin-top: 0; }
@@ -251,12 +275,12 @@
     }
 
     @media (max-width: 650px) {
-      body { font-size: 17px; }
+      body { font-size: 16px; }
       article { padding-top: 52px; }
-      h2 { font-size: 25px; }
+      h2 { font-size: 23px; }
 
       .comparison {
-        font-size: 14px;
+        font-size: 13px;
         display: block;
         overflow-x: auto;
       }
@@ -290,58 +314,64 @@
       <p class="subtitle">
         A study of Airbender's prover architecture — how a production
         RISC-V zkVM turns the ideas I built from scratch (fields, AIR,
-        FRI) into a system fast enough to prove real Ethereum blocks.
+        FRI) into a system fast enough to prove real Ethereum-scale
+        execution.
       </p>
 
-      <div class="meta">Srishti Rathi · Prover Architecture Study · June 2026</div>
+      <div class="meta">
+        Srishti Rathi · Prover Architecture Study · June 2026 ·
+        source: <a href="https://github.com/matter-labs/zksync-airbender" target="_blank" rel="noopener">matter-labs/zksync-airbender</a>
+      </div>
 
       <h2>Why I studied it</h2>
 
       <p>
         After building a STARK prover and a KZG commitment scheme from
-        scratch, the natural next question was: how do these same ideas
+        scratch, the natural next question was how these same ideas
         hold up once proving speed, hardware, and real workloads enter
-        the picture? Airbender is ZKsync's RISC-V proving system, and
-        it was a useful case study because it is transparent, STARK-based,
-        and open source — the same family of proof system I'd already
-        implemented a small version of, just under very different
-        performance constraints.
+        the picture. Airbender is Matter Labs' RISC-V proving system —
+        it serves as the proving layer for ZKsync OS, generating
+        cryptographic proofs that a batch of RISC-V execution was
+        carried out correctly. It's transparent, STARK-based, and open
+        source: the same family of proof system I'd already built a
+        small version of, just under very different performance
+        constraints.
       </p>
 
       <div class="stat-row">
         <div class="stat">
-          <span class="num">32I+M</span>
-          <span class="label">RISC-V ISA</span>
+          <span class="num">RV32IM</span>
+          <span class="label">full ISA config</span>
         </div>
         <div class="stat">
           <span class="num">M31</span>
-          <span class="label">field</span>
+          <span class="label">field (2³¹−1)</span>
         </div>
         <div class="stat">
-          <span class="num">STARK/FRI</span>
-          <span class="label">proof system</span>
+          <span class="num">2³⁶</span>
+          <span class="label">max cycles / program</span>
         </div>
       </div>
 
       <h2>What Airbender proves</h2>
 
       <p>
-        Airbender generates ZK proofs of RISC-V bytecode execution. Instead
-        of hand-writing circuits for each program, any code compiled down
-        to the RISC-V 32-bit integer instruction set — with multiplication
-        extensions — can be run through the same proving pipeline. That
-        includes EVM bytecode, WASM, or ordinary Rust, since it all
-        eventually becomes RISC-V. In ZKsync's newer stack this is the
-        basis for a "what you execute is what you prove" design: the
-        same RISC-V trace that ran the program is the one that gets
-        proven, rather than maintaining a second, separate circuit
-        implementation of the VM.
+        ZKsync's execution layer, ZKsync OS, is a Rust state-transition
+        function compiled to two targets: an x86 build that runs in the
+        sequencer for fast transaction processing, and a RISC-V build
+        that feeds into Airbender. Both compilations execute the same
+        code on the same inputs, so their results are deterministically
+        identical — which is what lets a RISC-V replay of the batch
+        stand in as something provable, without a second, hand-written
+        circuit implementation of the VM.
       </p>
 
       <div class="flow">
-        program (EVM / WASM / Rust)
+        ZKsync OS (Rust)
         <span class="arrow">→</span>
         compiled to RISC-V
+        <span class="arrow">→</span>
+        deterministic replay
         <span class="arrow">→</span>
         execution trace
         <span class="arrow">→</span>
@@ -361,38 +391,91 @@
       <p>
         My own prover used a field chosen mostly for clarity while
         learning. Airbender is built over the Mersenne31 prime field,
-        chosen specifically because its arithmetic maps efficiently onto
-        modern hardware — a reminder that field selection is itself a
-        performance decision, not just a correctness one.
+        2³¹−1, chosen specifically because it maps efficiently onto
+        32-bit RISC-V values and modern hardware arithmetic — a
+        reminder that field selection is itself a performance decision,
+        not just a correctness one. The constraint system itself is AIR
+        with polynomial degree capped at 2, which keeps proving
+        tractable.
       </p>
 
-      <h3>Execution model</h3>
+      <h3>Chunking and recursion</h3>
       <p>
-        The prover follows a fairly standard fetch–decode–execute loop
-        over the RISC-V program, but processes it in large chunks —
-        on the order of millions of cycles at a time — and stitches
-        proofs of separate chunks back together using memory arguments.
-        This is the same "trace → constraints" shape as the STARK I
-        built, just decomposed to make long executions tractable instead
-        of proving one flat trace end to end.
+        Long-running programs are automatically split into chunks of
+        roughly four million cycles each, up to 2³⁶ cycles total per
+        execution. Each chunk is proven independently and linked back
+        to its neighbors through memory and delegation arguments, which
+        is what makes chunk proving parallelizable in the first place.
+      </p>
+      <p>
+        After the base-layer proofs exist, Airbender applies recursive
+        compression: the verifier's own code is compiled to RISC-V and
+        proven recursively, folding many proofs into one at each layer.
+        A final pass through <code>zkos_wrapper</code> converts the
+        format and compresses further into a single SNARK suitable for
+        on-chain verification — so verification cost stays constant no
+        matter how long the original execution ran.
       </p>
 
-      <h3>Machine variants</h3>
+      <div class="flow">
+        base proofs (per chunk)
+        <span class="arrow">→</span>
+        recursive proving (verifier as RISC-V)
+        <span class="arrow">→</span>
+        final recursive proof
+        <span class="arrow">→</span>
+        zkos_wrapper
+        <span class="arrow">→</span>
+        one SNARK, on-chain
+      </div>
+
+      <h3>No exception handling, by design</h3>
       <p>
-        Rather than one fixed circuit, Airbender uses configurable
-        "machine variants" that enable or disable feature sets depending
-        on context — general-purpose execution versus specialized
-        recursive proving, for instance. It's a modular take on
-        constraint design: the AIR isn't one monolithic thing, it's
+        Airbender's RISC-V environment runs bare-metal, in machine
+        mode, and deliberately skips runtime exception handling. If a
+        program attempts a misaligned memory access or an invalid
+        instruction, there's no trap — the polynomial constraints
+        simply become unsatisfiable, and proof generation fails. That
+        trusted-code model is a very different way of enforcing
+        correctness than the exception handling I'd assumed was
+        necessary, and it simplifies the circuit considerably.
+      </p>
+
+      <h3>Delegation circuits</h3>
+      <p>
+        Heavy operations aren't proven inline. When a program needs
+        something like 256-bit arithmetic or hashing, it triggers a
+        delegation call through a custom control-status register,
+        handing the work off to a specialized circuit — a BigInt
+        delegation for U256 and elliptic-curve operations, a BLAKE2
+        delegation for the hashing behind Merkle commitments, and a
+        non-determinism oracle for supplying external inputs. These
+        delegated circuits still participate in the same memory
+        consistency checks as ordinary execution, but they can be
+        proven in parallel with the main trace.
+      </p>
+
+      <h3>Machine configurations</h3>
+      <p>
+        Rather than one fixed circuit, Airbender offers multiple
+        machine configurations. A full RV32IM configuration — including
+        signed multiplication and division — handles general-purpose
+        kernel code like ZKsync OS itself, while stripped-down "minimal"
+        machines drop byte-level memory operations and complex
+        arithmetic to shrink circuit size for recursion layers, where
+        the verifier code has simpler requirements. It's a modular take
+        on constraint design: the AIR isn't one monolithic thing, it's
         assembled per use case.
       </p>
 
-      <h3>CPU/GPU split</h3>
+      <h3>Where the GPU actually helps</h3>
       <p>
-        In GPU configurations, the CPU handles RISC-V simulation and
-        trace generation while the GPU takes over witness generation and
-        the heavier proving steps. Splitting the pipeline this way lets
-        each processor do the part of the work it's actually suited for.
+        GPU acceleration currently speeds up proving at the base and
+        recursion levels. The final wrapping step still runs on CPU,
+        since it needs roughly 150GB of RAM — a reminder that "GPU
+        proving" in a real system is usually a partial optimization
+        applied where it pays off most, not a blanket rewrite of the
+        whole pipeline.
       </p>
 
       <h2>Where it lands, practically</h2>
@@ -409,53 +492,62 @@
           <tr>
             <td>Purpose</td>
             <td>Learning the proving pipeline end to end</td>
-            <td>Proving real RISC-V programs at production scale</td>
+            <td>Proving ZKsync OS execution at production scale</td>
           </tr>
           <tr>
             <td>Field</td>
             <td>Chosen for simplicity</td>
-            <td>Mersenne31, chosen for arithmetic efficiency</td>
+            <td>Mersenne31 (2³¹−1), chosen for hardware efficiency</td>
           </tr>
           <tr>
             <td>Trace handling</td>
             <td>One flat execution trace</td>
-            <td>Chunked traces stitched via memory arguments</td>
+            <td>~4M-cycle chunks, linked via memory arguments</td>
           </tr>
           <tr>
             <td>Circuit design</td>
             <td>Fixed AIR</td>
-            <td>Configurable machine variants</td>
+            <td>Configurable machine variants + delegation circuits</td>
+          </tr>
+          <tr>
+            <td>Error handling</td>
+            <td>Not modeled</td>
+            <td>Invalid ops make constraints unsatisfiable, not trapped</td>
           </tr>
           <tr>
             <td>Hardware target</td>
             <td>Single-threaded CPU</td>
-            <td>CPU/GPU split, scales across GPUs</td>
+            <td>GPU for base/recursion proving, CPU for final wrap</td>
           </tr>
         </tbody>
       </table>
 
       <div class="note">
-        The interesting part wasn't that Airbender uses different concepts
-        — it's almost entirely the same vocabulary I already had: traces,
-        AIR, commitments, FRI. What's different is every decision has been
-        pushed toward throughput, because the target is proving Ethereum
-        blocks in the time it takes to read this sentence.
+        The interesting part wasn't that Airbender uses different
+        concepts — it's almost entirely the same vocabulary I already
+        had: traces, AIR, commitments, FRI. What's different is that
+        every decision has been pushed toward throughput and toward
+        making incorrect execution literally unprovable, because the
+        target is proving real batches of blockchain execution, not a
+        toy program.
       </div>
 
       <div class="takeaway">
         <h2>Takeaway</h2>
         <p>
           Building a STARK prover from scratch gave me the vocabulary.
-          Reading Airbender showed me what that vocabulary looks like
-          under real constraints — chunked traces instead of one flat
-          pass, a field picked for hardware efficiency instead of
-          convenience, and constraint systems that are assembled per
-          use case instead of fixed in advance.
+          Reading Airbender's source showed me what that vocabulary
+          looks like under real constraints — chunked, recursively
+          compressed proofs instead of one flat pass, a field picked
+          for hardware efficiency instead of convenience, delegation
+          circuits that offload expensive operations, and a machine
+          model where invalid execution doesn't error, it just becomes
+          unprovable.
         </p>
         <p>
           The gap between an educational prover and a production one
-          isn't the theory. It's every decision made once speed, memory,
-          and hardware stop being optional.
+          isn't the theory. It's every decision made once speed,
+          memory, and hardware stop being optional.
         </p>
       </div>
     </article>
