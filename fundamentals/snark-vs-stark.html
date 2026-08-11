@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNARK vs. STARK — Srishti Rathi</title>
+<meta name="description" content="SNARK vs. STARK from first principles: interactive proofs, polynomial commitments, trusted setup, transparency, soundness, zero knowledge, proof size, verification, recursion, and proving-system architecture.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+
+/* ---------- Fiat-Shamir additions ---------- */
+.protocol-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.protocol-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.protocol-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.protocol-flow .arrow{color:var(--ink-dim);}
+.protocol-flow .challenge{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.transcript{
+  margin:1.5rem 0;
+  padding:16px 18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.transcript .k{color:var(--teal);}
+.transcript .v{color:var(--purple);}
+@media (max-width:780px){
+  .protocol-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Witness / public-input additions ---------- */
+.input-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.input-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.input-card .value{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--purple);
+}
+.data-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.data-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.data-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.data-flow .private{
+  border-color:var(--purple);
+}
+.data-flow .public{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.data-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .data-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Arithmetic constraints additions ---------- */
+.constraint-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.constraint-card .formula{
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:13px;
+}
+.constraint-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.constraint-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.constraint-flow .field{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.constraint-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .constraint-flow .row{font-size:11px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>SNARK vs. STARK</em></h1>
+  <p class="dek">from “prove this computation” to polynomial commitments, trusted setup, transparency, proof size, verification, recursion, and real proving-system architecture</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="starting-point">
+  <h2>Start with the actual problem</h2>
+
+  <p>Suppose Alice performs a computation and obtains a result.</p>
+
+  <div class="math-box">
+    <div class="formula">program(input) = output</div>
+  </div>
+
+  <p>Bob wants confidence that Alice really performed the computation correctly.</p>
+
+  <p>The obvious solution is for Bob to execute the program himself.</p>
+
+  <div class="math-box">
+    <div class="formula">Bob → execute program → check output</div>
+  </div>
+
+  <p>But that can be expensive when the computation is enormous.</p>
+
+  <p>A zero-knowledge proof system changes the problem:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">prover</span>
+      <span class="arrow">→</span>
+      <span class="node">large computation</span>
+      <span class="arrow">→</span>
+      <span class="node field">small proof</span>
+      <span class="arrow">→</span>
+      <span class="node">verifier</span>
+    </div>
+  </div>
+
+  <p>The verifier checks the proof instead of repeating the entire computation.</p>
+
+  <p><strong>SNARKs and STARKs are families of cryptographic proof systems that solve this general problem.</strong></p>
+</section>
+
+<section id="one-sentence">
+  <h2>The shortest possible distinction</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">SNARK</div>
+      <p><strong>Succinct Non-interactive Argument of Knowledge.</strong> Many SNARK constructions achieve very small proofs and fast verification, often using polynomial commitments based on elliptic-curve cryptography.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">STARK</div>
+      <p><strong>Scalable Transparent Argument of Knowledge.</strong> STARKs use transparent setup and hash-based polynomial proof techniques such as FRI, making them naturally suited to large trace-based computations.</p>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>Important:</strong> SNARK and STARK are not single algorithms. They describe families of constructions with different assumptions, representations, commitment schemes, and performance characteristics.
+  </div>
+</section>
+
+<section id="words">
+  <h2>What do the words actually mean?</h2>
+
+  <h3>SNARK</h3>
+
+  <div class="math-box">
+    <div class="formula">S — Succinct</div>
+    <div class="formula">N — Non-interactive</div>
+    <div class="formula">A — Argument</div>
+    <div class="formula">K — Knowledge</div>
+  </div>
+
+  <p><strong>Succinct</strong> means the proof can be much smaller than the computation being proved.</p>
+
+  <p><strong>Non-interactive</strong> means the final proof can be verified without an ongoing back-and-forth conversation between prover and verifier. In practical constructions, Fiat–Shamir is often used to turn an interactive protocol into a non-interactive one.</p>
+
+  <p><strong>Argument</strong> generally means computational soundness: a computationally bounded cheating prover should not be able to convince the verifier of a false statement except with negligible probability.</p>
+
+  <p><strong>Knowledge</strong> means the proof is intended to demonstrate knowledge of a witness satisfying the statement, under the construction's precise knowledge assumptions.</p>
+
+  <h3>STARK</h3>
+
+  <div class="math-box">
+    <div class="formula">S — Scalable</div>
+    <div class="formula">T — Transparent</div>
+    <div class="formula">A — Argument</div>
+    <div class="formula">K — Knowledge</div>
+  </div>
+
+  <p><strong>Scalable</strong> refers to proof systems designed to handle very large computations efficiently, with prover complexity intended to scale well with computation size.</p>
+
+  <p><strong>Transparent</strong> means the protocol does not require a secret toxic-waste setup parameter. Publicly specified randomness and hash functions can be used instead.</p>
+</section>
+
+<section id="zk">
+  <h2>Where does zero knowledge enter?</h2>
+
+  <p>Imagine the statement:</p>
+
+  <div class="math-box">
+    <div class="formula">“I know x such that f(x) = y.”</div>
+  </div>
+
+  <p>The prover wants to convince the verifier that such an <code class="inline">x</code> exists without revealing <code class="inline">x</code>.</p>
+
+  <p>We therefore distinguish:</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">public input</div>
+      <p>The information the verifier is allowed to know.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">private witness</div>
+      <p>The secret information that makes the statement true.</p>
+    </div>
+  </div>
+
+  <p>A ZK proof aims to convince the verifier about correctness while revealing no additional useful information about the private witness beyond what is implied by the public statement.</p>
+</section>
+
+<section id="statement-witness">
+  <h2>Statement, witness, computation</h2>
+
+  <p>Most modern proof systems can be viewed through the relation:</p>
+
+  <div class="math-box">
+    <div class="formula">R(x, w) = true</div>
+  </div>
+
+  <p>where:</p>
+
+  <div class="math-box">
+    <div class="formula">x = public statement</div>
+    <div class="formula">w = private witness</div>
+  </div>
+
+  <p>The prover knows <code class="inline">w</code> and wants to prove:</p>
+
+  <div class="math-box">
+    <div class="formula">∃ w : R(x,w) = true</div>
+  </div>
+
+  <p>For a computation, the relation can encode the fact that an execution trace, circuit witness, or other representation satisfies all required constraints.</p>
+</section>
+
+<section id="constraints">
+  <h2>First bridge: computation becomes constraints</h2>
+
+  <p>Neither a SNARK nor a STARK directly proves an arbitrary program written in Rust or Python.</p>
+
+  <p>There is an intermediate mathematical representation.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">program</span>
+      <span class="arrow">→</span>
+      <span class="node">computation</span>
+      <span class="arrow">→</span>
+      <span class="node field">constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>For circuit-oriented systems, this might be R1CS or another circuit constraint system.</p>
+
+  <p>For STARK-style systems, this is commonly an execution trace plus AIR constraints.</p>
+</section>
+
+<section id="r1cs">
+  <h2>SNARK path: R1CS as an example</h2>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x · y</div>
+  </div>
+
+  <p>We can create a witness vector:</p>
+
+  <div class="math-box">
+    <div class="formula">W = [1, x, y, z]</div>
+  </div>
+
+  <p>An R1CS constraint can enforce:</p>
+
+  <div class="math-box">
+    <div class="formula">(A · W)(B · W) = C · W</div>
+  </div>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">A = [0,1,0,0]</div>
+    <div class="formula">B = [0,0,1,0]</div>
+    <div class="formula">C = [0,0,0,1]</div>
+  </div>
+
+  <p>which gives:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y = z</div>
+  </div>
+
+  <p>A complete circuit produces many such constraints.</p>
+</section>
+
+<section id="air">
+  <h2>STARK path: AIR as an example</h2>
+
+  <p>A zkVM naturally produces a sequence of machine states:</p>
+
+  <div class="math-box">
+    <div class="formula">state₀ → state₁ → state₂ → … → stateₙ</div>
+  </div>
+
+  <p>These states form an execution trace.</p>
+
+  <p>AIR then describes the rules that every valid transition must satisfy.</p>
+
+  <p>For a toy register:</p>
+
+  <div class="math-box">
+    <div class="formula">rᵢ₊₁ = rᵢ + 1</div>
+    <div class="formula">rᵢ₊₁ − rᵢ − 1 = 0</div>
+  </div>
+
+  <p>Boundary constraints specify where the computation starts or ends.</p>
+
+  <div class="math-box">
+    <div class="formula">r₀ = 2</div>
+  </div>
+
+  <p>This trace-oriented structure is one reason STARKs fit naturally with zkVM architectures.</p>
+</section>
+
+<section id="polynomials">
+  <h2>The common language: polynomials</h2>
+
+  <p>Although SNARK and STARK constructions can look very different, polynomial algebra is central to many of them.</p>
+
+  <p>A polynomial is:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + … + aₙxⁿ</div>
+  </div>
+
+  <p>A proving system can transform computation into polynomial statements and then prove that those statements hold.</p>
+
+  <p>This is the deeper connection:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">computation</span>
+      <span class="arrow">→</span>
+      <span class="node">constraints</span>
+      <span class="arrow">→</span>
+      <span class="node field">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+</section>
+
+<section id="commitments">
+  <h2>Polynomial commitments</h2>
+
+  <p>Suppose the prover has a polynomial:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x)</div>
+  </div>
+
+  <p>The verifier should be able to reason about this polynomial without receiving all of its coefficients.</p>
+
+  <p>A polynomial commitment provides a compact cryptographic commitment to <code class="inline">f</code>.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">KZG-style</div>
+      <p>Uses algebraic commitments based on elliptic curves and pairings. A structured reference string is commonly required.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">FRI-style</div>
+      <p>Uses hash commitments to evaluations and recursively reduces polynomial degree through folding.</p>
+    </div>
+  </div>
+
+  <p>This is one of the most important architectural differences between many pairing-based SNARKs and STARKs.</p>
+</section>
+
+<section id="kzg">
+  <h2>KZG: the pairing-based path</h2>
+
+  <p>Let the polynomial be:</p>
+
+  <div class="math-box">
+    <div class="formula">f(X) = a₀ + a₁X + … + aₙXⁿ</div>
+  </div>
+
+  <p>Conceptually, a KZG commitment uses a secret setup value <code class="inline">s</code> and publishes group elements related to powers of it.</p>
+
+  <div class="math-box">
+    <div class="formula">[1]G, [s]G, [s²]G, …</div>
+  </div>
+
+  <p>The commitment can then be formed conceptually as:</p>
+
+  <div class="math-box">
+    <div class="formula">C = [f(s)]G</div>
+  </div>
+
+  <p>The verifier does not learn <code class="inline">s</code>. The cryptographic structure allows the verifier to check an evaluation proof using pairings.</p>
+
+  <div class="note-box">
+    <strong>Important:</strong> this is a conceptual explanation. Concrete KZG schemes have precise group, scalar-field, subgroup, serialization, and pairing requirements.
+  </div>
+</section>
+
+<section id="trusted-setup">
+  <h2>What is the trusted setup?</h2>
+
+  <p>A trusted setup is a protocol that generates public parameters containing secret randomness that must not remain known to an attacker.</p>
+
+  <p>For a simple conceptual setup:</p>
+
+  <div class="math-box">
+    <div class="formula">secret s → setup ceremony → public powers of s</div>
+  </div>
+
+  <p>If the toxic secret is destroyed correctly, users can safely use the public parameters.</p>
+
+  <p>The problem is not that every SNARK requires a trusted setup.</p>
+
+  <p>The accurate statement is:</p>
+
+  <div class="constraint-card">
+    <div class="label">precise distinction</div>
+    <div class="formula">Some SNARK constructions require a trusted setup; other SNARK constructions use transparent or different setup models.</div>
+  </div>
+
+  <p>Similarly, the STARK family is characterized by transparency and does not rely on a secret toxic-waste parameter in the same way.</p>
+</section>
+
+<section id="fri">
+  <h2>FRI: the STARK path</h2>
+
+  <p>FRI stands for <strong>Fast Reed–Solomon Interactive Oracle Proof of Proximity</strong>.</p>
+
+  <p>The high-level goal is to convince the verifier that a function represented by evaluations is close to a low-degree polynomial.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="math-box">
+    <div class="formula">high-degree candidate → fold → smaller-degree candidate → fold → …</div>
+  </div>
+
+  <p>At each stage, the prover commits to the relevant evaluations, and verifier challenges determine how the folding proceeds.</p>
+
+  <p>Fiat–Shamir can remove the need for an interactive verifier by deriving challenges from the transcript.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">polynomial evaluations</span>
+      <span class="arrow">→</span>
+      <span class="node">Merkle commitment</span>
+      <span class="arrow">→</span>
+      <span class="node field">challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">fold</span>
+      <span class="arrow">→</span>
+      <span class="node">repeat</span>
+    </div>
+  </div>
+</section>
+
+<section id="merkle">
+  <h2>Why Merkle trees appear in STARKs</h2>
+
+  <p>Suppose the prover has a huge list of field-element evaluations:</p>
+
+  <div class="math-box">
+    <div class="formula">v₀, v₁, v₂, …, vₙ</div>
+  </div>
+
+  <p>Hashing each value gives leaves of a Merkle tree.</p>
+
+  <div class="math-box">
+    <div class="formula">leaves → hashes → parent hashes → … → Merkle root</div>
+  </div>
+
+  <p>The root is a compact commitment to the entire list.</p>
+
+  <p>Later, the prover can reveal selected values together with Merkle authentication paths.</p>
+
+  <p>The verifier checks that the revealed values belong to the committed dataset without downloading the entire list.</p>
+</section>
+
+<section id="transparency">
+  <h2>Transparency</h2>
+
+  <p>Transparency means the verifier does not have to trust a secret setup contribution.</p>
+
+  <p>A STARK-style system can use publicly specified:</p>
+
+  <ul>
+    <li>finite fields;</li>
+    <li>hash functions;</li>
+    <li>evaluation domains;</li>
+    <li>protocol parameters;</li>
+    <li>Fiat–Shamir transcript rules.</li>
+  </ul>
+
+  <p>There is no secret <code class="inline">s</code> that must be generated and destroyed as part of the core commitment mechanism.</p>
+
+  <div class="note-box">
+    <strong>Transparent does not mean “no cryptography.”</strong> STARKs still rely on cryptographic hash assumptions and the security of the underlying algebraic proof protocol.
+  </div>
+</section>
+
+<section id="proof-size">
+  <h2>Proof size</h2>
+
+  <p>One of the most visible practical differences is proof size.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">many pairing-based SNARKs</div>
+      <p>Can produce extremely small proofs, often roughly constant-sized with respect to the number of constraints, depending on the construction.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">STARKs</div>
+      <p>Proofs are generally larger because they contain hash-based commitments, authentication paths, query information, and FRI data.</p>
+    </div>
+  </div>
+
+  <p>This creates a classic engineering trade-off:</p>
+
+  <div class="math-box">
+    <div class="formula">smaller proof ↔ more algebraic / pairing-heavy machinery</div>
+    <div class="formula">larger proof ↔ transparent hash-based machinery</div>
+  </div>
+</section>
+
+<section id="verification">
+  <h2>Verification</h2>
+
+  <p>The verifier should perform substantially less work than re-running the original computation.</p>
+
+  <p>For a pairing-based SNARK, verification may involve a small number of elliptic-curve operations and pairings, depending on the construction.</p>
+
+  <p>For a STARK, verification typically involves:</p>
+
+  <ul>
+    <li>hash computations;</li>
+    <li>Merkle authentication checks;</li>
+    <li>field arithmetic;</li>
+    <li>FRI verification;</li>
+    <li>constraint evaluations at queried points.</li>
+  </ul>
+
+  <p>Both approaches aim for verification that is much cheaper than recomputing the full computation.</p>
+</section>
+
+<section id="prover">
+  <h2>Prover cost</h2>
+
+  <p>The prover is usually the party doing the expensive work.</p>
+
+  <p>A simplified picture is:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">large computation</span>
+      <span class="arrow">→</span>
+      <span class="node">expensive algebra</span>
+      <span class="arrow">→</span>
+      <span class="node field">proof</span>
+    </div>
+  </div>
+
+  <p>STARK provers often benefit from highly parallelizable operations such as:</p>
+
+  <ul>
+    <li>large-scale field arithmetic;</li>
+    <li>FFT/NTT-like transforms;</li>
+    <li>hashing;</li>
+    <li>Merkle tree construction;</li>
+    <li>FRI folding.</li>
+  </ul>
+
+  <p>Pairing-based SNARK provers also perform substantial work, commonly involving multiscalar multiplication, polynomial operations, and commitment-specific computations.</p>
+</section>
+
+<section id="security">
+  <h2>Security assumptions</h2>
+
+  <p>This is one of the most important differences.</p>
+
+  <h3>Pairing-based SNARKs</h3>
+
+  <p>Many pairing-based SNARKs rely on algebraic assumptions related to elliptic-curve groups and their discrete-logarithm-style hardness.</p>
+
+  <p>The exact assumption depends on the construction.</p>
+
+  <h3>STARKs</h3>
+
+  <p>STARKs primarily rely on collision resistance and related security properties of cryptographic hash functions, together with the soundness of the underlying algebraic proof protocol.</p>
+
+  <div class="note-box">
+    <strong>Do not oversimplify this to “SNARKs use elliptic curves and STARKs use hashes.”</strong> That is a useful beginner's mental model for common constructions, but the families are broader than those two implementation choices.
+  </div>
+</section>
+
+<section id="postquantum">
+  <h2>Post-quantum considerations</h2>
+
+  <p>Many commonly used pairing-based SNARK constructions rely on elliptic-curve assumptions that are vulnerable to sufficiently powerful quantum computers using Shor's algorithm.</p>
+
+  <p>Hash-based STARK constructions do not rely on elliptic-curve discrete logarithms in the same way, so they are generally regarded as having a more direct path toward post-quantum security, with appropriate hash-function security margins.</p>
+
+  <p>This does not mean “STARKs are automatically post-quantum secure.” The concrete protocol and parameters still matter.</p>
+</section>
+
+<section id="recursion">
+  <h2>Recursion</h2>
+
+  <p>A recursive proof verifies another proof inside a proof.</p>
+
+  <div class="math-box">
+    <div class="formula">proof₁ + proof₂ + … → recursive proof</div>
+  </div>
+
+  <p>This is useful when a system wants to compress or aggregate many computations.</p>
+
+  <p>Recursion can be built for both SNARK and STARK families, but the engineering techniques differ.</p>
+
+  <p>Pairing-friendly curves can make some recursive SNARK constructions efficient. STARK systems can use their algebraic and hash-based structure to build recursive or proof-composition systems as well.</p>
+</section>
+
+<section id="aggregation">
+  <h2>Aggregation</h2>
+
+  <p>Suppose a blockchain has many transactions, each with a proof.</p>
+
+  <div class="math-box">
+    <div class="formula">proof₁, proof₂, proof₃, …, proofₙ</div>
+  </div>
+
+  <p>Instead of verifying every proof independently, a system may aggregate them into a smaller number of proofs.</p>
+
+  <p>This is important for rollups and scalable blockchain systems.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">many proofs</span>
+      <span class="arrow">→</span>
+      <span class="node field">aggregation / recursion</span>
+      <span class="arrow">→</span>
+      <span class="node">compact verification</span>
+    </div>
+  </div>
+</section>
+
+<section id="snark-types">
+  <h2>Not every SNARK is the same</h2>
+
+  <p>This distinction matters when reading ZK papers.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">Groth16</div>
+      <p>A famous pairing-based zk-SNARK with very small proofs and efficient verification, but with circuit-specific setup requirements.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">PLONK-style systems</div>
+      <p>Use polynomial-based arithmetization and can support more flexible circuit settings. Different variants have different setup and commitment choices.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">transparent SNARKs</div>
+      <p>Some SNARK constructions avoid a traditional trusted setup, showing that “SNARK = trusted setup” is not a universal definition.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">STARK systems</div>
+      <p>Use transparent, typically hash-based polynomial proof machinery and often pair naturally with AIR and execution traces.</p>
+    </div>
+  </div>
+</section>
+
+<section id="same-computation">
+  <h2>The same computation through both lenses</h2>
+
+  <p>Suppose we want to prove:</p>
+
+  <div class="math-box">
+    <div class="formula">out = (a + b) · (c + d)</div>
+  </div>
+
+  <h3>Circuit / R1CS style</h3>
+
+  <div class="math-box">
+    <div class="formula">t₁ = a + b</div>
+    <div class="formula">t₂ = c + d</div>
+    <div class="formula">out = t₁ · t₂</div>
+  </div>
+
+  <p>Then convert those relationships into R1CS-style constraints.</p>
+
+  <h3>Trace / AIR style</h3>
+
+  <p>If this expression is part of a long-running machine execution, record the relevant machine state at each step and define transition constraints that describe how the state changes.</p>
+
+  <p>The two approaches prove the same logical statement, but organize the algebra differently.</p>
+</section>
+
+<section id="comparison">
+  <h2>SNARK vs STARK at a glance</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>SNARK family</th>
+        <th>STARK family</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Meaning</td>
+        <td>Succinct Non-interactive Argument of Knowledge</td>
+        <td>Scalable Transparent Argument of Knowledge</td>
+      </tr>
+      <tr>
+        <td>Proof size</td>
+        <td>Often extremely small in pairing-based constructions</td>
+        <td>Generally larger</td>
+      </tr>
+      <tr>
+        <td>Transparency</td>
+        <td>Depends on construction</td>
+        <td>Core design characteristic</td>
+      </tr>
+      <tr>
+        <td>Trusted setup</td>
+        <td>Some constructions require it</td>
+        <td>No secret toxic-waste setup in the core STARK approach</td>
+      </tr>
+      <tr>
+        <td>Common commitment</td>
+        <td>KZG or other algebraic commitments in many constructions</td>
+        <td>Hash/Merkle commitments + FRI in common constructions</td>
+      </tr>
+      <tr>
+        <td>Common representation</td>
+        <td>Circuits / R1CS / PLONK-like arithmetizations</td>
+        <td>AIR / execution traces</td>
+      </tr>
+      <tr>
+        <td>Elliptic curves</td>
+        <td>Common in pairing-based SNARKs</td>
+        <td>Not required by the core STARK approach</td>
+      </tr>
+      <tr>
+        <td>Hash usage</td>
+        <td>May be used, depending on construction</td>
+        <td>Central to common transparent constructions</td>
+      </tr>
+      <tr>
+        <td>Post-quantum path</td>
+        <td>Depends strongly on construction</td>
+        <td>Hash-based assumptions provide a more direct path</td>
+      </tr>
+      <tr>
+        <td>zkVM fit</td>
+        <td>Possible</td>
+        <td>Very natural for trace-based zkVMs</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="why-bigger-proof">
+  <h2>Why are STARK proofs usually bigger?</h2>
+
+  <p>A useful intuition is that STARKs expose more of the low-degree testing machinery to the verifier.</p>
+
+  <p>The proof may contain information associated with:</p>
+
+  <ul>
+    <li>Merkle roots;</li>
+    <li>queried evaluation values;</li>
+    <li>Merkle authentication paths;</li>
+    <li>FRI commitments;</li>
+    <li>FRI query responses;</li>
+    <li>final low-degree information.</li>
+  </ul>
+
+  <p>A pairing-based SNARK can compress a large amount of algebraic information into a small number of elliptic-curve group elements.</p>
+
+  <p>That is why comparing only proof size can be misleading: the systems make different cryptographic trade-offs.</p>
+</section>
+
+<section id="why-snarks-small">
+  <h2>Why can some SNARKs be so small?</h2>
+
+  <p>Pairing-based constructions exploit algebraic structure in elliptic-curve groups.</p>
+
+  <p>A verifier can check a compact collection of group elements and pairing equations that encode the correctness of a much larger computation.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="math-box">
+    <div class="formula">huge computation → algebraic encoding → tiny group-element proof</div>
+  </div>
+
+  <p>The price is that the construction may depend on stronger algebraic assumptions and, for some schemes, trusted setup.</p>
+</section>
+
+<section id="rust">
+  <h2>Rust: the difference at the representation level</h2>
+
+  <details open>
+    <summary>Educational R1CS vs trace-style AIR</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// R1CS-style thinking:</span>
+<span class="c">// explicitly describe relationships among witness variables.</span>
+
+<span class="k">let</span> witness = [1, x, y, z];
+
+<span class="c">// x * y = z</span>
+<span class="k">let</span> a = [0, 1, 0, 0];
+<span class="k">let</span> b = [0, 0, 1, 0];
+<span class="k">let</span> c = [0, 0, 0, 1];
+
+<span class="c">// AIR-style thinking:</span>
+<span class="c">// record repeated machine states and constrain transitions.</span>
+
+<span class="k">let</span> trace = [
+    State { pc: 0, r0: 2, r1: 3, r2: 0 },
+    State { pc: 4, r0: 2, r1: 3, r2: 5 },
+];
+
+<span class="c">// Conceptual transition:</span>
+<span class="c">// next.r2 = current.r0 + current.r1</span>
+<span class="c">// next.pc = current.pc + 4</span></code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>The code is intentionally small. The real cryptographic machinery comes later: field elements, polynomial evaluation, commitments, transcript challenges, proof generation, and verification.</p>
+</section>
+
+<section id="rollups">
+  <h2>Why this matters for blockchains</h2>
+
+  <p>A rollup may execute many transactions away from the base chain and then provide a proof that the resulting state transition is correct.</p>
+
+  <div class="math-box">
+    <div class="formula">many transactions → execute → prove → verify → update state</div>
+  </div>
+
+  <p>The base chain does not need to replay every computation if it can efficiently verify the proof.</p>
+
+  <p>This is one of the major reasons proof systems matter for blockchain scalability.</p>
+</section>
+
+<section id="zkvm">
+  <h2>SNARKs and STARKs in zkVMs</h2>
+
+  <p>A zkVM tries to prove ordinary machine execution.</p>
+
+  <p>The conceptual pipeline is:</p>
+
+  <div class="math-box">
+    <div class="formula">program → VM execution → trace → constraints → polynomial proof → verifier</div>
+  </div>
+
+  <p>For a trace-based STARK architecture:</p>
+
+  <div class="math-box">
+    <div class="formula">execution trace → AIR → composition polynomial → Merkle commitments → FRI</div>
+  </div>
+
+  <p>A SNARK-based zkVM may instead transform the machine execution into a circuit or another arithmetization:</p>
+
+  <div class="math-box">
+    <div class="formula">execution → circuit / constraints → polynomial commitment → SNARK proof</div>
+  </div>
+
+  <p>The same high-level objective can therefore be achieved using substantially different proving architectures.</p>
+</section>
+
+<section id="tradeoffs">
+  <h2>The real engineering trade-off</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">SNARK advantage</div>
+      <p>Very compact proofs can be excellent when proof bandwidth and on-chain verification cost are critical.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">SNARK cost</div>
+      <p>Some constructions require trusted setup and/or elliptic-curve assumptions, and circuit engineering can be complex.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">STARK advantage</div>
+      <p>Transparent setup, hash-based commitments, strong scalability characteristics, and a natural trace model for large computations.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">STARK cost</div>
+      <p>Proofs are typically larger and hash/FRI verification can require more data and computation than tiny pairing-based proofs.</p>
+    </div>
+  </div>
+</section>
+
+<section id="misconceptions">
+  <h2>Common misconceptions</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">“SNARK means trusted setup.”</div>
+      <p>Not universally. Some SNARK constructions are transparent or use different setup models.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“STARK means no setup at all.”</div>
+      <p>STARKs are transparent with respect to secret setup parameters, but they still have public protocol parameters and cryptographic assumptions.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“STARKs do not use polynomials.”</div>
+      <p>Polynomial algebra is central to the common STARK construction, especially AIR and FRI.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“SNARKs are always smaller and faster.”</div>
+      <p>Proof size and performance depend on the concrete proving system, circuit, hardware, recursion strategy, and verification environment.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“STARK = FRI.”</div>
+      <p>FRI is an important component of common STARK constructions, but STARK is the broader proof-system family.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“A proof hides everything.”</div>
+      <p>Zero knowledge hides the witness information specified by the security definition. Public inputs and the statement remain public.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline">
+  <h2>Put everything together</h2>
+
+  <h3>Typical pairing-based SNARK-style mental model</h3>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">program</span>
+      <span class="arrow">→</span>
+      <span class="node">circuit</span>
+      <span class="arrow">→</span>
+      <span class="node">R1CS / arithmetization</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node field">KZG / commitment</span>
+      <span class="arrow">→</span>
+      <span class="node">SNARK</span>
+    </div>
+  </div>
+
+  <h3>Typical STARK-style mental model</h3>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">program</span>
+      <span class="arrow">→</span>
+      <span class="node">execution trace</span>
+      <span class="arrow">→</span>
+      <span class="node">AIR</span>
+      <span class="arrow">→</span>
+      <span class="node field">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node">Merkle</span>
+      <span class="arrow">→</span>
+      <span class="node">FRI</span>
+      <span class="arrow">→</span>
+      <span class="node">STARK</span>
+    </div>
+  </div>
+
+  <p>These are mental models, not universal blueprints. Modern systems often combine ideas from multiple proof-system families.</p>
+</section>
+
+<section id="interview">
+  <h2>Interview-level questions you should be able to answer</h2>
+
+  <div class="constraint-card">
+    <div class="label">Q1</div>
+    <div class="formula">Why are STARKs called transparent?</div>
+    <p>Because the core construction does not require a secret toxic-waste setup parameter; it can use public parameters and hash-based commitments.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q2</div>
+    <div class="formula">Why are many SNARK proofs smaller than STARK proofs?</div>
+    <p>Pairing-based constructions can compress algebraic information into a small number of group elements, while STARKs expose more hash/Merkle/FRI information in the proof.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q3</div>
+    <div class="formula">Why is AIR natural for zkVMs?</div>
+    <p>A VM produces a sequential execution trace, and AIR naturally expresses local relationships between consecutive machine states.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q4</div>
+    <div class="formula">Does every SNARK require a trusted setup?</div>
+    <p>No. Trusted setup is construction-dependent, not part of the universal definition of SNARK.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q5</div>
+    <div class="formula">What is FRI doing?</div>
+    <p>It provides a way to test that an oracle/function is close to a low-degree polynomial through recursive folding and queries.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q6</div>
+    <div class="formula">Are STARKs automatically post-quantum secure?</div>
+    <p>No. Their common hash-based assumptions provide a more direct post-quantum path than elliptic-curve discrete-log assumptions, but concrete security still depends on the protocol and parameters.</p>
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. We want to prove a computation without re-running it.</div>
+    <div class="formula">2. The computation becomes a mathematical relation.</div>
+    <div class="formula">3. The relation is represented using constraints.</div>
+    <div class="formula">4. Constraints are transformed into algebraic / polynomial statements.</div>
+    <div class="formula">5. The prover commits to the relevant polynomial information.</div>
+    <div class="formula">6. The verifier uses cryptographic checks to test correctness.</div>
+    <div class="formula">7. SNARKs emphasize succinct proofs; concrete constructions vary.</div>
+    <div class="formula">8. STARKs emphasize scalability and transparency.</div>
+    <div class="formula">9. Pairing-based SNARKs commonly use elliptic curves and polynomial commitments such as KZG.</div>
+    <div class="formula">10. STARKs commonly use hash commitments, Merkle trees, AIR, and FRI.</div>
+    <div class="formula">11. SNARKs can have extremely small proofs.</div>
+    <div class="formula">12. STARKs generally have larger proofs but avoid a secret trusted setup.</div>
+    <div class="formula">13. Both can support zero knowledge, recursion, aggregation, and large-scale computation.</div>
+    <div class="formula">14. The correct comparison is between concrete constructions, not just the labels.</div>
+  </div>
+
+  <p>If you remember only one sentence, remember this: <em>SNARKs and STARKs are both ways to prove large computations succinctly, but common SNARK constructions achieve compact proofs through strong algebraic cryptography, while STARKs use transparent, hash-based polynomial proof machinery that is especially natural for large execution traces.</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
