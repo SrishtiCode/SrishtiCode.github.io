@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arithmetic Constraints — Srishti Rathi</title>
+<meta name="description" content="Arithmetic constraints from first principles: field equations, gates, witnesses, R1CS, arithmetic circuits, nonlinear constraints, boolean logic, range checks, AIR, zkVMs, and Rust implementation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+
+/* ---------- Fiat-Shamir additions ---------- */
+.protocol-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.protocol-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.protocol-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.protocol-flow .arrow{color:var(--ink-dim);}
+.protocol-flow .challenge{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.transcript{
+  margin:1.5rem 0;
+  padding:16px 18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.transcript .k{color:var(--teal);}
+.transcript .v{color:var(--purple);}
+@media (max-width:780px){
+  .protocol-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Witness / public-input additions ---------- */
+.input-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.input-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.input-card .value{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--purple);
+}
+.data-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.data-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.data-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.data-flow .private{
+  border-color:var(--purple);
+}
+.data-flow .public{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.data-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .data-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Arithmetic constraints additions ---------- */
+.constraint-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.constraint-card .formula{
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:13px;
+}
+.constraint-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.constraint-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.constraint-flow .field{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.constraint-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .constraint-flow .row{font-size:11px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>Arithmetic constraints</em></h1>
+  <p class="dek">from ordinary equations to finite-field constraints, arithmetic circuits, R1CS, Boolean logic, range checks, AIR, zkVMs, and how a prover turns computation into algebra</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="why">
+  <h2>Why do we need arithmetic constraints?</h2>
+
+  <p>A computer program is usually written using operations such as:</p>
+
+  <div class="math-box">
+    <div class="formula">add</div>
+    <div class="formula">subtract</div>
+    <div class="formula">multiply</div>
+    <div class="formula">compare</div>
+    <div class="formula">branch</div>
+    <div class="formula">load / store</div>
+  </div>
+
+  <p>A ZK proving system cannot simply be told:</p>
+
+  <div class="math-box">
+    <div class="formula">“run this program and prove that it was correct.”</div>
+  </div>
+
+  <p>It needs a mathematical description of what “correct” means.</p>
+
+  <p>Arithmetic constraints provide that description.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">computation</span>
+      <span class="arrow">→</span>
+      <span class="node">variables</span>
+      <span class="arrow">→</span>
+      <span class="node field">arithmetic constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>At the most basic level, a constraint is simply an equation that must evaluate to zero.</p>
+
+  <div class="math-box">
+    <div class="formula">x + y − z = 0</div>
+  </div>
+
+  <p>If the variables satisfy the equation, the constraint is satisfied. If they do not, it is violated.</p>
+
+  <div class="note-box">
+    <strong>Mental model:</strong> arithmetic constraints turn “this computation is correct” into a collection of mathematical equations that a proving system can check.
+  </div>
+</section>
+
+<section id="field">
+  <h2>First principle: arithmetic happens in a field</h2>
+
+  <p>In modern algebraic proof systems, arithmetic is usually performed over a finite field.</p>
+
+  <p>Let the field be:</p>
+
+  <div class="math-box">
+    <div class="formula">F</div>
+  </div>
+
+  <p>Every variable is an element of that field:</p>
+
+  <div class="math-box">
+    <div class="formula">x, y, z ∈ F</div>
+  </div>
+
+  <p>And every constraint is evaluated using field addition, subtraction, multiplication, and inversion where defined.</p>
+
+  <p>For a prime field:</p>
+
+  <div class="math-box">
+    <div class="formula">Fₚ = {0, 1, 2, …, p−1}</div>
+  </div>
+
+  <p>with all arithmetic performed modulo <code class="inline">p</code>.</p>
+
+  <p>For example, over <code class="inline">F₇</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">5 + 4 = 2</div>
+    <div class="formula">3 · 5 = 1</div>
+  </div>
+
+  <p>because:</p>
+
+  <div class="math-box">
+    <div class="formula">9 mod 7 = 2</div>
+    <div class="formula">15 mod 7 = 1</div>
+  </div>
+
+  <p>This is important: an arithmetic constraint is not necessarily an equation over the ordinary integers. It is usually an equation over a specific field.</p>
+</section>
+
+<section id="zero">
+  <h2>The standard form: polynomial equals zero</h2>
+
+  <p>Consider:</p>
+
+  <div class="math-box">
+    <div class="formula">x + y = z</div>
+  </div>
+
+  <p>Move everything to one side:</p>
+
+  <div class="math-box">
+    <div class="formula">x + y − z = 0</div>
+  </div>
+
+  <p>This is a convenient representation because proving systems can ask whether a polynomial expression vanishes.</p>
+
+  <p>For example:</p>
+
+  <div class="constraint-card">
+    <div class="label">addition constraint</div>
+    <div class="formula">x + y − z = 0</div>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">multiplication constraint</div>
+    <div class="formula">x · y − z = 0</div>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">constant constraint</div>
+    <div class="formula">x − 7 = 0</div>
+  </div>
+
+  <p>The same idea scales from one equation to millions of constraints.</p>
+</section>
+
+<section id="variables">
+  <h2>Variables and assignments</h2>
+
+  <p>A constraint describes what values are allowed, but the prover needs an actual assignment.</p>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">x + y − z = 0</div>
+  </div>
+
+  <p>and the assignment is:</p>
+
+  <div class="math-box">
+    <div class="formula">x = 3</div>
+    <div class="formula">y = 5</div>
+    <div class="formula">z = 8</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">3 + 5 − 8 = 0</div>
+  </div>
+
+  <p>so the constraint is satisfied.</p>
+
+  <p>If instead:</p>
+
+  <div class="math-box">
+    <div class="formula">z = 9</div>
+  </div>
+
+  <p>then:</p>
+
+  <div class="math-box">
+    <div class="formula">3 + 5 − 9 = −1 ≠ 0</div>
+  </div>
+
+  <p>and the assignment is invalid for that constraint.</p>
+</section>
+
+<section id="circuits">
+  <h2>From computation to arithmetic circuits</h2>
+
+  <p>Suppose we want to compute:</p>
+
+  <div class="math-box">
+    <div class="formula">z = (x + y) · w</div>
+  </div>
+
+  <p>Introduce an intermediate variable:</p>
+
+  <div class="math-box">
+    <div class="formula">t = x + y</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">z = t · w</div>
+  </div>
+
+  <p>These become two arithmetic constraints:</p>
+
+  <div class="math-box">
+    <div class="formula">x + y − t = 0</div>
+    <div class="formula">t · w − z = 0</div>
+  </div>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">x</span>
+      <span class="arrow">+</span>
+      <span class="node">y</span>
+      <span class="arrow">→</span>
+      <span class="node">t</span>
+      <span class="arrow">×</span>
+      <span class="node">w</span>
+      <span class="arrow">→</span>
+      <span class="node">z</span>
+    </div>
+  </div>
+
+  <p>The intermediate variable <code class="inline">t</code> is important. Instead of describing one complicated expression, we decompose the computation into simple algebraic relationships.</p>
+</section>
+
+<section id="gates">
+  <h2>Arithmetic gates</h2>
+
+  <p>An arithmetic circuit is commonly built from simple gates.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">addition gate</div>
+      <p><code class="inline">z = x + y</code></p>
+    </div>
+    <div class="example-card">
+      <div class="label">multiplication gate</div>
+      <p><code class="inline">z = x · y</code></p>
+    </div>
+    <div class="example-card">
+      <div class="label">constant gate</div>
+      <p><code class="inline">z = x + 7</code></p>
+    </div>
+    <div class="example-card">
+      <div class="label">negation</div>
+      <p><code class="inline">z = −x</code></p>
+    </div>
+  </div>
+
+  <p>Each gate can be translated into an algebraic constraint.</p>
+</section>
+
+<section id="linear">
+  <h2>Linear constraints</h2>
+
+  <p>A linear constraint has variables only to the first power and does not multiply variables by one another.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">3x + 5y − 7z + 4 = 0</div>
+  </div>
+
+  <p>This is linear in <code class="inline">x, y, z</code>.</p>
+
+  <p>Linear constraints are comparatively simple to represent.</p>
+
+  <p>Many arithmetic circuits, however, need multiplication between variables.</p>
+</section>
+
+<section id="nonlinear">
+  <h2>Nonlinear constraints</h2>
+
+  <p>A nonlinear constraint contains products or powers of variables.</p>
+
+  <p>Examples:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y − z = 0</div>
+    <div class="formula">x² − y = 0</div>
+    <div class="formula">x · y · z − 1 = 0</div>
+  </div>
+
+  <p>These constraints are important because general computation requires multiplication.</p>
+
+  <p>For example, hashing, encryption, signatures, and arithmetic programs all contain nonlinear operations once represented algebraically.</p>
+</section>
+
+<section id="r1cs">
+  <h2>R1CS: the important normal form</h2>
+
+  <p>One of the most important constraint representations in SNARK systems is <strong>R1CS</strong>, or Rank-1 Constraint System.</p>
+
+  <p>An R1CS constraint has the form:</p>
+
+  <div class="math-box">
+    <div class="formula">(A · W) · (B · W) = C · W</div>
+  </div>
+
+  <p>Here:</p>
+
+  <ul>
+    <li><code class="inline">W</code> is the witness/assignment vector;</li>
+    <li><code class="inline">A</code>, <code class="inline">B</code>, and <code class="inline">C</code> describe linear combinations of variables.</li>
+  </ul>
+
+  <p>Equivalently:</p>
+
+  <div class="math-box">
+    <div class="formula">(A · W)(B · W) − C · W = 0</div>
+  </div>
+
+  <p>This gives a very structured way to represent quadratic constraints.</p>
+</section>
+
+<section id="r1cs-example">
+  <h2>R1CS example from scratch</h2>
+
+  <p>Consider:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x · y</div>
+  </div>
+
+  <p>Let the assignment vector be:</p>
+
+  <div class="math-box">
+    <div class="formula">W = [1, x, y, z]</div>
+  </div>
+
+  <p>The constant <code class="inline">1</code> lets us represent constants as linear combinations.</p>
+
+  <p>Choose:</p>
+
+  <div class="math-box">
+    <div class="formula">A · W = x</div>
+    <div class="formula">B · W = y</div>
+    <div class="formula">C · W = z</div>
+  </div>
+
+  <p>Then the R1CS equation becomes:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y = z</div>
+  </div>
+
+  <p>which is exactly the desired computation.</p>
+</section>
+
+<section id="addition-r1cs">
+  <h2>How addition fits into R1CS</h2>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x + y</div>
+  </div>
+
+  <p>We can use a multiplication by one:</p>
+
+  <div class="math-box">
+    <div class="formula">(x + y) · 1 = z</div>
+  </div>
+
+  <p>So:</p>
+
+  <div class="math-box">
+    <div class="formula">(A · W)(B · W) = C · W</div>
+    <div class="formula">(x + y) · 1 = z</div>
+  </div>
+
+  <p>This shows why the R1CS form can represent both linear and multiplication relationships.</p>
+</section>
+
+<section id="constants">
+  <h2>Constants in constraints</h2>
+
+  <p>Suppose we want:</p>
+
+  <div class="math-box">
+    <div class="formula">z = 3x + 7</div>
+  </div>
+
+  <p>Move everything into a polynomial equation:</p>
+
+  <div class="math-box">
+    <div class="formula">3x + 7 − z = 0</div>
+  </div>
+
+  <p>Because the assignment vector contains a constant <code class="inline">1</code>, the constant 7 can be represented as:</p>
+
+  <div class="math-box">
+    <div class="formula">7 · 1</div>
+  </div>
+
+  <p>This is why the constant slot is useful in many R1CS conventions.</p>
+</section>
+
+<section id="boolean">
+  <h2>How do we represent Boolean values?</h2>
+
+  <p>Fields contain many values, not just zero and one.</p>
+
+  <p>So if a variable is supposed to be a bit, we must constrain it.</p>
+
+  <p>The standard Boolean constraint is:</p>
+
+  <div class="math-box">
+    <div class="formula">b(b − 1) = 0</div>
+  </div>
+
+  <p>Factor it:</p>
+
+  <div class="math-box">
+    <div class="formula">b = 0 or b = 1</div>
+  </div>
+
+  <p>Therefore:</p>
+
+  <div class="constraint-card">
+    <div class="label">boolean constraint</div>
+    <div class="formula">b² − b = 0</div>
+  </div>
+
+  <p>This is a beautiful example of converting a logical requirement into algebra.</p>
+</section>
+
+<section id="logic">
+  <h2>Building logic from arithmetic</h2>
+
+  <p>Once we can constrain bits, we can express Boolean operations algebraically.</p>
+
+  <h3>NOT</h3>
+
+  <div class="math-box">
+    <div class="formula">NOT(a) = 1 − a</div>
+  </div>
+
+  <h3>AND</h3>
+
+  <div class="math-box">
+    <div class="formula">AND(a,b) = a · b</div>
+  </div>
+
+  <h3>OR</h3>
+
+  <div class="math-box">
+    <div class="formula">OR(a,b) = a + b − ab</div>
+  </div>
+
+  <p>For bits, these expressions produce exactly the expected Boolean results.</p>
+</section>
+
+<section id="range">
+  <h2>Range constraints</h2>
+
+  <p>A field element can represent a very large number, but sometimes a value must lie inside a small integer range.</p>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">x ∈ {0,1,2,3}</div>
+  </div>
+
+  <p>One common strategy is to decompose it into bits:</p>
+
+  <div class="math-box">
+    <div class="formula">x = b₀ + 2b₁</div>
+  </div>
+
+  <p>and constrain:</p>
+
+  <div class="math-box">
+    <div class="formula">b₀² − b₀ = 0</div>
+    <div class="formula">b₁² − b₁ = 0</div>
+  </div>
+
+  <p>Now the possible values are exactly:</p>
+
+  <div class="math-box">
+    <div class="formula">0, 1, 2, 3</div>
+  </div>
+
+  <p>This is the basis of many range-check constructions.</p>
+</section>
+
+<section id="inverse">
+  <h2>Representing division</h2>
+
+  <p>Division is not normally treated as a primitive gate.</p>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x / y</div>
+  </div>
+
+  <p>For nonzero <code class="inline">y</code>, rewrite it as:</p>
+
+  <div class="math-box">
+    <div class="formula">z · y = x</div>
+  </div>
+
+  <p>which becomes:</p>
+
+  <div class="math-box">
+    <div class="formula">z · y − x = 0</div>
+  </div>
+
+  <p>But there is an important edge case: what if <code class="inline">y = 0</code>?</p>
+
+  <p>A correct circuit must handle or constrain that case according to the intended semantics.</p>
+
+  <div class="note-box">
+    <strong>Important:</strong> algebraic constraints can accidentally accept values that would be invalid under ordinary program semantics if exceptional cases are not explicitly constrained.
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>Comparisons are not primitive field operations</h2>
+
+  <p>Fields naturally support:</p>
+
+  <div class="math-box">
+    <div class="formula">+, −, ×, inverse</div>
+  </div>
+
+  <p>But a statement like:</p>
+
+  <div class="math-box">
+    <div class="formula">x &lt; 10</div>
+  </div>
+
+  <p>is not a native field equation.</p>
+
+  <p>To prove comparisons, systems usually use techniques such as:</p>
+
+  <ul>
+    <li>bit decomposition;</li>
+    <li>range checks;</li>
+    <li>lookup arguments;</li>
+    <li>specialized comparison gadgets.</li>
+  </ul>
+
+  <p>This is one reason arithmetic circuits can be substantially more complicated than ordinary source code.</p>
+</section>
+
+<section id="witness">
+  <h2>Constraints and the witness</h2>
+
+  <p>A constraint system defines what assignments are valid.</p>
+
+  <p>The witness supplies one concrete assignment.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">constraints</span>
+      <span class="arrow">+</span>
+      <span class="node">witness W</span>
+      <span class="arrow">→</span>
+      <span class="node">evaluate</span>
+      <span class="arrow">→</span>
+      <span class="node field">all zero?</span>
+    </div>
+  </div>
+
+  <p>For a valid witness:</p>
+
+  <div class="math-box">
+    <div class="formula">C₀(W) = 0</div>
+    <div class="formula">C₁(W) = 0</div>
+    <div class="formula">C₂(W) = 0</div>
+    <div class="formula">…</div>
+  </div>
+
+  <p>The prover then uses the satisfied system to construct a proof.</p>
+</section>
+
+<section id="public">
+  <h2>Public inputs inside constraints</h2>
+
+  <p>Suppose the statement is:</p>
+
+  <div class="math-box">
+    <div class="formula">w² = x</div>
+  </div>
+
+  <p>where:</p>
+
+  <div class="math-box">
+    <div class="formula">x = public input</div>
+    <div class="formula">w = private witness</div>
+  </div>
+
+  <p>The constraint is:</p>
+
+  <div class="math-box">
+    <div class="formula">w² − x = 0</div>
+  </div>
+
+  <p>The public input is therefore directly bound into the relation.</p>
+
+  <p>The proof is not merely:</p>
+
+  <div class="math-box">
+    <div class="formula">“some square exists.”</div>
+  </div>
+
+  <p>It is:</p>
+
+  <div class="math-box">
+    <div class="formula">“there exists a w such that w² = this exact public x.”</div>
+  </div>
+</section>
+
+<section id="air">
+  <h2>Arithmetic constraints in AIR</h2>
+
+  <p>R1CS is not the only way to express constraints.</p>
+
+  <p>AIR — Algebraic Intermediate Representation — is especially important in STARKs and zkVMs.</p>
+
+  <p>Instead of describing every operation as an independent circuit gate, AIR often describes relationships between neighboring rows of an execution trace.</p>
+
+  <p>Suppose a register increments:</p>
+
+  <div class="math-box">
+    <div class="formula">rᵢ₊₁ = rᵢ + 1</div>
+  </div>
+
+  <p>The transition constraint becomes:</p>
+
+  <div class="math-box">
+    <div class="formula">rᵢ₊₁ − rᵢ − 1 = 0</div>
+  </div>
+
+  <p>This constraint must hold for every appropriate row <code class="inline">i</code>.</p>
+</section>
+
+<section id="boundary">
+  <h2>Transition vs boundary constraints</h2>
+
+  <p>AIR commonly separates constraints into two broad categories.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">transition constraints</div>
+      <p>Describe how one row of the trace relates to another row.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">boundary constraints</div>
+      <p>Specify required values at particular positions, such as the first or final row.</p>
+    </div>
+  </div>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">rᵢ₊₁ − rᵢ − 1 = 0</div>
+    <div class="formula">r₀ − 2 = 0</div>
+    <div class="formula">rₙ − 5 = 0</div>
+  </div>
+
+  <p>Together they describe the intended execution.</p>
+</section>
+
+<section id="zkvm">
+  <h2>Arithmetic constraints in a zkVM</h2>
+
+  <p>A zkVM converts machine execution into algebraic constraints.</p>
+
+  <p>Imagine a trace with columns:</p>
+
+  <div class="math-box">
+    <div class="formula">pc, opcode, r₀, r₁, r₂, …</div>
+  </div>
+
+  <p>A transition might enforce:</p>
+
+  <div class="math-box">
+    <div class="formula">pcᵢ₊₁ = pcᵢ + instruction_size</div>
+  </div>
+
+  <p>which becomes:</p>
+
+  <div class="math-box">
+    <div class="formula">pcᵢ₊₁ − pcᵢ − 4 = 0</div>
+  </div>
+
+  <p>A register update might be:</p>
+
+  <div class="math-box">
+    <div class="formula">r₂ᵢ₊₁ − r₀ᵢ − r₁ᵢ = 0</div>
+  </div>
+
+  <p>Conditional execution, opcode decoding, memory consistency, and instruction semantics require additional constraints.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">CPU execution</span>
+      <span class="arrow">→</span>
+      <span class="node">trace</span>
+      <span class="arrow">→</span>
+      <span class="node field">AIR constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node">STARK</span>
+    </div>
+  </div>
+</section>
+
+<section id="degree">
+  <h2>Constraint degree matters</h2>
+
+  <p>Consider:</p>
+
+  <div class="math-box">
+    <div class="formula">x + y − z = 0</div>
+  </div>
+
+  <p>This has degree 1.</p>
+
+  <p>Now:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y − z = 0</div>
+  </div>
+
+  <p>has degree 2.</p>
+
+  <p>And:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y · z − 1 = 0</div>
+  </div>
+
+  <p>has degree 3.</p>
+
+  <p>The degree of constraints affects how the proving system represents and checks them.</p>
+
+  <p>This is one reason systems often normalize computations into restricted forms such as quadratic R1CS constraints or carefully structured AIR constraints.</p>
+</section>
+
+<section id="composition">
+  <h2>Combining many constraints</h2>
+
+  <p>Suppose we have:</p>
+
+  <div class="math-box">
+    <div class="formula">C₀(W) = 0</div>
+    <div class="formula">C₁(W) = 0</div>
+    <div class="formula">C₂(W) = 0</div>
+  </div>
+
+  <p>A proving system may need to represent a large collection of constraints compactly.</p>
+
+  <p>STARK-style systems often combine constraint evaluations into a composition polynomial using random coefficients:</p>
+
+  <div class="math-box">
+    <div class="formula">C(x) = α₀C₀(x) + α₁C₁(x) + α₂C₂(x) + …</div>
+  </div>
+
+  <p>where the <code class="inline">αᵢ</code> values are random challenges, commonly derived through Fiat–Shamir.</p>
+
+  <p>The idea is that a cheating prover should not be able to make many independently violated constraints disappear in the same random linear combination.</p>
+</section>
+
+<section id="interpolation">
+  <h2>Why constraints eventually become polynomials</h2>
+
+  <p>This connects arithmetic constraints to the other fundamentals you are studying.</p>
+
+  <p>Suppose a trace column gives values:</p>
+
+  <div class="math-box">
+    <div class="formula">r₀, r₁, r₂, …, rₙ₋₁</div>
+  </div>
+
+  <p>These values can be interpreted as evaluations of a polynomial on a chosen domain:</p>
+
+  <div class="math-box">
+    <div class="formula">r(ωⁱ) = rᵢ</div>
+  </div>
+
+  <p>Then a transition constraint can become a polynomial expression such as:</p>
+
+  <div class="math-box">
+    <div class="formula">r(ωx) − r(x) − 1</div>
+  </div>
+
+  <p>The proving system can then test whether this expression vanishes on the required domain.</p>
+
+  <p>This is the bridge:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">execution trace</span>
+      <span class="arrow">→</span>
+      <span class="node">constraint expressions</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node">commitments / FRI</span>
+    </div>
+  </div>
+</section>
+
+<section id="rust">
+  <h2>Arithmetic constraints in Rust</h2>
+
+  <p>Before using a proving library, you can model the core idea directly.</p>
+
+  <details open>
+    <summary>Complete educational Rust implementation</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// A tiny arithmetic constraint system.</span>
+<span class="c">// This is educational, not a cryptographic proving system.</span>
+
+<span class="k">#[derive(Debug)]</span>
+<span class="k">struct</span> Assignment {
+    x: i64,
+    y: i64,
+    z: i64,
+}
+
+<span class="k">fn</span> addition_constraint(a: &amp;Assignment) -&gt; i64 {
+    a.x + a.y - a.z
+}
+
+<span class="k">fn</span> multiplication_constraint(a: &amp;Assignment) -&gt; i64 {
+    a.x * a.y - a.z
+}
+
+<span class="k">fn</span> boolean_constraint(b: i64) -&gt; i64 {
+    b * b - b
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">let</span> a = Assignment {
+        x: 3,
+        y: 5,
+        z: 8,
+    };
+
+    <span class="k">assert_eq</span>!(addition_constraint(&amp;a), 0);
+
+    <span class="k">let</span> product = Assignment {
+        x: 3,
+        y: 5,
+        z: 15,
+    };
+
+    <span class="k">assert_eq</span>!(multiplication_constraint(&amp;product), 0);
+
+    <span class="c">// Valid Boolean values satisfy b² - b = 0.</span>
+    <span class="k">assert_eq</span>!(boolean_constraint(0), 0);
+    <span class="k">assert_eq</span>!(boolean_constraint(1), 0);
+
+    <span class="c">// 2 is not Boolean.</span>
+    <span class="k">assert_ne</span>!(boolean_constraint(2), 0);
+
+    println!(<span class="s">"All constraints satisfied."</span>);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>A real implementation would replace ordinary integers with a finite-field type and would build a structured constraint system rather than directly evaluating the equations.</p>
+</section>
+
+<section id="field-rust">
+  <h2>Why the Rust implementation should use a field</h2>
+
+  <p>Suppose the field modulus is <code class="inline">p</code>.</p>
+
+  <p>Then the constraint:</p>
+
+  <div class="math-box">
+    <div class="formula">x + y − z = 0</div>
+  </div>
+
+  <p>means:</p>
+
+  <div class="math-box">
+    <div class="formula">(x + y − z) mod p = 0</div>
+  </div>
+
+  <p>A production Rust implementation would therefore use a type such as a field element rather than <code class="inline">i64</code>.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="math-box">
+    <div class="formula">FieldElement&lt;P&gt;</div>
+  </div>
+
+  <p>This is important because the proving system's algebra is defined over the field.</p>
+</section>
+
+<section id="constraint-system">
+  <h2>A constraint system is more than equations</h2>
+
+  <p>A practical system must also know:</p>
+
+  <ul>
+    <li>which variables exist;</li>
+    <li>which variables are public;</li>
+    <li>which variables are private;</li>
+    <li>which field is being used;</li>
+    <li>which constraints apply;</li>
+    <li>how variables map to witness positions;</li>
+    <li>how constants are represented;</li>
+    <li>how the system handles special operations.</li>
+  </ul>
+
+  <p>So the mathematical idea is simple, but the engineering around it can become substantial.</p>
+</section>
+
+<section id="soundness">
+  <h2>Why constraints matter for soundness</h2>
+
+  <p>Suppose the intended computation is:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x · y</div>
+  </div>
+
+  <p>If the system forgets the constraint:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y − z = 0</div>
+  </div>
+
+  <p>then the prover may be able to provide an invalid assignment without the proving system noticing.</p>
+
+  <p>This illustrates a fundamental rule:</p>
+
+  <div class="note-box">
+    <strong>If an intended property is not encoded as a constraint, the proof system does not automatically know that the property matters.</strong>
+  </div>
+
+  <p>Constraint completeness is therefore a major part of proving-system correctness.</p>
+</section>
+
+<section id="bugs">
+  <h2>Common constraint-system bugs</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">missing constraint</div>
+      <p>A required relationship is never enforced.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">wrong variable</div>
+      <p>A constraint accidentally references the wrong witness position.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">missing range check</div>
+      <p>A value intended to be a bit or bounded integer can take arbitrary field values.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">wrong field semantics</div>
+      <p>Ordinary integer intuition is applied to modular field arithmetic.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">unconstrained intermediate</div>
+      <p>An intermediate value is used without adequately enforcing how it was produced.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">exceptional case</div>
+      <p>Division by zero, overflow assumptions, or other edge cases are not represented correctly.</p>
+    </div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>R1CS vs AIR</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Concept</th><th>R1CS</th><th>AIR</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>basic object</td><td>constraint over an assignment vector</td><td>constraint over trace rows/columns</td></tr>
+      <tr><td>typical form</td><td>(A·W)(B·W) = C·W</td><td>polynomial relation between trace values</td></tr>
+      <tr><td>natural use</td><td>arithmetic circuits / SNARKs</td><td>execution traces / STARKs / zkVMs</td></tr>
+      <tr><td>multiplication</td><td>naturally represented by quadratic form</td><td>represented in transition/boundary polynomials</td></tr>
+      <tr><td>trace-oriented</td><td>not inherently</td><td>yes</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="pipeline">
+  <h2>Where arithmetic constraints fit in ZK</h2>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">program / statement</span>
+      <span class="arrow">→</span>
+      <span class="node">arithmetic representation</span>
+      <span class="arrow">→</span>
+      <span class="node field">constraints</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node field">constraints</span>
+      <span class="arrow">+</span>
+      <span class="node">witness</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node">commitments</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">commitments</span>
+      <span class="arrow">→</span>
+      <span class="node">Fiat–Shamir</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>This connects directly to the fundamentals you have already built:</p>
+
+  <div class="math-box">
+    <div class="formula">finite fields → arithmetic constraints → polynomials → commitments → Fiat–Shamir → FRI / SNARK proof</div>
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. A computation must be translated into mathematics.</div>
+    <div class="formula">2. ZK arithmetic normally happens over a finite field.</div>
+    <div class="formula">3. A constraint is a condition that an assignment must satisfy.</div>
+    <div class="formula">4. A convenient form is polynomial(expression) = 0.</div>
+    <div class="formula">5. Addition becomes a linear constraint.</div>
+    <div class="formula">6. Multiplication creates nonlinear constraints.</div>
+    <div class="formula">7. Arithmetic circuits decompose computations into simple relationships.</div>
+    <div class="formula">8. R1CS expresses constraints as (A·W)(B·W) = C·W.</div>
+    <div class="formula">9. Boolean values require constraints such as b² − b = 0.</div>
+    <div class="formula">10. Range checks can be built from bit decomposition or specialized gadgets.</div>
+    <div class="formula">11. AIR expresses constraints over execution-trace rows and columns.</div>
+    <div class="formula">12. zkVMs use AIR-like constraints to describe valid machine execution.</div>
+    <div class="formula">13. Constraints are combined and transformed into polynomial objects.</div>
+    <div class="formula">14. Those polynomials can then be committed to and proved about.</div>
+    <div class="formula">15. Missing constraints can become soundness vulnerabilities.</div>
+  </div>
+
+  <p>If witnesses answer <em>“what assignment makes the computation true?”</em>, arithmetic constraints answer <em>“what equations must that assignment satisfy?”</em>. From there, R1CS and AIR turn those equations into structures that modern SNARK and STARK proving systems can actually operate on.</p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
