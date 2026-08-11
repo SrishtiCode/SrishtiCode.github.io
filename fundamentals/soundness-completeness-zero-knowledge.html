@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soundness, Completeness & Zero Knowledge — Srishti Rathi</title>
+<meta name="description" content="Soundness, completeness, and zero knowledge explained from first principles: statements, witnesses, interactive proofs, adversaries, probability, simulation, knowledge, and how these properties work together in ZK systems.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+
+/* ---------- Fiat-Shamir additions ---------- */
+.protocol-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.protocol-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.protocol-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.protocol-flow .arrow{color:var(--ink-dim);}
+.protocol-flow .challenge{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.transcript{
+  margin:1.5rem 0;
+  padding:16px 18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.transcript .k{color:var(--teal);}
+.transcript .v{color:var(--purple);}
+@media (max-width:780px){
+  .protocol-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Witness / public-input additions ---------- */
+.input-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.input-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.input-card .value{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--purple);
+}
+.data-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.data-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.data-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.data-flow .private{
+  border-color:var(--purple);
+}
+.data-flow .public{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.data-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .data-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Arithmetic constraints additions ---------- */
+.constraint-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.constraint-card .formula{
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:13px;
+}
+.constraint-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.constraint-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.constraint-flow .field{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.constraint-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .constraint-flow .row{font-size:11px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>Soundness, Completeness & Zero Knowledge</em></h1>
+  <p class="dek">the three core properties of a zero-knowledge proof — from “what are we proving?” to honest provers, cheating provers, simulators, probability, and real ZK systems</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="starting-point">
+  <h2>Start with the actual problem</h2>
+
+  <p>Suppose a prover claims that a statement is true.</p>
+
+  <div class="math-box">
+    <div class="formula">“I know a secret witness w such that R(x,w) = true.”</div>
+  </div>
+
+  <p>The verifier does not simply want a message saying “trust me.” The verifier wants a protocol that gives a meaningful cryptographic guarantee.</p>
+
+  <p>Three properties describe the heart of that guarantee:</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">completeness</div>
+      <p>If the statement is true and the prover follows the protocol honestly, the verifier should accept.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">soundness</div>
+      <p>If the statement is false, a cheating prover should have only a very small probability of convincing the verifier.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">zero knowledge</div>
+      <p>The verifier should learn nothing useful about the private witness beyond what is already implied by the statement.</p>
+    </div>
+  </div>
+
+  <p>These properties answer three different questions:</p>
+
+  <div class="math-box">
+    <div class="formula">Completeness → Will a true statement pass?</div>
+    <div class="formula">Soundness → Will a false statement fail?</div>
+    <div class="formula">Zero knowledge → What does the verifier learn?</div>
+  </div>
+</section>
+
+<section id="statement-witness">
+  <h2>Statement and witness</h2>
+
+  <p>Before discussing the three properties, we need to define what a proof is actually about.</p>
+
+  <p>Let:</p>
+
+  <div class="math-box">
+    <div class="formula">x = public statement</div>
+    <div class="formula">w = private witness</div>
+  </div>
+
+  <p>A relation <code class="inline">R</code> tells us whether a particular witness satisfies a particular statement.</p>
+
+  <div class="math-box">
+    <div class="formula">R(x,w) = true</div>
+  </div>
+
+  <p>The language of provable statements is:</p>
+
+  <div class="math-box">
+    <div class="formula">L = { x : ∃w such that R(x,w) = true }</div>
+  </div>
+
+  <p>So the prover's claim is usually not simply “I know a number.” It is:</p>
+
+  <div class="math-box">
+    <div class="formula">x ∈ L</div>
+  </div>
+
+  <p>and the prover possesses a witness <code class="inline">w</code> demonstrating membership.</p>
+
+  <h3>Example: knowing a preimage</h3>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">y = H(w)</div>
+  </div>
+
+  <p>The public statement is <code class="inline">y</code>. The private witness is <code class="inline">w</code>.</p>
+
+  <p>The prover wants to prove:</p>
+
+  <div class="math-box">
+    <div class="formula">∃w : H(w) = y</div>
+  </div>
+
+  <p>without revealing <code class="inline">w</code>.</p>
+</section>
+
+<section id="protocol">
+  <h2>What is a proof protocol?</h2>
+
+  <p>A proof protocol describes how a prover and verifier interact.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">Prover</span>
+      <span class="arrow">→</span>
+      <span class="node">message</span>
+      <span class="arrow">→</span>
+      <span class="node">Verifier</span>
+      <span class="arrow">→</span>
+      <span class="node field">challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">Prover</span>
+    </div>
+  </div>
+
+  <p>A simple interactive protocol can look like:</p>
+
+  <div class="math-box">
+    <div class="formula">1. Prover → commitment</div>
+    <div class="formula">2. Verifier → random challenge</div>
+    <div class="formula">3. Prover → response</div>
+    <div class="formula">4. Verifier → accept / reject</div>
+  </div>
+
+  <p>Later, Fiat–Shamir can replace the verifier's random challenge with a hash-derived challenge in many non-interactive constructions.</p>
+</section>
+
+<section id="completeness">
+  <h2>1. Completeness</h2>
+
+  <p>Completeness describes what happens when everyone behaves honestly and the statement is actually true.</p>
+
+  <div class="math-box">
+    <div class="formula">x ∈ L</div>
+    <div class="formula">w is a valid witness</div>
+    <div class="formula">P is honest</div>
+    <div class="formula">⇒ V accepts</div>
+  </div>
+
+  <p>More formally, a proof system is complete if an honest prover with a valid witness causes an honest verifier to accept with probability 1, or with probability negligibly close to 1, depending on the precise definition.</p>
+
+  <h3>Why can completeness involve probability?</h3>
+
+  <p>Some protocols contain randomized behavior. For example, a prover or verifier may sample random values.</p>
+
+  <p>Therefore the exact statement can be written as:</p>
+
+  <div class="math-box">
+    <div class="formula">Pr[V accepts ⟨P,V⟩(x,w)] ≥ 1 − ε</div>
+  </div>
+
+  <p>where <code class="inline">ε</code> is the completeness error.</p>
+
+  <div class="note-box">
+    <strong>Intuition:</strong> completeness protects honest users from false rejection. A correct proof should not randomly fail with a significant probability.
+  </div>
+</section>
+
+<section id="completeness-example">
+  <h2>Completeness with a simple example</h2>
+
+  <p>Suppose Alice knows a valid witness <code class="inline">w</code> and follows every proving step correctly.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">valid statement</span>
+      <span class="arrow">+</span>
+      <span class="node">valid witness</span>
+      <span class="arrow">+</span>
+      <span class="node">honest prover</span>
+      <span class="arrow">→</span>
+      <span class="node field">accept</span>
+    </div>
+  </div>
+
+  <p>If the verifier rejects valid proofs often, the system is not useful. A proof system therefore aims to make honest acceptance overwhelmingly likely.</p>
+</section>
+
+<section id="soundness">
+  <h2>2. Soundness</h2>
+
+  <p>Soundness is the property that protects the verifier from a dishonest prover.</p>
+
+  <p>Imagine that the statement is false:</p>
+
+  <div class="math-box">
+    <div class="formula">x ∉ L</div>
+  </div>
+
+  <p>There is no valid witness satisfying the relation.</p>
+
+  <p>A malicious prover may still try to produce messages that make the verifier accept.</p>
+
+  <p>Soundness says that this should succeed only with a small probability.</p>
+
+  <div class="math-box">
+    <div class="formula">Pr[V accepts ⟨P*,V⟩(x)] ≤ ε</div>
+    <div class="formula">for every efficient cheating prover P* and x ∉ L</div>
+  </div>
+
+  <p>Here <code class="inline">P*</code> represents an arbitrary malicious prover and <code class="inline">ε</code> is the soundness error.</p>
+
+  <div class="note-box">
+    <strong>Intuition:</strong> soundness is the “you cannot fake it” property.
+  </div>
+</section>
+
+<section id="soundness-probability">
+  <h2>Why is soundness usually probabilistic?</h2>
+
+  <p>Many proof protocols use randomness.</p>
+
+  <p>The verifier may choose a challenge that the cheating prover cannot predict before committing to its first message.</p>
+
+  <p>Suppose a dishonest prover can answer only one particular challenge out of <code class="inline">N</code> possible challenges.</p>
+
+  <div class="math-box">
+    <div class="formula">Pr[cheating succeeds] = 1/N</div>
+  </div>
+
+  <p>If <code class="inline">N</code> is large, the cheating probability becomes small.</p>
+
+  <p>Repeating a protocol can reduce the error further:</p>
+
+  <div class="math-box">
+    <div class="formula">ε, ε², ε³, …</div>
+  </div>
+
+  <p>The exact reduction depends on the protocol and how repetitions are composed.</p>
+</section>
+
+<section id="knowledge">
+  <h2>Soundness vs. knowledge soundness</h2>
+
+  <p>This distinction is important in zero knowledge.</p>
+
+  <p>Ordinary soundness says, roughly:</p>
+
+  <div class="math-box">
+    <div class="formula">false statement → cheating prover cannot convince verifier</div>
+  </div>
+
+  <p><strong>Knowledge soundness</strong> is stronger in a different direction. It says that if a prover can convince the verifier, then there should exist an efficient extractor that can obtain a valid witness from that prover, under the construction's formal security model.</p>
+
+  <div class="math-box">
+    <div class="formula">successful prover → extractor → witness</div>
+  </div>
+
+  <p>This is why the word <strong>Knowledge</strong> appears in SNARK and STARK terminology.</p>
+
+  <div class="note-box">
+    <strong>Important:</strong> the extractor is a security-definition tool. It does not mean that the verifier literally runs an extractor during normal proof verification.
+  </div>
+</section>
+
+<section id="zero-knowledge">
+  <h2>3. Zero knowledge</h2>
+
+  <p>Now consider a different question.</p>
+
+  <p>Suppose the statement is true and the prover has a valid witness. Does the verifier learn the witness while checking the proof?</p>
+
+  <p>A zero-knowledge proof is designed so that the verifier learns nothing beyond what the statement itself reveals, according to the formal definition and security model.</p>
+
+  <div class="math-box">
+    <div class="formula">proof of knowledge ≠ disclosure of knowledge</div>
+  </div>
+
+  <p>The prover can demonstrate possession of a secret without simply sending the secret to the verifier.</p>
+</section>
+
+<section id="simulation">
+  <h2>The central idea: simulation</h2>
+
+  <p>The standard way to formalize zero knowledge is through a <strong>simulator</strong>.</p>
+
+  <p>Imagine two worlds.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">real world</div>
+      <p>The verifier interacts with the actual prover, who knows the witness.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">simulated world</div>
+      <p>A simulator produces an interaction without having access to the witness.</p>
+    </div>
+  </div>
+
+  <p>If the verifier cannot distinguish these worlds except with negligible advantage, the protocol provides zero knowledge under the relevant definition.</p>
+
+  <div class="math-box">
+    <div class="formula">Real interaction ≈ Simulated interaction</div>
+  </div>
+
+  <p>The symbol <code class="inline">≈</code> represents computational indistinguishability in the common computational zero-knowledge setting.</p>
+</section>
+
+<section id="simulator">
+  <h2>Why does the simulator matter?</h2>
+
+  <p>Suppose the verifier's entire view of the real protocol can be generated without knowing the secret witness.</p>
+
+  <p>Then whatever information the verifier obtained from the protocol could not depend on actually possessing the witness in the first place.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">real prover</span>
+      <span class="arrow">→</span>
+      <span class="node">transcript</span>
+      <span class="arrow">≈</span>
+      <span class="node field">simulator</span>
+      <span class="arrow">→</span>
+      <span class="node">transcript</span>
+    </div>
+  </div>
+
+  <p>This is the fundamental intuition behind simulation-based zero knowledge.</p>
+</section>
+
+<section id="perfect-statistical-computational">
+  <h2>Perfect, statistical, and computational zero knowledge</h2>
+
+  <p>The phrase “indistinguishable” can be interpreted at different strengths.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">perfect ZK</div>
+      <p>The real and simulated views have exactly the same distribution.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">statistical ZK</div>
+      <p>The distributions are extremely close statistically, even for an unbounded distinguisher.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">computational ZK</div>
+      <p>No efficient distinguisher can tell the real and simulated views apart except with negligible advantage.</p>
+    </div>
+  </div>
+
+  <p>These are distinct formal security notions.</p>
+</section>
+
+<section id="interactive-example">
+  <h2>A classic intuition: proving you know a secret</h2>
+
+  <p>Imagine a locked cave with two entrances connected by a secret passage.</p>
+
+  <p>The prover knows the secret that opens the passage. The verifier wants confidence that the prover really knows it, but does not want the secret itself revealed.</p>
+
+  <p>A simplified protocol is:</p>
+
+  <div class="math-box">
+    <div class="formula">1. Prover enters through a randomly chosen side.</div>
+    <div class="formula">2. Verifier randomly asks: “come out from the left or right.”</div>
+    <div class="formula">3. If the prover knows the secret passage, they can satisfy either challenge.</div>
+    <div class="formula">4. A prover who does not know it can guess the requested side only with probability 1/2.</div>
+  </div>
+
+  <p>Repeated rounds make the cheating probability small:</p>
+
+  <div class="math-box">
+    <div class="formula">1/2 → 1/4 → 1/8 → 1/16 → …</div>
+  </div>
+
+  <p>This captures the intuition behind challenge-response protocols.</p>
+
+  <div class="note-box">
+    <strong>Important:</strong> the cave story is an intuition, not a complete cryptographic protocol. Real systems require precise commitments, randomness, transcript rules, and security proofs.
+  </div>
+</section>
+
+<section id="challenge">
+  <h2>Why the verifier's challenge matters</h2>
+
+  <p>The challenge must be unpredictable to a cheating prover at the right point in the protocol.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="math-box">
+    <div class="formula">commit first → challenge later → response</div>
+  </div>
+
+  <p>If the prover could see the challenge before committing, it might construct a fake commitment tailored to that challenge.</p>
+
+  <p>This is one reason commitment schemes are so important in interactive proofs.</p>
+</section>
+
+<section id="fiat-shamir">
+  <h2>From interaction to non-interaction: Fiat–Shamir</h2>
+
+  <p>Interactive protocols require a verifier to generate random challenges.</p>
+
+  <p>For a non-interactive proof, the prover can derive the challenge from a cryptographic hash of the transcript.</p>
+
+  <div class="math-box">
+    <div class="formula">challenge = H(statement || commitment || transcript)</div>
+  </div>
+
+  <p>This is the core intuition behind the Fiat–Shamir transform.</p>
+
+  <p>The verifier recomputes the same challenge from the proof transcript.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">commitment</span>
+      <span class="arrow">→</span>
+      <span class="node field">hash</span>
+      <span class="arrow">→</span>
+      <span class="node">challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">response</span>
+    </div>
+  </div>
+
+  <p>Security of this transformation requires careful modeling and domain separation; it is not simply “replace randomness with any hash.”</p>
+</section>
+
+<section id="zk-not-encryption">
+  <h2>Zero knowledge is not encryption</h2>
+
+  <p>Encryption hides a message from unauthorized parties.</p>
+
+  <p>Zero knowledge is different: it lets one party prove a statement without revealing the secret information used to make the statement true.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">encryption</div>
+      <p>“Here is a secret message, but only the intended recipient can read it.”</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">zero knowledge</div>
+      <p>“I know a secret satisfying this condition, but I will not reveal the secret.”</p>
+    </div>
+  </div>
+</section>
+
+<section id="three-properties">
+  <h2>The three properties work together</h2>
+
+  <div class="math-box">
+    <div class="formula">Completeness → honest truth survives verification.</div>
+    <div class="formula">Soundness → false claims do not survive verification.</div>
+    <div class="formula">Zero knowledge → verification does not expose the witness.</div>
+  </div>
+
+  <p>Consider what happens if one property is missing.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">no completeness</div>
+      <p>Honest users can be rejected even when their statements are true.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">no soundness</div>
+      <p>An attacker might prove false statements.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">no zero knowledge</div>
+      <p>The verifier may learn the private witness while checking correctness.</p>
+    </div>
+  </div>
+</section>
+
+<section id="zk-snark-stark">
+  <h2>How this appears in SNARKs and STARKs</h2>
+
+  <p>Modern SNARKs and STARKs combine these properties with concrete algebraic and cryptographic mechanisms.</p>
+
+  <h3>SNARK-style view</h3>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">witness</span>
+      <span class="arrow">→</span>
+      <span class="node">constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomial relations</span>
+      <span class="arrow">→</span>
+      <span class="node field">commitments</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>Soundness comes from the inability of an efficient adversary to satisfy the required algebraic checks for a false statement, under the construction's assumptions.</p>
+
+  <p>Zero knowledge is achieved through blinding, randomization, simulation arguments, or other construction-specific mechanisms.</p>
+
+  <h3>STARK-style view</h3>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">witness / trace</span>
+      <span class="arrow">→</span>
+      <span class="node">AIR</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomial constraints</span>
+      <span class="arrow">→</span>
+      <span class="node field">Merkle + FRI</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>Soundness is connected to low-degree testing, query randomness, hash commitments, and the algebraic structure of the protocol.</p>
+
+  <p>Zero knowledge requires additional hiding/randomization mechanisms when the underlying proof would otherwise reveal information about the witness or execution trace.</p>
+</section>
+
+<section id="zkvm">
+  <h2>What does zero knowledge mean in a zkVM?</h2>
+
+  <p>A zkVM executes a program and generates an execution trace.</p>
+
+  <div class="math-box">
+    <div class="formula">program → execution trace → constraints → proof</div>
+  </div>
+
+  <p>Suppose the trace contains a private value:</p>
+
+  <div class="math-box">
+    <div class="formula">secret = 123456...</div>
+  </div>
+
+  <p>The goal may be to prove that the VM executed correctly without exposing that private value.</p>
+
+  <p>Completeness says the honest trace produces an accepted proof.</p>
+
+  <p>Soundness says an invalid trace should not produce an accepted proof except with negligible probability.</p>
+
+  <p>Zero knowledge says the proof should not unnecessarily reveal the private execution information.</p>
+</section>
+
+<section id="probability">
+  <h2>Understanding “negligible probability”</h2>
+
+  <p>Cryptographic security often uses the word <strong>negligible</strong>.</p>
+
+  <p>Informally, a function <code class="inline">negl(λ)</code> is negligible if it becomes smaller than the inverse of every polynomial in the security parameter <code class="inline">λ</code>, for sufficiently large <code class="inline">λ</code>.</p>
+
+  <div class="math-box">
+    <div class="formula">∀ polynomial p(λ), ∃ λ₀ : negl(λ) &lt; 1/p(λ) for λ &gt; λ₀</div>
+  </div>
+
+  <p>This gives cryptographers a rigorous way to express “so small that an efficient adversary cannot exploit it at meaningful scale.”</p>
+</section>
+
+<section id="security-parameter">
+  <h2>The security parameter</h2>
+
+  <p>The symbol <code class="inline">λ</code> commonly represents the security parameter.</p>
+
+  <p>Increasing <code class="inline">λ</code> generally means increasing the resources required to break the cryptographic guarantee.</p>
+
+  <div class="math-box">
+    <div class="formula">larger λ → harder attack → smaller acceptable failure probability</div>
+  </div>
+
+  <p>Concrete systems translate this abstract parameter into things such as field sizes, hash output lengths, repetition counts, query counts, and group sizes.</p>
+</section>
+
+<section id="adversary">
+  <h2>What is a cheating prover?</h2>
+
+  <p>Soundness is not about one specific attacker.</p>
+
+  <p>We imagine an arbitrary efficient algorithm:</p>
+
+  <div class="math-box">
+    <div class="formula">P*</div>
+  </div>
+
+  <p>The star indicates that this prover may deviate from the prescribed protocol in any computationally feasible way.</p>
+
+  <p>The security statement is therefore roughly:</p>
+
+  <div class="math-box">
+    <div class="formula">for every efficient P*, false statements are accepted only with negligible probability</div>
+  </div>
+
+  <p>This is much stronger than testing the protocol against a few obvious cheating strategies.</p>
+</section>
+
+<section id="malicious-verifier">
+  <h2>What about a malicious verifier?</h2>
+
+  <p>Zero knowledge must consider what a verifier might do with the information it receives.</p>
+
+  <p>A malicious verifier <code class="inline">V*</code> may:</p>
+
+  <ul>
+    <li>choose challenges differently from an honest verifier;</li>
+    <li>keep transcripts;</li>
+    <li>try to correlate protocol messages;</li>
+    <li>run additional computation on the received data;</li>
+    <li>attempt to extract information about the witness.</li>
+  </ul>
+
+  <p>Therefore, a strong zero-knowledge definition is usually phrased against an arbitrary efficient verifier, not just an honest one.</p>
+</section>
+
+<section id="honest-vs-malicious">
+  <h2>Honest prover, honest verifier, malicious prover, malicious verifier</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr>
+        <th>Actor</th>
+        <th>Meaning</th>
+        <th>Property involved</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Honest prover</td>
+        <td>Follows protocol and has a valid witness</td>
+        <td>Completeness</td>
+      </tr>
+      <tr>
+        <td>Cheating prover</td>
+        <td>May deviate arbitrarily while remaining computationally bounded</td>
+        <td>Soundness</td>
+      </tr>
+      <tr>
+        <td>Honest verifier</td>
+        <td>Follows the prescribed verification algorithm</td>
+        <td>Completeness / standard verification</td>
+      </tr>
+      <tr>
+        <td>Malicious verifier</td>
+        <td>May attempt to extract information from interaction</td>
+        <td>Zero knowledge</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="proof-vs-argument">
+  <h2>Proof vs. argument</h2>
+
+  <p>The terminology matters.</p>
+
+  <p>A classical proof can be sound even against an unbounded prover, depending on the formal setting.</p>
+
+  <p>An <strong>argument</strong> relies on computational limitations: a computationally bounded adversary should not be able to break soundness.</p>
+
+  <div class="math-box">
+    <div class="formula">proof → information-theoretic style soundness</div>
+    <div class="formula">argument → computational soundness</div>
+  </div>
+
+  <p>Modern SNARKs and STARKs are generally described as arguments because their soundness relies on computational assumptions.</p>
+</section>
+
+<section id="zero-knowledge-levels">
+  <h2>Interactive vs. non-interactive zero knowledge</h2>
+
+  <p>In an interactive protocol:</p>
+
+  <div class="math-box">
+    <div class="formula">P ↔ V</div>
+  </div>
+
+  <p>The verifier actively contributes randomness.</p>
+
+  <p>In a non-interactive proof:</p>
+
+  <div class="math-box">
+    <div class="formula">P → π → V</div>
+  </div>
+
+  <p>The prover sends a proof <code class="inline">π</code> that the verifier checks.</p>
+
+  <p>Many practical ZK systems use Fiat–Shamir or another mechanism to obtain non-interactive proofs from interactive-style protocols.</p>
+</section>
+
+<section id="rust">
+  <h2>Rust: a tiny mental model</h2>
+
+  <details open>
+    <summary>Completeness, soundness, and verification as code concepts</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Public statement</span>
+<span class="k">struct</span> <span class="t">Statement</span> {
+    public_value: u64,
+}
+
+<span class="c">// Private witness</span>
+<span class="k">struct</span> <span class="t">Witness</span> {
+    secret: u64,
+}
+
+<span class="c">// Relation being proved:</span>
+<span class="c">// H(secret) == public_value</span>
+<span class="k">fn</span> <span class="f">relation</span>(x: &amp;Statement, w: &amp;Witness) -&gt; bool {
+    hash(w.secret) == x.public_value
+}
+
+<span class="c">// Completeness:</span>
+<span class="c">// an honest prover with a valid witness should produce</span>
+<span class="c">// a proof accepted by verify().</span>
+
+<span class="c">// Soundness:</span>
+<span class="c">// an efficient prover without a valid witness should</span>
+<span class="c">// have only negligible probability of producing a proof</span>
+<span class="c">// accepted by verify().</span>
+
+<span class="c">// Zero knowledge:</span>
+<span class="c">// the proof should not expose `w.secret`.</span>
+
+<span class="k">fn</span> <span class="f">verify</span>(x: &amp;Statement, proof: &amp;Proof) -&gt; bool {
+    <span class="c">// Real systems perform cryptographic verification here.</span>
+    todo!()
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>This is deliberately not a cryptographic implementation. It shows where the three security properties sit conceptually in a software system.</p>
+</section>
+
+<section id="common-mistakes">
+  <h2>Common mistakes</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">“Completeness means the prover is honest.”</div>
+      <p>No. Completeness describes the behavior of an honest prover with a valid witness. It is a property of the protocol.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“Soundness means cheating is impossible.”</div>
+      <p>Usually the formal claim is probabilistic: cheating succeeds only with negligible probability under the security model.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“Zero knowledge means the verifier learns nothing.”</div>
+      <p>More precisely, the verifier learns nothing beyond what is allowed by the formal zero-knowledge definition and the public statement.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“Zero knowledge and secrecy are identical.”</div>
+      <p>Zero knowledge is a protocol property based on simulation/indistinguishability, not simply encryption of a message.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“Soundness and zero knowledge are the same.”</div>
+      <p>Soundness protects against false proofs. Zero knowledge protects the witness from being learned through the proof.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">“The verifier extracts the witness.”</div>
+      <p>Knowledge soundness uses an extractor in the security argument; ordinary verification does not normally run that extractor.</p>
+    </div>
+  </div>
+</section>
+
+<section id="zk-pipeline">
+  <h2>Where the three properties appear in a proving pipeline</h2>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">program</span>
+      <span class="arrow">→</span>
+      <span class="node">trace / witness</span>
+      <span class="arrow">→</span>
+      <span class="node">constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node field">commitments</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <div class="math-box">
+    <div class="formula">Completeness → valid witness / trace produces an accepted proof.</div>
+    <div class="formula">Soundness → invalid witness / trace cannot produce an accepted proof except with tiny probability.</div>
+    <div class="formula">Zero knowledge → proof does not expose the private witness beyond the allowed leakage.</div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>Completeness vs. soundness vs. zero knowledge</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Question</th>
+        <th>Protected party</th>
+        <th>Failure looks like</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Completeness</td>
+        <td>Does a true claim with an honest prover get accepted?</td>
+        <td>Honest prover</td>
+        <td>Valid proofs are rejected</td>
+      </tr>
+      <tr>
+        <td>Soundness</td>
+        <td>Can a false claim be accepted?</td>
+        <td>Verifier</td>
+        <td>Invalid proof is accepted</td>
+      </tr>
+      <tr>
+        <td>Zero knowledge</td>
+        <td>Does the proof reveal the witness?</td>
+        <td>Prover / witness owner</td>
+        <td>Verifier learns forbidden information</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="interview">
+  <h2>Interview-level questions</h2>
+
+  <div class="constraint-card">
+    <div class="label">Q1</div>
+    <div class="formula">What is completeness?</div>
+    <p>If the statement is true and the prover has a valid witness and follows the protocol, the verifier accepts with overwhelming probability or according to the protocol's completeness guarantee.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q2</div>
+    <div class="formula">What is soundness?</div>
+    <p>If the statement is false, an efficient cheating prover can convince the verifier only with negligible probability, under the protocol's security assumptions.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q3</div>
+    <div class="formula">What is zero knowledge?</div>
+    <p>The verifier's view of the real proof can be simulated without the witness, so the verifier cannot efficiently extract additional useful witness information from the protocol.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q4</div>
+    <div class="formula">What is the difference between soundness and knowledge soundness?</div>
+    <p>Soundness prevents false statements from being accepted. Knowledge soundness additionally captures the idea that a successful prover must effectively “know” a valid witness, formalized through an extractor.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q5</div>
+    <div class="formula">Why is a simulator used for zero knowledge?</div>
+    <p>Because if a simulated verifier view can be generated without the witness and is indistinguishable from the real view, the protocol is not giving the verifier useful witness-dependent information.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q6</div>
+    <div class="formula">What does negligible probability mean?</div>
+    <p>It means the probability decreases faster than the inverse of every polynomial in the security parameter, for sufficiently large security parameters.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q7</div>
+    <div class="formula">Can a protocol be sound but not zero knowledge?</div>
+    <p>Yes. A protocol can prevent false proofs while still revealing the witness.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q8</div>
+    <div class="formula">Can a protocol be zero knowledge but not sound?</div>
+    <p>Yes in principle. Hiding the witness does not automatically guarantee that false statements cannot be proven.</p>
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. A prover wants to establish that a public statement x belongs to a language L.</div>
+    <div class="formula">2. Membership means there exists a witness w satisfying R(x,w) = true.</div>
+    <div class="formula">3. Completeness says honest valid proofs are accepted.</div>
+    <div class="formula">4. Soundness says false statements are accepted only with tiny probability.</div>
+    <div class="formula">5. Knowledge soundness says a successful prover can be associated with an extractable witness.</div>
+    <div class="formula">6. Zero knowledge says the verifier's view can be simulated without the witness.</div>
+    <div class="formula">7. Interactive protocols often use commitment → challenge → response.</div>
+    <div class="formula">8. Fiat–Shamir can derive challenges from a transcript for non-interactive proofs.</div>
+    <div class="formula">9. Completeness protects honest provers.</div>
+    <div class="formula">10. Soundness protects verifiers from false claims.</div>
+    <div class="formula">11. Zero knowledge protects the witness from being revealed.</div>
+    <div class="formula">12. Modern SNARKs and STARKs implement these ideas using concrete algebraic and cryptographic machinery.</div>
+  </div>
+
+  <p>If you remember only one mental model, remember this:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">true claim</span>
+      <span class="arrow">→</span>
+      <span class="node field">accept</span>
+      <span class="arrow">=</span>
+      <span class="node">completeness</span>
+    </div>
+    <div class="row">
+      <span class="node">false claim</span>
+      <span class="arrow">→</span>
+      <span class="node field">reject</span>
+      <span class="arrow">=</span>
+      <span class="node">soundness</span>
+    </div>
+    <div class="row">
+      <span class="node">private witness</span>
+      <span class="arrow">→</span>
+      <span class="node field">not revealed</span>
+      <span class="arrow">=</span>
+      <span class="node">zero knowledge</span>
+    </div>
+  </div>
+
+  <p><em>These three properties are not interchangeable. Together, they describe the core correctness, security, and privacy goals that make a zero-knowledge proof system useful.</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
