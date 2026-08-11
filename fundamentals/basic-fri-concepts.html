@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Basic FRI Concepts — Srishti Rathi</title>
+<meta name="description" content="FRI explained from first principles: Reed–Solomon codes, low-degree testing, evaluation domains, oracle access, Merkle commitments, Fiat–Shamir, folding, queries, soundness, and the role of FRI inside STARKs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+
+/* ---------- Fiat-Shamir additions ---------- */
+.protocol-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.protocol-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.protocol-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.protocol-flow .arrow{color:var(--ink-dim);}
+.protocol-flow .challenge{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.transcript{
+  margin:1.5rem 0;
+  padding:16px 18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.transcript .k{color:var(--teal);}
+.transcript .v{color:var(--purple);}
+@media (max-width:780px){
+  .protocol-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Witness / public-input additions ---------- */
+.input-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.input-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.input-card .value{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--purple);
+}
+.data-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.data-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.data-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.data-flow .private{
+  border-color:var(--purple);
+}
+.data-flow .public{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.data-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .data-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Arithmetic constraints additions ---------- */
+.constraint-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.constraint-card .formula{
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:13px;
+}
+.constraint-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.constraint-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.constraint-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.constraint-flow .field{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.constraint-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .constraint-flow .row{font-size:11px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>Basic FRI Concepts</em></h1>
+  <p class="dek">from polynomials and evaluation domains to low-degree testing, Merkle commitments, folding, queries, soundness, and the STARK proving pipeline</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · FRI</p>
+</header>
+
+<article>
+
+<section id="problem">
+  <h2>Start with the actual problem</h2>
+
+  <p>FRI is easier to understand if we first ask what a STARK prover needs to prove.</p>
+
+  <p>Suppose a prover claims that some huge computation is valid. After converting the computation into algebraic constraints, the prover eventually needs to convince the verifier about properties of one or more polynomials.</p>
+
+  <div class="math-box">
+    <div class="formula">“This huge collection of evaluations comes from a low-degree polynomial.”</div>
+  </div>
+
+  <p>The verifier cannot simply download every evaluation and reconstruct the polynomial. There may be millions of values.</p>
+
+  <p>FRI provides a scalable way to test this claim through:</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">commitments</div>
+      <p>The prover commits to large evaluation vectors using Merkle trees.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">random queries</div>
+      <p>The verifier checks only a small number of positions.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">folding</div>
+      <p>The prover repeatedly transforms a polynomial into a lower-degree polynomial.</p>
+    </div>
+  </div>
+
+  <p>At the end, the verifier has evidence that the original function was close to the claimed low-degree structure.</p>
+</section>
+
+<section id="meaning">
+  <h2>What does FRI stand for?</h2>
+
+  <div class="math-box">
+    <div class="formula">F — Fast</div>
+    <div class="formula">R — Reed–Solomon</div>
+    <div class="formula">I — Interactive Oracle</div>
+    <div class="formula">P — Proximity</div>
+  </div>
+
+  <p>The full name is <strong>Fast Reed–Solomon Interactive Oracle of Proximity</strong>.</p>
+
+  <p>Each word tells us something important.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">Fast</div>
+      <p>The protocol is designed to handle very large evaluation domains efficiently.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">Reed–Solomon</div>
+      <p>The underlying object is a polynomial evaluation code: values generated by evaluating a low-degree polynomial over a domain.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">Interactive Oracle</div>
+      <p>The verifier accesses selected locations of a committed function rather than receiving the entire function.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">Proximity</div>
+      <p>The goal is not merely to ask whether a function is exactly a codeword, but whether it is sufficiently close to one.</p>
+    </div>
+  </div>
+</section>
+
+<section id="polynomial">
+  <h2>First principle: what is a polynomial?</h2>
+
+  <p>A polynomial over a field can be written as:</p>
+
+  <div class="math-box">
+    <div class="formula">f(X) = a₀ + a₁X + a₂X² + … + a_dX^d</div>
+  </div>
+
+  <p>The largest exponent with a non-zero coefficient is the degree.</p>
+
+  <div class="math-box">
+    <div class="formula">deg(f) ≤ d</div>
+  </div>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">f(X) = 3 + 2X + 7X²</div>
+    <div class="formula">deg(f) = 2</div>
+  </div>
+
+  <p>FRI is fundamentally interested in whether a function behaves like a polynomial whose degree is below a specified bound.</p>
+</section>
+
+<section id="field">
+  <h2>The polynomial lives over a finite field</h2>
+
+  <p>STARK systems do not normally evaluate polynomials over the real numbers.</p>
+
+  <p>They work over a finite field.</p>
+
+  <div class="math-box">
+    <div class="formula">F = {0, 1, 2, …, p−1}</div>
+    <div class="formula">all arithmetic is performed modulo p</div>
+  </div>
+
+  <p>For example, over the field modulo 17:</p>
+
+  <div class="math-box">
+    <div class="formula">15 + 5 = 3 mod 17</div>
+    <div class="formula">4 · 5 = 3 mod 17</div>
+  </div>
+
+  <p>Therefore a polynomial such as:</p>
+
+  <div class="math-box">
+    <div class="formula">f(X) = 2 + 3X + 5X²</div>
+  </div>
+
+  <p>can be evaluated at field elements using finite-field arithmetic.</p>
+</section>
+
+<section id="evaluation">
+  <h2>From coefficients to evaluations</h2>
+
+  <p>A polynomial can be represented by its coefficients:</p>
+
+  <div class="math-box">
+    <div class="formula">[a₀, a₁, a₂, …, a_d]</div>
+  </div>
+
+  <p>Or we can evaluate it at a collection of points:</p>
+
+  <div class="math-box">
+    <div class="formula">[f(x₀), f(x₁), f(x₂), …, f(xₙ)]</div>
+  </div>
+
+  <p>FRI works primarily with this evaluation representation.</p>
+
+  <p>This is important because the prover can commit to a large vector of evaluations without revealing the entire polynomial's coefficients.</p>
+</section>
+
+<section id="domain">
+  <h2>What is an evaluation domain?</h2>
+
+  <p>An evaluation domain is a chosen set of field elements where the polynomial will be evaluated.</p>
+
+  <div class="math-box">
+    <div class="formula">D = {x₀, x₁, x₂, …, x_{n−1}}</div>
+  </div>
+
+  <p>In STARK systems, the domain is often chosen with strong algebraic structure, commonly using a multiplicative subgroup or a related structured domain.</p>
+
+  <p>A structured domain makes polynomial operations and FFT-style transformations efficient.</p>
+
+  <h3>Example</h3>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">D = {1, ω, ω², …, ω^{n−1}}</div>
+  </div>
+
+  <p>where <code class="inline">ω</code> is an element with the required multiplicative order.</p>
+</section>
+
+<section id="reed-solomon">
+  <h2>Reed–Solomon code: the key connection</h2>
+
+  <p>A Reed–Solomon code can be understood as taking a low-degree polynomial and encoding it by evaluating it at many points.</p>
+
+  <div class="math-box">
+    <div class="formula">polynomial f</div>
+    <div class="formula">↓ evaluate on D</div>
+    <div class="formula">codeword = [f(x₀), f(x₁), …, f(xₙ₋₁)]</div>
+  </div>
+
+  <p>So a low-degree polynomial corresponds to a highly structured evaluation vector.</p>
+
+  <p>FRI exploits this structure.</p>
+
+  <div class="note-box">
+    <strong>Mental model:</strong> instead of asking “is this list of numbers a polynomial?”, think “is this evaluation vector close to the evaluation vector of a sufficiently low-degree polynomial?”
+  </div>
+</section>
+
+<section id="oracle">
+  <h2>What is an oracle?</h2>
+
+  <p>An oracle is an abstraction for a function that the verifier can query at selected positions.</p>
+
+  <p>Imagine the prover has a huge vector:</p>
+
+  <div class="math-box">
+    <div class="formula">v = [v₀, v₁, v₂, …, vₙ₋₁]</div>
+  </div>
+
+  <p>The verifier does not receive the whole vector.</p>
+
+  <p>Instead, it asks:</p>
+
+  <div class="math-box">
+    <div class="formula">“Give me v₁₂₇.”</div>
+    <div class="formula">“Give me v₈₄₂.”</div>
+    <div class="formula">“Give me v₁₀₂₄.”</div>
+  </div>
+
+  <p>FRI is an oracle proof because the verifier reasons about a huge function through a relatively small number of queries.</p>
+</section>
+
+<section id="proximity">
+  <h2>What does “proximity” mean?</h2>
+
+  <p>This is one of the most important words in FRI.</p>
+
+  <p>Suppose the verifier expects a function that comes from a polynomial of degree at most <code class="inline">d</code>.</p>
+
+  <p>A function may not be exactly such a polynomial, but it might differ at only a small fraction of its positions.</p>
+
+  <div class="math-box">
+    <div class="formula">f_actual ≈ f_low_degree</div>
+  </div>
+
+  <p>FRI is designed to distinguish between:</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">close to low degree</div>
+      <p>The oracle differs from some valid low-degree polynomial only on a small fraction of the domain.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">far from low degree</div>
+      <p>The oracle is not close to any polynomial within the claimed degree bound.</p>
+    </div>
+  </div>
+</section>
+
+<section id="commit">
+  <h2>Why does the prover need to commit first?</h2>
+
+  <p>If the prover could wait until seeing the verifier's queries before choosing values, it could answer each query dishonestly in a coordinated way.</p>
+
+  <p>Therefore the prover first commits to the evaluation vector.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">evaluation vector</span>
+      <span class="arrow">→</span>
+      <span class="node field">Merkle tree</span>
+      <span class="arrow">→</span>
+      <span class="node">root</span>
+      <span class="arrow">→</span>
+      <span class="node">verifier</span>
+    </div>
+  </div>
+
+  <p>The Merkle root acts as a compact commitment to the complete vector.</p>
+</section>
+
+<section id="merkle">
+  <h2>Merkle commitments in FRI</h2>
+
+  <p>Suppose the prover has evaluations:</p>
+
+  <div class="math-box">
+    <div class="formula">v₀, v₁, v₂, …, v₇</div>
+  </div>
+
+  <p>Hash the leaves:</p>
+
+  <div class="math-box">
+    <div class="formula">hᵢ = H(vᵢ)</div>
+  </div>
+
+  <p>Then repeatedly hash pairs:</p>
+
+  <div class="math-box">
+    <div class="formula">h₀₁ = H(h₀ || h₁)</div>
+    <div class="formula">h₂₃ = H(h₂ || h₃)</div>
+    <div class="formula">…</div>
+    <div class="formula">root = H(h₀₁ || h₂₃ || …)</div>
+  </div>
+
+  <p>Later, the prover gives a queried value together with its authentication path.</p>
+
+  <p>The verifier can reconstruct the root and check that the value was part of the committed vector.</p>
+</section>
+
+<section id="folding-intuition">
+  <h2>The central idea: folding</h2>
+
+  <p>FRI repeatedly reduces the size and degree of the polynomial problem.</p>
+
+  <p>The easiest intuition is to split evaluations into two halves:</p>
+
+  <div class="math-box">
+    <div class="formula">f₀(x), f₁(x)</div>
+  </div>
+
+  <p>and combine them using a random verifier challenge.</p>
+
+  <p>A common conceptual form is:</p>
+
+  <div class="math-box">
+    <div class="formula">g(x²) = (f(x) + α f(−x)) / 2</div>
+  </div>
+
+  <p>where <code class="inline">α</code> is a random challenge derived from the transcript.</p>
+
+  <p>The exact implementation can be expressed in several equivalent forms depending on the domain and indexing convention.</p>
+
+  <div class="note-box">
+    <strong>Key intuition:</strong> folding combines information from two related points into one new point while reducing the effective degree of the object being tested.
+  </div>
+</section>
+
+<section id="even-odd">
+  <h2>Why does pairing x and −x help?</h2>
+
+  <p>Write a polynomial as its even and odd parts:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = f_even(x²) + x · f_odd(x²)</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) + f(−x) = 2 f_even(x²)</div>
+    <div class="formula">f(x) − f(−x) = 2x f_odd(x²)</div>
+  </div>
+
+  <p>This decomposition is the algebraic reason folding can reduce the degree problem.</p>
+
+  <p>FRI uses a random linear combination of these pieces so that a cheating function is unlikely to continue looking low-degree after repeated folds.</p>
+</section>
+
+<section id="alpha">
+  <h2>What is the random challenge α?</h2>
+
+  <p>At each folding round, the verifier contributes a random field element.</p>
+
+  <div class="math-box">
+    <div class="formula">α₀ → first fold</div>
+    <div class="formula">α₁ → second fold</div>
+    <div class="formula">α₂ → third fold</div>
+    <div class="formula">…</div>
+  </div>
+
+  <p>These challenges prevent the prover from preparing a malicious function specifically for a known folding rule.</p>
+
+  <p>In a non-interactive STARK, the challenges are typically derived using Fiat–Shamir:</p>
+
+  <div class="math-box">
+    <div class="formula">αᵢ = H(previous transcript)</div>
+  </div>
+</section>
+
+<section id="rounds">
+  <h2>FRI rounds</h2>
+
+  <p>A simplified FRI protocol repeatedly performs:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">commit</span>
+      <span class="arrow">→</span>
+      <span class="node">challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">fold</span>
+      <span class="arrow">→</span>
+      <span class="node">commit</span>
+      <span class="arrow">→</span>
+      <span class="node">challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">fold</span>
+    </div>
+  </div>
+
+  <p>After each fold, the domain becomes smaller and the degree bound decreases.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="math-box">
+    <div class="formula">D₀ → D₁ → D₂ → D₃ → …</div>
+    <div class="formula">size: N → N/2 → N/4 → N/8 → …</div>
+    <div class="formula">degree bound: d → roughly d/2 → roughly d/4 → …</div>
+  </div>
+
+  <p>The precise degree relationship depends on the protocol variant and how the folding is defined.</p>
+</section>
+
+<section id="small-example">
+  <h2>A tiny conceptual example</h2>
+
+  <p>Suppose the prover claims a polynomial has degree at most 3:</p>
+
+  <div class="math-box">
+    <div class="formula">deg(f) ≤ 3</div>
+  </div>
+
+  <p>Evaluate it over a domain of eight points:</p>
+
+  <div class="math-box">
+    <div class="formula">[f(x₀), f(x₁), …, f(x₇)]</div>
+  </div>
+
+  <p>FRI can fold the eight evaluations into four:</p>
+
+  <div class="math-box">
+    <div class="formula">8 evaluations → 4 folded evaluations</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">4 → 2 → 1</div>
+  </div>
+
+  <p>The point is not that “one value proves the polynomial.” The point is that repeated algebraic reductions make the low-degree claim progressively easier to test, while random challenges preserve soundness.</p>
+</section>
+
+<section id="last-round">
+  <h2>What happens at the end?</h2>
+
+  <p>Eventually the polynomial is reduced to a very small object.</p>
+
+  <p>The verifier can directly check the final representation against the expected low-degree structure.</p>
+
+  <div class="math-box">
+    <div class="formula">large polynomial → folds → small polynomial → direct check</div>
+  </div>
+
+  <p>The prover cannot simply choose arbitrary final values because every folding step is tied to previous committed evaluations and transcript challenges.</p>
+</section>
+
+<section id="queries">
+  <h2>Why are random queries necessary?</h2>
+
+  <p>The verifier cannot inspect every position in every FRI layer.</p>
+
+  <p>Instead, it samples a small number of random positions.</p>
+
+  <div class="math-box">
+    <div class="formula">huge domain → random query i → local consistency checks</div>
+  </div>
+
+  <p>For each query, the verifier checks the values needed to reconstruct the corresponding fold relation.</p>
+
+  <p>If the prover's function is far from low degree, random sampling gives the verifier a significant chance of detecting inconsistency.</p>
+
+  <div class="note-box">
+    <strong>Soundness intuition:</strong> a cheating prover may hide bad locations, but it cannot know which locations the verifier will query after it has committed.
+  </div>
+</section>
+
+<section id="query-path">
+  <h2>What does a query look like?</h2>
+
+  <p>Suppose the verifier chooses an index <code class="inline">i</code>.</p>
+
+  <p>The prover must provide enough information to verify the fold relationship involving the corresponding pair of locations.</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">query i</span>
+      <span class="arrow">→</span>
+      <span class="node">related index</span>
+      <span class="arrow">→</span>
+      <span class="node field">field values</span>
+      <span class="arrow">→</span>
+      <span class="node">fold equation</span>
+      <span class="arrow">→</span>
+      <span class="node">Merkle paths</span>
+    </div>
+  </div>
+
+  <p>Repeated queries make it increasingly unlikely that a significantly corrupted oracle passes all checks.</p>
+</section>
+
+<section id="fiat-shamir">
+  <h2>FRI and Fiat–Shamir</h2>
+
+  <p>The original FRI description is interactive: the verifier sends random challenges.</p>
+
+  <p>A STARK prover generally needs a non-interactive proof.</p>
+
+  <p>Fiat–Shamir derives each challenge from the transcript:</p>
+
+  <div class="math-box">
+    <div class="formula">commit₀</div>
+    <div class="formula">α₀ = H(statement || commit₀)</div>
+    <div class="formula">fold₀</div>
+    <div class="formula">commit₁</div>
+    <div class="formula">α₁ = H(statement || commit₀ || commit₁)</div>
+    <div class="formula">fold₁</div>
+  </div>
+
+  <p>This creates a deterministic transcript that both prover and verifier can reproduce.</p>
+
+  <p>Careful transcript design and domain separation are essential for security.</p>
+</section>
+
+<section id="commitment-order">
+  <h2>Why the order matters</h2>
+
+  <p>The protocol must preserve the causal order:</p>
+
+  <div class="math-box">
+    <div class="formula">commit → challenge → respond</div>
+  </div>
+
+  <p>not:</p>
+
+  <div class="math-box">
+    <div class="formula">challenge → choose commitment</div>
+  </div>
+
+  <p>If the prover can adapt its committed function after learning the challenge, the soundness argument can fail.</p>
+</section>
+
+<section id="soundness">
+  <h2>How FRI gets soundness</h2>
+
+  <p>Suppose the prover's oracle is far from every polynomial of the claimed degree.</p>
+
+  <p>The prover commits to this oracle before seeing the random challenges.</p>
+
+  <p>FRI's folding transformation and random challenges make it difficult for a far-from-low-degree function to remain consistent through every round.</p>
+
+  <div class="math-box">
+    <div class="formula">bad oracle</div>
+    <div class="formula">↓ random fold</div>
+    <div class="formula">still unlikely to look low-degree</div>
+    <div class="formula">↓ random fold</div>
+    <div class="formula">still unlikely</div>
+    <div class="formula">↓ queries</div>
+    <div class="formula">detected with high probability</div>
+  </div>
+
+  <p>The formal soundness analysis is more involved and depends on the field, degree bound, rate, number of rounds, and number of queries.</p>
+</section>
+
+<section id="soundness-error">
+  <h2>Soundness error intuition</h2>
+
+  <p>If a cheating oracle has only a small chance of passing one random test, repeating independent or appropriately structured tests reduces the overall cheating probability.</p>
+
+  <div class="math-box">
+    <div class="formula">one test → failure probability ε</div>
+    <div class="formula">q effective tests → roughly ε^q</div>
+  </div>
+
+  <p>The exact bound is protocol-specific, so this should be treated as intuition rather than a universal FRI formula.</p>
+</section>
+
+<section id="rate">
+  <h2>What is the code rate?</h2>
+
+  <p>The evaluation domain is usually larger than the polynomial's degree bound.</p>
+
+  <div class="math-box">
+    <div class="formula">domain size = N</div>
+    <div class="formula">degree bound = d</div>
+  </div>
+
+  <p>The ratio between the amount of information represented and the size of the encoded domain is related to the code rate.</p>
+
+  <p>In simple intuition:</p>
+
+  <div class="math-box">
+    <div class="formula">more evaluation points relative to degree → more redundancy → more error-detection capability</div>
+  </div>
+
+  <p>FRI relies on this redundancy to test whether the oracle is consistent with a low-degree polynomial.</p>
+</section>
+
+<section id="lde">
+  <h2>FRI and low-degree extension</h2>
+
+  <p>In STARKs, a polynomial is often first evaluated over a larger domain than the original execution trace domain.</p>
+
+  <p>This is called a <strong>low-degree extension</strong> (LDE).</p>
+
+  <div class="math-box">
+    <div class="formula">trace values</div>
+    <div class="formula">↓ interpolate</div>
+    <div class="formula">trace polynomial</div>
+    <div class="formula">↓ evaluate on larger domain</div>
+    <div class="formula">LDE evaluations</div>
+  </div>
+
+  <p>The enlarged domain provides redundancy that is useful for proximity testing and soundness.</p>
+</section>
+
+<section id="composition">
+  <h2>Where does the composition polynomial fit?</h2>
+
+  <p>In a STARK, the prover does not usually ask FRI to prove every individual AIR constraint independently.</p>
+
+  <p>Constraint violations can be combined into a composition polynomial or related algebraic object.</p>
+
+  <div class="math-box">
+    <div class="formula">execution trace</div>
+    <div class="formula">↓</div>
+    <div class="formula">AIR constraints</div>
+    <div class="formula">↓</div>
+    <div class="formula">composition polynomial</div>
+    <div class="formula">↓</div>
+    <div class="formula">FRI low-degree proof</div>
+  </div>
+
+  <p>FRI then helps prove that the relevant composition object has the required low-degree structure.</p>
+</section>
+
+<section id="zk">
+  <h2>FRI is not automatically zero knowledge</h2>
+
+  <p>This distinction is important.</p>
+
+  <p>FRI is fundamentally a low-degree testing / proximity protocol. Zero knowledge is a separate security property.</p>
+
+  <div class="math-box">
+    <div class="formula">FRI → low-degree soundness</div>
+    <div class="formula">ZK mechanisms → hide witness-dependent information</div>
+  </div>
+
+  <p>A complete zero-knowledge STARK adds appropriate masking, randomization, and protocol techniques so that the proof does not reveal the private execution data that should remain hidden.</p>
+</section>
+
+<section id="stark">
+  <h2>FRI inside a STARK</h2>
+
+  <p>A simplified STARK pipeline is:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">program</span>
+      <span class="arrow">→</span>
+      <span class="node">execution trace</span>
+      <span class="arrow">→</span>
+      <span class="node">AIR</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node field">Merkle commitments</span>
+      <span class="arrow">→</span>
+      <span class="node">FRI</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>FRI is therefore not the entire STARK. It is one of the central components used to establish low-degree proximity.</p>
+</section>
+
+<section id="small-rust">
+  <h2>Rust: the core folding idea</h2>
+
+  <details open>
+    <summary>Educational FRI-style folding</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Educational illustration only.</span>
+<span class="c">// Real FRI implementations must use field elements,</span>
+<span class="c">// a carefully chosen domain, transcript challenges,</span>
+<span class="c">// commitments, and exact protocol indexing.</span>
+
+<span class="k">fn</span> <span class="f">fold</span>(
+    f_x: FieldElement,
+    f_minus_x: FieldElement,
+    alpha: FieldElement,
+) -&gt; FieldElement {
+    <span class="c">// Conceptual form:</span>
+    <span class="c">// g(x²) = (f(x) + alpha * f(-x)) / 2</span>
+    <span class="k">let</span> two_inv = FieldElement::from(2).inverse();
+    (f_x + alpha * f_minus_x) * two_inv
+}
+
+<span class="c">// A real prover would:</span>
+<span class="c">// 1. evaluate a polynomial over a domain</span>
+<span class="c">// 2. commit to the evaluations</span>
+<span class="c">// 3. derive alpha from the transcript</span>
+<span class="c">// 4. fold the evaluations</span>
+<span class="c">// 5. commit to the next layer</span>
+<span class="c">// 6. repeat until the final layer</span></code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>The important part is not the syntax. The important part is the repeated transformation:</p>
+
+  <div class="math-box">
+    <div class="formula">large evaluation vector → smaller evaluation vector → smaller → …</div>
+  </div>
+</section>
+
+<section id="implementation">
+  <h2>What a real FRI implementation must handle</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">field arithmetic</div>
+      <p>Every value must be a valid element of the selected finite field.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">domain indexing</div>
+      <p>Paired points must be mapped consistently across every folding round.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">transcript</div>
+      <p>Challenges must be derived in the exact order expected by prover and verifier.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">Merkle commitments</div>
+      <p>Every FRI layer must be committed before its challenge is known.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">query paths</div>
+      <p>The verifier must request all sibling values needed to validate folding relationships.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">final polynomial</div>
+      <p>The final reduced object must be checked against the claimed degree bound.</p>
+    </div>
+  </div>
+</section>
+
+<section id="fri-vs-fft">
+  <h2>FRI vs FFT</h2>
+
+  <p>These are easy to confuse because both appear together in STARK implementations.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">FFT / IFFT</div>
+      <p>Efficiently moves between polynomial coefficients and evaluations over a structured domain.</p>
+    </div>
+
+    <div class="example-card">
+      <div class="label">FRI</div>
+      <p>Provides a protocol for testing that an evaluation oracle is close to a low-degree polynomial.</p>
+    </div>
+  </div>
+
+  <p>A STARK prover may use FFTs to construct polynomial evaluations and FRI to prove the resulting low-degree claims.</p>
+</section>
+
+<section id="fri-vs-merkle">
+  <h2>FRI vs Merkle trees</h2>
+
+  <p>A Merkle tree by itself does not prove that a vector comes from a low-degree polynomial.</p>
+
+  <div class="math-box">
+    <div class="formula">Merkle tree → commitment to data</div>
+    <div class="formula">FRI → low-degree proximity protocol</div>
+  </div>
+
+  <p>They work together:</p>
+
+  <div class="constraint-flow">
+    <div class="row">
+      <span class="node">FRI layer</span>
+      <span class="arrow">→</span>
+      <span class="node field">Merkle root</span>
+      <span class="arrow">→</span>
+      <span class="node">random query</span>
+      <span class="arrow">→</span>
+      <span class="node">authentication path</span>
+    </div>
+  </div>
+</section>
+
+<section id="fri-vs-kzg">
+  <h2>FRI vs KZG</h2>
+
+  <p>Both can be used as polynomial-proof machinery, but their cryptographic approaches are very different.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>FRI</th>
+        <th>KZG</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Core idea</td>
+        <td>Low-degree testing through recursive folding</td>
+        <td>Algebraic polynomial commitment with evaluation proofs</td>
+      </tr>
+      <tr>
+        <td>Commitment style</td>
+        <td>Hash / Merkle commitments</td>
+        <td>Elliptic-curve group commitment</td>
+      </tr>
+      <tr>
+        <td>Pairings</td>
+        <td>Not required by core FRI</td>
+        <td>Used for common KZG verification</td>
+      </tr>
+      <tr>
+        <td>Trusted setup</td>
+        <td>Transparent</td>
+        <td>Traditional KZG requires an SRS generated from secret setup randomness</td>
+      </tr>
+      <tr>
+        <td>Proof size</td>
+        <td>Generally larger</td>
+        <td>Very compact evaluation proofs</td>
+      </tr>
+      <tr>
+        <td>Typical STARK role</td>
+        <td>Core low-degree testing component</td>
+        <td>Not the usual commitment scheme</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="why-fold">
+  <h2>Why does folding actually help?</h2>
+
+  <p>Suppose the initial domain contains <code class="inline">N</code> evaluations.</p>
+
+  <p>After one fold:</p>
+
+  <div class="math-box">
+    <div class="formula">N → N/2</div>
+  </div>
+
+  <p>After another:</p>
+
+  <div class="math-box">
+    <div class="formula">N/2 → N/4</div>
+  </div>
+
+  <p>After <code class="inline">r</code> rounds:</p>
+
+  <div class="math-box">
+    <div class="formula">N / 2^r</div>
+  </div>
+
+  <p>This logarithmic number of rounds is what makes recursive reduction practical for very large domains.</p>
+</section>
+
+<section id="mental-model">
+  <h2>The simplest mental model</h2>
+
+  <div class="math-box">
+    <div class="formula">1. Start with a huge evaluation vector.</div>
+    <div class="formula">2. Commit to it.</div>
+    <div class="formula">3. Receive a random challenge.</div>
+    <div class="formula">4. Fold paired evaluations into a smaller vector.</div>
+    <div class="formula">5. Commit to the smaller vector.</div>
+    <div class="formula">6. Repeat.</div>
+    <div class="formula">7. Randomly query the layers.</div>
+    <div class="formula">8. Verify Merkle paths and fold equations.</div>
+    <div class="formula">9. Check the final low-degree object.</div>
+  </div>
+
+  <p>The prover cannot freely change old layers because every layer was committed before the corresponding challenge was derived.</p>
+</section>
+
+<section id="interview">
+  <h2>Interview-level questions</h2>
+
+  <div class="constraint-card">
+    <div class="label">Q1</div>
+    <div class="formula">What does FRI stand for?</div>
+    <p>Fast Reed–Solomon Interactive Oracle of Proximity.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q2</div>
+    <div class="formula">What problem does FRI solve?</div>
+    <p>It provides a scalable protocol for testing whether an oracle is close to the evaluation of a low-degree polynomial.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q3</div>
+    <div class="formula">Why is it called “proximity”?</div>
+    <p>The verifier tests whether the function is close to a valid low-degree Reed–Solomon codeword, rather than requiring direct reconstruction of the whole polynomial.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q4</div>
+    <div class="formula">What is folding?</div>
+    <p>Folding combines evaluations at related domain points using a random challenge to produce a new function on a smaller domain with a lower effective degree bound.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q5</div>
+    <div class="formula">Why are Merkle trees used?</div>
+    <p>They commit to large evaluation vectors while allowing the verifier to authenticate only the values needed for random queries.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q6</div>
+    <div class="formula">Why must the prover commit before the challenge?</div>
+    <p>Otherwise the prover could adapt the evaluation vector after learning which folding or query choices will be tested.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q7</div>
+    <div class="formula">What does Fiat–Shamir do in FRI?</div>
+    <p>It derives verifier challenges from the transcript, allowing an interactive-style FRI protocol to be represented as a non-interactive proof.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q8</div>
+    <div class="formula">Is FRI the same thing as a STARK?</div>
+    <p>No. FRI is a central low-degree testing component used by common STARK constructions, but a STARK includes the complete proving system around it.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q9</div>
+    <div class="formula">Is FRI zero knowledge?</div>
+    <p>FRI itself is primarily a low-degree proximity protocol. A zero-knowledge STARK needs additional mechanisms to hide witness-dependent information.</p>
+  </div>
+
+  <div class="constraint-card">
+    <div class="label">Q10</div>
+    <div class="formula">Why is FRI useful for zkVMs?</div>
+    <p>A zkVM produces huge algebraic traces and polynomial representations. FRI lets the verifier test the required low-degree claims without downloading every evaluation.</p>
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. A polynomial can be represented by its evaluations over a domain.</div>
+    <div class="formula">2. Evaluations of a low-degree polynomial form a Reed–Solomon codeword.</div>
+    <div class="formula">3. A STARK needs to prove that huge evaluation vectors have this low-degree structure.</div>
+    <div class="formula">4. The prover commits to each evaluation layer using a Merkle tree.</div>
+    <div class="formula">5. The verifier supplies random challenges.</div>
+    <div class="formula">6. FRI folds related evaluations using those challenges.</div>
+    <div class="formula">7. Each fold reduces the domain and the effective degree bound.</div>
+    <div class="formula">8. The verifier checks a small number of random query paths.</div>
+    <div class="formula">9. Repeated random checks make far-from-low-degree cheating difficult.</div>
+    <div class="formula">10. The final reduced object is checked directly.</div>
+    <div class="formula">11. Fiat–Shamir turns transcript challenges into deterministic hash-derived challenges.</div>
+    <div class="formula">12. FRI provides low-degree proximity testing; it is not the entire STARK.</div>
+  </div>
+
+  <p>If you remember only one sentence, remember this: <em>FRI lets a verifier test, using commitments, random queries, and recursive folding, whether a huge evaluation oracle is consistent with a low-degree polynomial without downloading the entire polynomial.</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
