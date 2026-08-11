@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiat–Shamir Transform — Srishti Rathi</title>
+<meta name="description" content="The Fiat–Shamir transform from first principles: interactive proofs, public-coin challenges, transcripts, random oracles, non-interactive proofs, Schnorr, soundness, zero knowledge, and ZK applications.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+
+/* ---------- Fiat-Shamir additions ---------- */
+.protocol-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.protocol-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.protocol-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.protocol-flow .arrow{color:var(--ink-dim);}
+.protocol-flow .challenge{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.transcript{
+  margin:1.5rem 0;
+  padding:16px 18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.transcript .k{color:var(--teal);}
+.transcript .v{color:var(--purple);}
+@media (max-width:780px){
+  .protocol-flow .row{font-size:11px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>Fiat–Shamir transform</em></h1>
+  <p class="dek">from interactive proofs and verifier randomness to hash-derived challenges, transcripts, random oracles, and non-interactive ZK proofs</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="motivation">
+  <h2>Why do we need the Fiat–Shamir transform?</h2>
+
+  <p>Start with an interactive proof.</p>
+
+  <p>A prover wants to convince a verifier that some statement is true. The verifier sends unpredictable challenges, and the prover responds.</p>
+
+  <div class="protocol-flow">
+    <div class="row">
+      <span class="node">Prover</span>
+      <span class="arrow">→ commitment →</span>
+      <span class="node">Verifier</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">Prover</span>
+      <span class="arrow">← random challenge ←</span>
+      <span class="node challenge">Verifier</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">Prover</span>
+      <span class="arrow">→ response →</span>
+      <span class="node">Verifier</span>
+    </div>
+  </div>
+
+  <p>This interaction is useful because the verifier's challenge is unpredictable to the prover when the commitment is created.</p>
+
+  <p>But an interactive protocol has a practical problem: the prover and verifier must communicate during the proof.</p>
+
+  <p>The <strong>Fiat–Shamir transform</strong> removes that interaction by replacing the verifier's random challenge with a cryptographic hash of the transcript.</p>
+
+  <div class="note-box">
+    <strong>Mental model:</strong> instead of asking a verifier for a random challenge, the prover computes the challenge as a hash of everything that came before it. The transcript becomes self-contained.
+  </div>
+</section>
+
+<section id="interactive">
+  <h2>First understand an interactive proof</h2>
+
+  <p>Most Fiat–Shamir explanations become much easier if you first understand the interactive protocol it transforms.</p>
+
+  <p>A common three-message public-coin protocol has this shape:</p>
+
+  <div class="math-box">
+    <div class="formula">Prover → Verifier : commitment A</div>
+    <div class="formula">Verifier → Prover : challenge c</div>
+    <div class="formula">Prover → Verifier : response z</div>
+  </div>
+
+  <p>The verifier checks:</p>
+
+  <div class="math-box">
+    <div class="formula">Verify(statement, A, c, z) = accept</div>
+  </div>
+
+  <p>The important property is that <code class="inline">c</code> is chosen after <code class="inline">A</code>.</p>
+
+  <p>The prover commits first, before knowing which challenge it will have to answer.</p>
+</section>
+
+<section id="public-coin">
+  <h2>What does “public-coin” mean?</h2>
+
+  <p>In a public-coin protocol, the verifier's message is essentially a random challenge.</p>
+
+  <p>There is no secret verifier state that the prover needs to learn.</p>
+
+  <div class="math-box">
+    <div class="formula">commitment A</div>
+    <div class="formula">↓</div>
+    <div class="formula">random challenge c ← ChallengeSpace</div>
+    <div class="formula">↓</div>
+    <div class="formula">response z</div>
+  </div>
+
+  <p>This matters because Fiat–Shamir is designed around replacing this public random challenge with a deterministic value derived from the transcript.</p>
+</section>
+
+<section id="core">
+  <h2>The central Fiat–Shamir idea</h2>
+
+  <p>Instead of:</p>
+
+  <div class="math-box">
+    <div class="formula">c ←$ ChallengeSpace</div>
+  </div>
+
+  <p>the prover computes:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(statement || A)</div>
+  </div>
+
+  <p>or, more generally:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(transcript_so_far)</div>
+  </div>
+
+  <p>The response is then computed using that challenge:</p>
+
+  <div class="math-box">
+    <div class="formula">z = Respond(witness, A, c)</div>
+  </div>
+
+  <p>The verifier independently computes the same hash and therefore derives the same challenge.</p>
+
+  <div class="protocol-flow">
+    <div class="row">
+      <span class="node">statement</span>
+      <span class="arrow">+</span>
+      <span class="node">commitment A</span>
+      <span class="arrow">→ H →</span>
+      <span class="node challenge">challenge c</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">A, c, z</span>
+      <span class="arrow">→</span>
+      <span class="node">verification</span>
+    </div>
+  </div>
+</section>
+
+<section id="transcript">
+  <h2>The transcript is the key</h2>
+
+  <p>The verifier must derive the exact same challenge as the prover.</p>
+
+  <p>Therefore both parties need the same transcript bytes.</p>
+
+  <div class="transcript">
+    <div><span class="k">statement = </span><span class="v">public statement bytes</span></div>
+    <div><span class="k">A         = </span><span class="v">commitment bytes</span></div>
+    <div><span class="k">c         = </span><span class="v">H(statement || A)</span></div>
+    <div><span class="k">z         = </span><span class="v">response</span></div>
+  </div>
+
+  <p>This is why real proving systems use transcript objects rather than casually concatenating arbitrary values.</p>
+
+  <p>The transcript typically defines:</p>
+
+  <ul>
+    <li>what gets absorbed into the hash;</li>
+    <li>the exact byte encoding;</li>
+    <li>domain-separation labels;</li>
+    <li>when a challenge is sampled;</li>
+    <li>how the digest becomes a field element or other challenge type.</li>
+  </ul>
+
+  <div class="note-box">
+    <strong>Implementation rule:</strong> Fiat–Shamir is not simply “call SHA-256 somewhere.” The transcript format is part of the cryptographic protocol.
+  </div>
+</section>
+
+<section id="schnorr">
+  <h2>Concrete example: Schnorr identification</h2>
+
+  <p>Consider a cyclic group with generator <code class="inline">g</code>.</p>
+
+  <p>The prover knows a secret:</p>
+
+  <div class="math-box">
+    <div class="formula">x</div>
+  </div>
+
+  <p>and the public key is:</p>
+
+  <div class="math-box">
+    <div class="formula">y = gˣ</div>
+  </div>
+
+  <p>The prover wants to demonstrate knowledge of <code class="inline">x</code> without revealing it.</p>
+
+  <h3>Step 1 — commitment</h3>
+
+  <p>The prover chooses random:</p>
+
+  <div class="math-box">
+    <div class="formula">r ←$ Z_q</div>
+  </div>
+
+  <p>and computes:</p>
+
+  <div class="math-box">
+    <div class="formula">A = gʳ</div>
+  </div>
+
+  <h3>Step 2 — verifier challenge</h3>
+
+  <p>In the interactive protocol:</p>
+
+  <div class="math-box">
+    <div class="formula">c ←$ Z_q</div>
+  </div>
+
+  <h3>Step 3 — response</h3>
+
+  <p>The prover sends:</p>
+
+  <div class="math-box">
+    <div class="formula">z = r + cx mod q</div>
+  </div>
+
+  <h3>Step 4 — verification</h3>
+
+  <p>The verifier checks:</p>
+
+  <div class="math-box">
+    <div class="formula">gᶻ = A · yᶜ</div>
+  </div>
+
+  <p>Why?</p>
+
+  <div class="math-box">
+    <div class="formula">gᶻ</div>
+    <div class="formula">= gʳ⁺ᶜˣ</div>
+    <div class="formula">= gʳ · (gˣ)ᶜ</div>
+    <div class="formula">= A · yᶜ</div>
+  </div>
+</section>
+
+<section id="schnorr-fs">
+  <h2>Apply Fiat–Shamir to Schnorr</h2>
+
+  <p>Replace the verifier's random challenge with a hash:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(y || A || message)</div>
+  </div>
+
+  <p>The prover computes:</p>
+
+  <div class="math-box">
+    <div class="formula">z = r + cx mod q</div>
+  </div>
+
+  <p>The final proof is approximately:</p>
+
+  <div class="math-box">
+    <div class="formula">π = (A, z)</div>
+  </div>
+
+  <p>The verifier receives the public key, message, and proof. It recomputes:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(y || A || message)</div>
+  </div>
+
+  <p>and checks:</p>
+
+  <div class="math-box">
+    <div class="formula">gᶻ = A · yᶜ</div>
+  </div>
+
+  <p>No interactive challenge was required.</p>
+
+  <div class="note-box">
+    <strong>This is the transformation:</strong> the verifier's random challenge becomes a deterministic function of the transcript.
+  </div>
+</section>
+
+<section id="why">
+  <h2>Why can't the prover choose the challenge?</h2>
+
+  <p>This is the heart of the soundness intuition.</p>
+
+  <p>Suppose the prover could choose both:</p>
+
+  <div class="math-box">
+    <div class="formula">A</div>
+    <div class="formula">c</div>
+  </div>
+
+  <p>before committing to the protocol state.</p>
+
+  <p>Then a malicious prover might construct a response specifically for a challenge it already knows.</p>
+
+  <p>Interactive protocols prevent this by forcing:</p>
+
+  <div class="math-box">
+    <div class="formula">A first → c later</div>
+  </div>
+
+  <p>Fiat–Shamir tries to preserve that ordering cryptographically:</p>
+
+  <div class="math-box">
+    <div class="formula">A first → H(A) → c</div>
+  </div>
+
+  <p>The prover cannot choose <code class="inline">c</code> independently after fixing <code class="inline">A</code>; the challenge is tied to the commitment through the hash.</p>
+</section>
+
+<section id="random-oracle">
+  <h2>The random-oracle viewpoint</h2>
+
+  <p>Security proofs for Fiat–Shamir are often described using the <strong>random oracle model</strong>.</p>
+
+  <p>In this idealized model, a hash function behaves like a random function:</p>
+
+  <div class="math-box">
+    <div class="formula">H(input) → unpredictable random-looking output</div>
+  </div>
+
+  <p>For an input that has not previously been queried, the output is modeled as unpredictable.</p>
+
+  <p>This resembles the verifier's random challenge:</p>
+
+  <div class="math-box">
+    <div class="formula">interactive: c ← random</div>
+    <div class="formula">Fiat–Shamir: c = H(transcript)</div>
+  </div>
+
+  <p>In the random-oracle model, the second value can behave like a fresh random challenge once the transcript has been fixed.</p>
+
+  <div class="note-box">
+    <strong>Important distinction:</strong> the random-oracle model is an idealized security model. A real hash function is not literally a mathematical random oracle.
+  </div>
+</section>
+
+<section id="soundness">
+  <h2>Where does soundness come from?</h2>
+
+  <p>Suppose a false statement can only be answered successfully for a small fraction of possible challenges.</p>
+
+  <p>For example, imagine a false prover succeeds for at most:</p>
+
+  <div class="math-box">
+    <div class="formula">1 / |ChallengeSpace|</div>
+  </div>
+
+  <p>of all possible challenges.</p>
+
+  <p>In the interactive protocol, the verifier independently chooses the challenge, so the prover cannot reliably predict it.</p>
+
+  <p>With Fiat–Shamir, the challenge is generated from the commitment:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(statement || A)</div>
+  </div>
+
+  <p>Under the random-oracle heuristic, the prover cannot predict or freely program this challenge in the ordinary execution of the protocol.</p>
+
+  <p>This preserves the basic intuition that a false prover must get lucky with the challenge.</p>
+</section>
+
+<section id="rewinding">
+  <h2>The special role of rewinding in proofs</h2>
+
+  <p>Interactive-proof security proofs often use a technique called <strong>rewinding</strong>.</p>
+
+  <p>Conceptually, a simulator or extractor may run a prover, observe a commitment, and then obtain responses to different challenges.</p>
+
+  <div class="math-box">
+    <div class="formula">same A + challenge c₁ → z₁</div>
+    <div class="formula">same A + challenge c₂ → z₂</div>
+  </div>
+
+  <p>Two valid responses to different challenges can reveal useful algebraic information.</p>
+
+  <p>For Schnorr, for example:</p>
+
+  <div class="math-box">
+    <div class="formula">z₁ = r + c₁x</div>
+    <div class="formula">z₂ = r + c₂x</div>
+  </div>
+
+  <p>Subtract:</p>
+
+  <div class="math-box">
+    <div class="formula">z₁ − z₂ = (c₁ − c₂)x</div>
+  </div>
+
+  <p>so:</p>
+
+  <div class="math-box">
+    <div class="formula">x = (z₁ − z₂)/(c₁ − c₂)</div>
+  </div>
+
+  <p>This illustrates why a malicious prover that can answer many different challenges consistently may be forced to know the underlying witness.</p>
+</section>
+
+<section id="zk">
+  <h2>What about zero knowledge?</h2>
+
+  <p>Fiat–Shamir itself is <strong>not</strong> a zero-knowledge property.</p>
+
+  <p>It is a transformation that removes interaction from certain public-coin protocols.</p>
+
+  <p>Whether the resulting proof is zero knowledge depends on the underlying protocol and its security proof.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">fiat–shamir</div>
+      <p>Transforms an interactive public-coin protocol into a non-interactive one.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">soundness</div>
+      <p>Concerns whether false statements can be proven successfully.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">zero knowledge</div>
+      <p>Concerns whether the proof reveals information beyond validity of the statement.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">completeness</div>
+      <p>Concerns whether an honest prover can convince the verifier of a true statement.</p>
+    </div>
+  </div>
+</section>
+
+<section id="transcript-design">
+  <h2>Transcript design is cryptographic design</h2>
+
+  <p>A common beginner mistake is:</p>
+
+  <div class="math-box">
+    <div class="formula">c = hash(some_values)</div>
+  </div>
+
+  <p>without specifying exactly which values and how they are encoded.</p>
+
+  <p>A robust transcript should make the protocol state explicit.</p>
+
+  <div class="math-box">
+    <div class="formula">domain_separator</div>
+    <div class="formula">|| protocol_version</div>
+    <div class="formula">|| public_statement</div>
+    <div class="formula">|| commitment</div>
+    <div class="formula">|| previous_challenges</div>
+  </div>
+
+  <p>The exact fields depend on the protocol.</p>
+
+  <h3>Why include the statement?</h3>
+
+  <p>The challenge should be bound to the statement being proved. Otherwise the same commitment could potentially be reused across different statements in ways the protocol did not intend.</p>
+
+  <h3>Why include a domain separator?</h3>
+
+  <p>Different protocols should not accidentally interpret the same hash input as the same challenge.</p>
+
+  <h3>Why specify encoding?</h3>
+
+  <p>If two implementations serialize the same mathematical object differently, they will derive different challenges and the proof will fail verification.</p>
+</section>
+
+<section id="field">
+  <h2>Turning a hash into a field challenge</h2>
+
+  <p>ZK systems frequently need a challenge in a finite field:</p>
+
+  <div class="math-box">
+    <div class="formula">c ∈ F</div>
+  </div>
+
+  <p>But a cryptographic hash gives bytes.</p>
+
+  <p>So the transcript must define a conversion:</p>
+
+  <div class="math-box">
+    <div class="formula">digest = H(transcript)</div>
+    <div class="formula">c = DecodeToField(digest)</div>
+  </div>
+
+  <p>For a simple educational field, one might reduce an integer modulo the field modulus:</p>
+
+  <div class="math-box">
+    <div class="formula">c = integer(digest) mod p</div>
+  </div>
+
+  <p>Real protocols may use rejection sampling or specialized challenge-generation rules to avoid undesirable statistical bias or other issues.</p>
+
+  <div class="note-box">
+    <strong>Protocol detail:</strong> “hash and take mod p” is an educational simplification. Production challenge derivation must follow the exact scheme specification.
+  </div>
+</section>
+
+<section id="recursive">
+  <h2>Fiat–Shamir with multiple rounds</h2>
+
+  <p>ZK protocols often have many challenge points.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">A₁ → c₁ → A₂ → c₂ → A₃ → c₃ → …</div>
+  </div>
+
+  <p>The transcript is extended after every message.</p>
+
+  <div class="math-box">
+    <div class="formula">c₁ = H(transcript up to A₁)</div>
+    <div class="formula">c₂ = H(transcript up to A₂)</div>
+    <div class="formula">c₃ = H(transcript up to A₃)</div>
+  </div>
+
+  <p>This creates a deterministic chain of challenges.</p>
+
+  <div class="protocol-flow">
+    <div class="row">
+      <span class="node">A₁</span>
+      <span class="arrow">→ H →</span>
+      <span class="node challenge">c₁</span>
+      <span class="arrow">→</span>
+      <span class="node">A₂</span>
+      <span class="arrow">→ H →</span>
+      <span class="node challenge">c₂</span>
+    </div>
+  </div>
+
+  <p>In a transcript implementation, this often looks like:</p>
+
+  <div class="math-box">
+    <div class="formula">absorb(A₁)</div>
+    <div class="formula">c₁ = squeeze_challenge()</div>
+    <div class="formula">absorb(A₂)</div>
+    <div class="formula">c₂ = squeeze_challenge()</div>
+  </div>
+</section>
+
+<section id="zk-starks">
+  <h2>Fiat–Shamir inside STARKs</h2>
+
+  <p>Fiat–Shamir is fundamental to non-interactive STARK-style protocols.</p>
+
+  <p>A simplified STARK flow is:</p>
+
+  <div class="protocol-flow">
+    <div class="row">
+      <span class="node">execution trace</span>
+      <span class="arrow">→</span>
+      <span class="node">polynomials</span>
+      <span class="arrow">→</span>
+      <span class="node">Merkle commitment</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">commitment</span>
+      <span class="arrow">→ H →</span>
+      <span class="node challenge">random field challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">composition / folding</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">new commitment</span>
+      <span class="arrow">→ H →</span>
+      <span class="node challenge">next challenge</span>
+    </div>
+  </div>
+
+  <p>The prover does not wait for a network message from a verifier after every commitment. Instead, the transcript determines the challenges.</p>
+
+  <p>This is what turns an interactive public-coin proof into a non-interactive proof that can be generated and verified independently.</p>
+</section>
+
+<section id="fri">
+  <h2>Fiat–Shamir inside FRI</h2>
+
+  <p>FRI repeatedly commits to evaluation vectors and derives challenges that determine how the prover folds them.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="math-box">
+    <div class="formula">commit L₀</div>
+    <div class="formula">α₀ = H(transcript)</div>
+    <div class="formula">fold L₀ → L₁</div>
+    <div class="formula">commit L₁</div>
+    <div class="formula">α₁ = H(transcript)</div>
+    <div class="formula">fold L₁ → L₂</div>
+    <div class="formula">…</div>
+  </div>
+
+  <p>The verifier recomputes the same challenges from the transcript.</p>
+
+  <p>This is why transcript correctness is not a cosmetic implementation detail in FRI or STARK code. A different byte encoding or challenge order means a completely different proof.</p>
+</section>
+
+<section id="rust">
+  <h2>Fiat–Shamir transcript in Rust</h2>
+
+  <p>Here is a small educational transcript implementation. It demonstrates the core pattern: absorb protocol data, hash the transcript, and derive a challenge.</p>
+
+  <details open>
+    <summary>Complete Rust implementation</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Cargo.toml:</span>
+<span class="c">// sha2 = "0.10"</span>
+
+<span class="k">use</span> sha2::{Digest, Sha256};
+
+<span class="k">struct</span> Transcript {
+    state: Vec&lt;u8&gt;,
+}
+
+<span class="k">impl</span> Transcript {
+    <span class="k">fn</span> new(domain: &amp;[u8]) -&gt; Self {
+        <span class="k">let mut</span> state = Vec::new();
+
+        <span class="c">// Domain separation.</span>
+        state.extend_from_slice(domain);
+
+        Self { state }
+    }
+
+    <span class="k">fn</span> append_message(
+        &amp;<span class="k">mut</span> self,
+        label: &amp;[u8],
+        message: &amp;[u8],
+    ) {
+        <span class="c">// Length prefixes make the encoding explicit.</span>
+        self.state
+            .extend_from_slice(&amp;(label.len() as u64).to_le_bytes());
+
+        self.state.extend_from_slice(label);
+
+        self.state
+            .extend_from_slice(&amp;(message.len() as u64).to_le_bytes());
+
+        self.state.extend_from_slice(message);
+    }
+
+    <span class="k">fn</span> challenge_bytes(&amp;self) -&gt; [u8; 32] {
+        <span class="k">let</span> digest = Sha256::digest(&amp;self.state);
+        digest.into()
+    }
+
+    <span class="k">fn</span> challenge_u64(&amp;self) -&gt; u64 {
+        <span class="k">let</span> digest = self.challenge_bytes();
+
+        <span class="k">let mut</span> bytes = [0u8; 8];
+        bytes.copy_from_slice(&amp;digest[..8]);
+
+        u64::from_le_bytes(bytes)
+    }
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">let</span> commitment = b<span class="s">"commitment-A"</span>;
+
+    <span class="k">let</span> transcript =
+        Transcript::new(b<span class="s">"example-protocol-v1"</span>)
+            .append_message(
+                b<span class="s">"commitment"</span>,
+                commitment,
+            );
+
+    <span class="k">let</span> challenge = transcript.challenge_u64();
+
+    println!(<span class="s">"challenge = {challenge}"</span>);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>This is deliberately simple. A production transcript should be designed around the exact protocol and should use an appropriate challenge-generation construction rather than treating arbitrary bytes as a complete cryptographic specification.</p>
+</section>
+
+<section id="transcript-rust">
+  <h2>A more realistic STARK-style transcript pattern</h2>
+
+  <p>In a proving system, the transcript often follows a pattern like:</p>
+
+  <div class="math-box">
+    <div class="formula">transcript.append(commitment_0)</div>
+    <div class="formula">challenge_0 = transcript.challenge_field()</div>
+    <div class="formula">transcript.append(commitment_1)</div>
+    <div class="formula">challenge_1 = transcript.challenge_field()</div>
+    <div class="formula">transcript.append(commitment_2)</div>
+    <div class="formula">challenge_2 = transcript.challenge_field()</div>
+  </div>
+
+  <p>The critical invariant is:</p>
+
+  <div class="math-box">
+    <div class="formula">prover transcript = verifier transcript</div>
+  </div>
+
+  <p>If they diverge by even one byte, every subsequent challenge can diverge.</p>
+</section>
+
+<section id="malleability">
+  <h2>Why transcript binding matters</h2>
+
+  <p>Suppose a challenge were generated only from a commitment:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(A)</div>
+  </div>
+
+  <p>But the proof is actually intended to establish a statement <code class="inline">S</code>.</p>
+
+  <p>It is generally safer for the challenge derivation to bind the relevant statement and protocol context:</p>
+
+  <div class="math-box">
+    <div class="formula">c = H(domain || S || A)</div>
+  </div>
+
+  <p>Otherwise a transcript might be reusable in a context where the protocol did not intend it to be reusable.</p>
+
+  <p>Exact transcript binding requirements are protocol-specific, but the general principle is universal: <strong>hash the data that the challenge is logically supposed to depend on.</strong></p>
+</section>
+
+<section id="forking">
+  <h2>The forking intuition</h2>
+
+  <p>Security proofs for Fiat–Shamir often use a <strong>forking</strong> argument.</p>
+
+  <p>Very roughly, imagine a successful malicious prover that produces:</p>
+
+  <div class="math-box">
+    <div class="formula">(A, c, z)</div>
+  </div>
+
+  <p>If a reduction can obtain another accepting transcript with the same commitment but a different challenge:</p>
+
+  <div class="math-box">
+    <div class="formula">(A, c′, z′)</div>
+  </div>
+
+  <p>then the two accepting transcripts may reveal information that contradicts the prover's supposed ability to prove a false statement without the witness.</p>
+
+  <p>For Schnorr, this is exactly the algebra behind extracting the secret:</p>
+
+  <div class="math-box">
+    <div class="formula">x = (z − z′)/(c − c′)</div>
+  </div>
+
+  <p>The full security theorem is more subtle than this intuition, but the example shows why challenge unpredictability and transcript binding are central.</p>
+</section>
+
+<section id="limitations">
+  <h2>Fiat–Shamir is not magic</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">not every protocol</div>
+      <p>Fiat–Shamir is not a universal compiler for arbitrary interactive protocols. The public-coin structure and security properties of the underlying protocol matter.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">model matters</div>
+      <p>A proof in the random-oracle model does not automatically become a proof in every standard model.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">transcript matters</div>
+      <p>Leaving values out of the transcript, using ambiguous encodings, or deriving challenges at the wrong point can invalidate the intended security argument.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">challenge conversion matters</div>
+      <p>Mapping hash output into a finite field or challenge space needs to follow the protocol's specified method.</p>
+    </div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>Interactive vs Fiat–Shamir</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Property</th><th>Interactive protocol</th><th>Fiat–Shamir version</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>challenge source</td><td>verifier randomness</td><td>hash of transcript</td></tr>
+      <tr><td>communication</td><td>multiple rounds</td><td>single proof object</td></tr>
+      <tr><td>public coin</td><td>yes</td><td>simulated through hashing</td></tr>
+      <tr><td>verification</td><td>interactive</td><td>offline</td></tr>
+      <tr><td>transcript</td><td>messages exchanged live</td><td>proof contains enough data to reconstruct challenges</td></tr>
+      <tr><td>security intuition</td><td>unpredictable verifier challenge</td><td>unpredictable hash-derived challenge</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="pipeline">
+  <h2>How it fits into a ZK proving pipeline</h2>
+
+  <div class="protocol-flow">
+    <div class="row">
+      <span class="node">witness</span>
+      <span class="arrow">→</span>
+      <span class="node">commitment</span>
+      <span class="arrow">→</span>
+      <span class="node challenge">Fiat–Shamir challenge</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">algebraic response</span>
+      <span class="arrow">→</span>
+      <span class="node">new commitment</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">new transcript</span>
+      <span class="arrow">→ H →</span>
+      <span class="node challenge">next challenge</span>
+    </div>
+  </div>
+
+  <p>For a STARK, this can involve commitments to trace-derived evaluation vectors, random field challenges, composition-polynomial combinations, FRI commitments, and query positions.</p>
+
+  <p>For a SNARK, Fiat–Shamir can be used to derive challenges in polynomial interactive-oracle protocols, inner-product arguments, and other proof components.</p>
+
+  <p>The recurring pattern is:</p>
+
+  <div class="math-box">
+    <div class="formula">commit → hash transcript → challenge → respond → extend transcript → repeat</div>
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. An interactive public-coin proof has a prover commitment A.</div>
+    <div class="formula">2. The verifier chooses a fresh random challenge c.</div>
+    <div class="formula">3. The prover answers with a response z.</div>
+    <div class="formula">4. Fiat–Shamir replaces c ← random with c = H(transcript).</div>
+    <div class="formula">5. The prover and verifier therefore derive the same challenge independently.</div>
+    <div class="formula">6. The proof becomes non-interactive.</div>
+    <div class="formula">7. The transcript must bind every value the challenge is supposed to depend on.</div>
+    <div class="formula">8. Hash output must be converted into the required challenge space correctly.</div>
+    <div class="formula">9. Security is commonly analyzed in the random-oracle model.</div>
+    <div class="formula">10. The transformation does not itself mean “zero knowledge.”</div>
+    <div class="formula">11. STARKs and FRI use Fiat–Shamir to replace verifier challenges throughout the proving protocol.</div>
+  </div>
+
+  <p>If Merkle trees answer <em>“how do we commit to a large vector?”</em>, and polynomial commitments answer <em>“how do we commit to a polynomial?”</em>, Fiat–Shamir answers <em>“how can a public-coin interactive proof generate its own verifier challenges from a cryptographic transcript?”</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
