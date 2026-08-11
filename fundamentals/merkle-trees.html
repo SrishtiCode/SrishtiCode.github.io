@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merkle Trees — Srishti Rathi</title>
+<meta name="description" content="Merkle trees from first principles: cryptographic hashes, binary trees, Merkle roots, inclusion proofs, authentication paths, updates, multiproofs, security, and Rust implementation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>Merkle trees</em></h1>
+  <p class="dek">from cryptographic hashes to Merkle roots, inclusion proofs, authentication paths, updates, multiproofs, and how they appear inside ZK systems</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="motivation">
+  <h2>Why do we need Merkle trees?</h2>
+
+  <p>Imagine a prover has a huge collection of values:</p>
+
+  <div class="math-box">
+    <div class="formula">x₀, x₁, x₂, …, xₙ₋₁</div>
+  </div>
+
+  <p>The verifier wants a compact commitment to the entire collection. Later, the prover may need to convince the verifier that one particular value belongs to that committed collection.</p>
+
+  <p>Sending the entire collection every time would defeat the purpose of having a compact commitment.</p>
+
+  <p>A Merkle tree solves this by repeatedly hashing pairs of values until only one hash remains:</p>
+
+  <div class="hash-flow">
+    <div class="row">
+      <span class="node">many values</span>
+      <span class="arrow">→ hash pairs →</span>
+      <span class="node">fewer hashes</span>
+      <span class="arrow">→ repeat →</span>
+      <span class="node">one root</span>
+    </div>
+  </div>
+
+  <p>The final hash is called the <strong>Merkle root</strong>.</p>
+
+  <div class="note-box">
+    <strong>Mental model:</strong> the Merkle root is a short cryptographic fingerprint of an entire dataset. An authentication path lets you prove membership using only a logarithmic amount of sibling information.
+  </div>
+</section>
+
+<section id="hash">
+  <h2>Start with cryptographic hashes</h2>
+
+  <p>A hash function takes an input of arbitrary length and produces a fixed-size output.</p>
+
+  <div class="math-box">
+    <div class="formula">H : {0,1}* → {0,1}ᵏ</div>
+  </div>
+
+  <p>For example, a hash function might map:</p>
+
+  <div class="math-box">
+    <div class="formula">"hello" → 256-bit digest</div>
+  </div>
+
+  <p>We do not normally expect to reverse the digest and recover the input. More importantly for Merkle trees, small input changes should cause unpredictable changes in the output.</p>
+
+  <h3>Important hash properties</h3>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">preimage resistance</div>
+      <p>Given a digest y, it should be computationally difficult to find x such that H(x) = y.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">second-preimage resistance</div>
+      <p>Given x, it should be difficult to find a different x′ with H(x′) = H(x).</p>
+    </div>
+    <div class="example-card">
+      <div class="label">collision resistance</div>
+      <p>It should be difficult to find any two distinct inputs x and y with H(x) = H(y).</p>
+    </div>
+    <div class="example-card">
+      <div class="label">determinism</div>
+      <p>The same input always produces the same digest.</p>
+    </div>
+  </div>
+
+  <p>Merkle-tree security relies primarily on the collision/second-preimage resistance of the underlying hash construction and on how the tree is encoded.</p>
+</section>
+
+<section id="two">
+  <h2>Build the smallest possible Merkle tree</h2>
+
+  <p>Start with two data values:</p>
+
+  <div class="math-box">
+    <div class="formula">A, B</div>
+  </div>
+
+  <p>Hash each leaf:</p>
+
+  <div class="math-box">
+    <div class="formula">hₐ = H(A)</div>
+    <div class="formula">hᵦ = H(B)</div>
+  </div>
+
+  <p>Then hash the two child hashes together:</p>
+
+  <div class="math-box">
+    <div class="formula">root = H(hₐ || hᵦ)</div>
+  </div>
+
+  <p>Here <code class="inline">||</code> means concatenation.</p>
+
+  <div class="merkle-diagram">
+<pre>
+                    root
+                      │
+                 H(hₐ || hᵦ)
+                  /       \
+                 /         \
+               hₐ           hᵦ
+               │             │
+             H(A)           H(B)
+               │             │
+               A             B
+</pre>
+  </div>
+
+  <p>The root commits to both values. If either leaf changes, its hash changes, which changes the parent hash, which changes the root.</p>
+</section>
+
+<section id="four">
+  <h2>A 4-leaf Merkle tree</h2>
+
+  <p>Now consider:</p>
+
+  <div class="math-box">
+    <div class="formula">A, B, C, D</div>
+  </div>
+
+  <p>The first level contains:</p>
+
+  <div class="math-box">
+    <div class="formula">h₀ = H(A)</div>
+    <div class="formula">h₁ = H(B)</div>
+    <div class="formula">h₂ = H(C)</div>
+    <div class="formula">h₃ = H(D)</div>
+  </div>
+
+  <p>The next level combines pairs:</p>
+
+  <div class="math-box">
+    <div class="formula">p₀ = H(h₀ || h₁)</div>
+    <div class="formula">p₁ = H(h₂ || h₃)</div>
+  </div>
+
+  <p>Finally:</p>
+
+  <div class="math-box">
+    <div class="formula">root = H(p₀ || p₁)</div>
+  </div>
+
+  <div class="merkle-diagram">
+<pre>
+                         root
+                           │
+                    H(p₀ || p₁)
+                     /       \
+                    /         \
+                  p₀           p₁
+                  │             │
+             H(h₀ || h₁)   H(h₂ || h₃)
+              /       \       /       \
+             h₀       h₁     h₂       h₃
+             │         │      │         │
+           H(A)      H(B)   H(C)      H(D)
+             │         │      │         │
+             A         B      C         D
+</pre>
+  </div>
+
+  <p>There are four leaves, two internal nodes, and one root.</p>
+</section>
+
+<section id="recursive">
+  <h2>The recursive structure</h2>
+
+  <p>A binary Merkle tree repeatedly applies the same operation:</p>
+
+  <div class="math-box">
+    <div class="formula">parent = H(left || right)</div>
+  </div>
+
+  <p>For <code class="inline">n = 2ᵏ</code> leaves, there are <code class="inline">k</code> levels from the leaves to the root.</p>
+
+  <div class="math-box">
+    <div class="formula">levels = log₂(n)</div>
+  </div>
+
+  <p>The number of nodes is:</p>
+
+  <div class="math-box">
+    <div class="formula">n + n/2 + n/4 + … + 1 = 2n − 1</div>
+  </div>
+
+  <p>So constructing the whole tree takes <code class="inline">O(n)</code> hash operations.</p>
+</section>
+
+<section id="root">
+  <h2>What exactly does the Merkle root commit to?</h2>
+
+  <p>The root depends recursively on every leaf.</p>
+
+  <p>For four leaves:</p>
+
+  <div class="math-box">
+    <div class="formula">R = H( H(H(A)||H(B)) || H(H(C)||H(D)) )</div>
+  </div>
+
+  <p>Therefore changing <code class="inline">A</code> changes:</p>
+
+  <div class="math-box">
+    <div class="formula">H(A)</div>
+    <div class="formula">H(H(A)||H(B))</div>
+    <div class="formula">R</div>
+  </div>
+
+  <p>The same happens for every leaf. The root is therefore a compact commitment to the complete ordered tree.</p>
+
+  <div class="note-box">
+    <strong>Important:</strong> a Merkle root is not encryption. It does not hide the underlying data by itself. It is a commitment/integrity structure based on hashing.
+  </div>
+</section>
+
+<section id="proof">
+  <h2>How do we prove that a leaf belongs?</h2>
+
+  <p>Suppose the verifier knows only the root and the prover wants to prove that:</p>
+
+  <div class="math-box">
+    <div class="formula">A is the leaf at index 0</div>
+  </div>
+
+  <p>The verifier already knows the root, but does not know <code class="inline">B</code>, <code class="inline">C</code>, or <code class="inline">D</code>.</p>
+
+  <p>The prover does not need to send all three values.</p>
+
+  <p>For leaf <code class="inline">A</code>, the prover sends the sibling hashes:</p>
+
+  <div class="math-box">
+    <div class="formula">h₁ = H(B)</div>
+    <div class="formula">p₁ = H(h₂ || h₃)</div>
+  </div>
+
+  <p>This is called the <strong>Merkle authentication path</strong> or <strong>Merkle proof</strong>.</p>
+
+  <div class="merkle-diagram">
+<pre>
+                         root
+                           ▲
+                           │
+                         p₁
+                           ▲
+                           │
+                    H(h₀ || h₁)
+                     ▲       ▲
+                     │       │
+                    h₀      h₁
+                     ▲       ▲
+                     │       │
+                     A     sibling
+</pre>
+  </div>
+
+  <p>The verifier starts from <code class="inline">A</code> and reconstructs the path to the root.</p>
+</section>
+
+<section id="authentication">
+  <h2>Authentication path step by step</h2>
+
+  <p>For <code class="inline">A</code> at index 0:</p>
+
+  <ol class="steps">
+    <li>Hash the leaf: <code class="inline">h₀ = H(A)</code>.</li>
+    <li>Combine it with its sibling: <code class="inline">p₀ = H(h₀ || h₁)</code>.</li>
+    <li>Combine <code class="inline">p₀</code> with the sibling parent <code class="inline">p₁</code>.</li>
+    <li>Compute <code class="inline">H(p₀ || p₁)</code>.</li>
+    <li>Compare the resulting hash with the known Merkle root.</li>
+  </ol>
+
+  <p>If the computed root equals the committed root, the proof is valid under the security assumptions of the hash function and tree encoding.</p>
+</section>
+
+<section id="directions">
+  <h2>Why does the proof need left/right direction?</h2>
+
+  <p>Hash concatenation is ordered:</p>
+
+  <div class="math-box">
+    <div class="formula">H(left || right) ≠ H(right || left)</div>
+  </div>
+
+  <p>Therefore the verifier needs to know whether each sibling is on the left or right.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">left sibling  → H(sibling || current)</div>
+    <div class="formula">right sibling → H(current || sibling)</div>
+  </div>
+
+  <p>A proof can therefore be represented as pairs such as:</p>
+
+  <div class="math-box">
+    <div class="formula">(sibling_hash, sibling_is_left)</div>
+  </div>
+
+  <p>Some implementations derive the direction from the leaf index and the level instead of storing it explicitly.</p>
+</section>
+
+<section id="complexity">
+  <h2>Why are Merkle proofs small?</h2>
+
+  <p>For <code class="inline">n</code> leaves, the tree height is:</p>
+
+  <div class="math-box">
+    <div class="formula">log₂(n)</div>
+  </div>
+
+  <p>Therefore a membership proof needs only one sibling hash per level:</p>
+
+  <div class="math-box">
+    <div class="formula">proof size = O(log n)</div>
+  </div>
+
+  <p>Compare that with sending all <code class="inline">n</code> leaves:</p>
+
+  <div class="comparison-grid">
+    <div class="comparison-card">
+      <div class="label">without Merkle proof</div>
+      <p>Transmit or process the entire dataset: O(n).</p>
+    </div>
+    <div class="comparison-card">
+      <div class="label">with Merkle proof</div>
+      <p>Transmit one leaf plus a logarithmic authentication path: O(log n) hashes.</p>
+    </div>
+  </div>
+
+  <p>This logarithmic proof size is the main reason Merkle trees are so useful.</p>
+</section>
+
+<section id="update">
+  <h2>What happens when a leaf changes?</h2>
+
+  <p>Suppose <code class="inline">B</code> changes to <code class="inline">B′</code>.</p>
+
+  <p>Only one path to the root needs to be recomputed:</p>
+
+  <div class="math-box">
+    <div class="formula">B′</div>
+    <div class="formula">↓</div>
+    <div class="formula">H(B′)</div>
+    <div class="formula">↓</div>
+    <div class="formula">H(H(A) || H(B′))</div>
+    <div class="formula">↓</div>
+    <div class="formula">new root</div>
+  </div>
+
+  <p>You do not need to recompute unrelated branches.</p>
+
+  <p>Updating one leaf therefore costs approximately:</p>
+
+  <div class="math-box">
+    <div class="formula">O(log n)</div>
+  </div>
+
+  <p>hash computations, assuming the tree structure and neighboring nodes are already available.</p>
+</section>
+
+<section id="append">
+  <h2>What about adding leaves?</h2>
+
+  <p>Appending a leaf is slightly more complicated than updating an existing leaf because the tree shape changes.</p>
+
+  <p>For a complete power-of-two tree, adding the next leaf may require rebuilding or maintaining additional internal nodes.</p>
+
+  <p>Practical systems often use specialized structures such as:</p>
+
+  <ul>
+    <li>complete binary Merkle trees</li>
+    <li>sparse Merkle trees</li>
+    <li>incremental Merkle trees</li>
+    <li>Merkle Mountain Ranges</li>
+  </ul>
+
+  <p>The right structure depends on whether the workload is mostly static, append-only, sparse-keyed, or frequently updated.</p>
+</section>
+
+<section id="padding">
+  <h2>What if the number of leaves is not a power of two?</h2>
+
+  <p>Our simple diagrams assumed:</p>
+
+  <div class="math-box">
+    <div class="formula">n = 2ᵏ</div>
+  </div>
+
+  <p>Real datasets do not necessarily have that shape.</p>
+
+  <p>There are several possible conventions:</p>
+
+  <ul>
+    <li>pad the leaf set to the next power of two;</li>
+    <li>duplicate the last node at certain levels;</li>
+    <li>use an unbalanced tree;</li>
+    <li>use a tree construction specifically designed for arbitrary lengths.</li>
+  </ul>
+
+  <div class="note-box">
+    <strong>Engineering rule:</strong> the exact tree construction must be part of the protocol specification. A verifier cannot simply guess how odd-sized levels were handled.
+  </div>
+</section>
+
+<section id="domain-separation">
+  <h2>Why domain separation matters</h2>
+
+  <p>There is a subtle implementation issue with hashing leaves and internal nodes.</p>
+
+  <p>If both are encoded as raw concatenations, it can sometimes be dangerous for a protocol to allow ambiguity between:</p>
+
+  <div class="math-box">
+    <div class="formula">leaf data</div>
+    <div class="formula">internal-node input</div>
+  </div>
+
+  <p>A robust design often uses distinct domain-separation tags:</p>
+
+  <div class="math-box">
+    <div class="formula">leaf_hash = H(LEAF_TAG || data)</div>
+    <div class="formula">node_hash = H(NODE_TAG || left || right)</div>
+  </div>
+
+  <p>The exact tags are protocol-specific, but the principle is important: <strong>make different semantic objects cryptographically distinguishable.</strong></p>
+</section>
+
+<section id="second-preimage">
+  <h2>Why changing a leaf should be detectable</h2>
+
+  <p>Suppose the verifier knows:</p>
+
+  <div class="math-box">
+    <div class="formula">R = MerkleRoot(A, B, C, D)</div>
+  </div>
+
+  <p>A malicious prover wants to replace <code class="inline">A</code> with <code class="inline">A′</code> while producing the same root.</p>
+
+  <p>At the bottom of the tree, this would require:</p>
+
+  <div class="math-box">
+    <div class="formula">H(A) ≈ H(A′)</div>
+  </div>
+
+  <p>or a more complicated collision involving internal nodes.</p>
+
+  <p>Collision-resistant hashing is what makes such manipulation computationally infeasible.</p>
+
+  <div class="note-box">
+    <strong>Merkle security comes from the hash function.</strong> The tree structure gives us efficient organization and proofs; it does not magically create cryptographic security on its own.
+  </div>
+</section>
+
+<section id="rust">
+  <h2>Merkle tree in Rust</h2>
+
+  <p>Here is a small implementation using SHA-256. It constructs a binary Merkle tree, computes the root, generates an inclusion proof, and verifies that proof.</p>
+
+  <details open>
+    <summary>Complete Rust implementation</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Cargo.toml:</span>
+<span class="c">// sha2 = "0.10"</span>
+
+<span class="k">use</span> sha2::{Digest, Sha256};
+
+<span class="k">type</span> Hash = [u8; 32];
+
+<span class="k">fn</span> hash_leaf(data: &amp;[u8]) -&gt; Hash {
+    <span class="k">let mut</span> hasher = Sha256::new();
+
+    <span class="c">// Domain separation: leaf hash.</span>
+    hasher.update([0x00]);
+    hasher.update(data);
+
+    hasher.finalize().into()
+}
+
+<span class="k">fn</span> hash_node(left: &amp;Hash, right: &amp;Hash) -&gt; Hash {
+    <span class="k">let mut</span> hasher = Sha256::new();
+
+    <span class="c">// Domain separation: internal node.</span>
+    hasher.update([0x01]);
+    hasher.update(left);
+    hasher.update(right);
+
+    hasher.finalize().into()
+}
+
+<span class="k">fn</span> merkle_root(leaves: &amp;[Vec&lt;u8&gt;]) -&gt; Hash {
+    assert!(!leaves.is_empty());
+    assert!(leaves.len().is_power_of_two());
+
+    <span class="k">let mut</span> level: Vec&lt;Hash&gt; =
+        leaves.iter().map(|x| hash_leaf(x)).collect();
+
+    <span class="k">while</span> level.len() &gt; 1 {
+        <span class="k">let mut</span> next = Vec::with_capacity(level.len() / 2);
+
+        <span class="k">for</span> pair <span class="k">in</span> level.chunks_exact(2) {
+            next.push(hash_node(&amp;pair[0], &amp;pair[1]));
+        }
+
+        level = next;
+    }
+
+    level[0]
+}
+
+<span class="c">/// One sibling per tree level.</span>
+<span class="c">/// is_left = true means the sibling is on the left.</span>
+<span class="k">#[derive(Debug, Clone)]</span>
+<span class="k">struct</span> ProofStep {
+    sibling: Hash,
+    is_left: bool,
+}
+
+<span class="k">fn</span> merkle_proof(
+    leaves: &amp;[Vec&lt;u8&gt;],
+    <span class="k">mut</span> index: usize,
+) -&gt; Vec&lt;ProofStep&gt; {
+    assert!(!leaves.is_empty());
+    assert!(leaves.len().is_power_of_two());
+    assert!(index &lt; leaves.len());
+
+    <span class="k">let mut</span> level: Vec&lt;Hash&gt; =
+        leaves.iter().map(|x| hash_leaf(x)).collect();
+
+    <span class="k">let mut</span> proof = Vec::new();
+
+    <span class="k">while</span> level.len() &gt; 1 {
+        <span class="k">let</span> sibling_index =
+            <span class="k">if</span> index % 2 == 0 {
+                index + 1
+            } <span class="k">else</span> {
+                index - 1
+            };
+
+        proof.push(ProofStep {
+            sibling: level[sibling_index],
+            is_left: index % 2 == 1,
+        });
+
+        <span class="k">let mut</span> next = Vec::with_capacity(level.len() / 2);
+
+        <span class="k">for</span> pair <span class="k">in</span> level.chunks_exact(2) {
+            next.push(hash_node(&amp;pair[0], &amp;pair[1]));
+        }
+
+        level = next;
+        index /= 2;
+    }
+
+    proof
+}
+
+<span class="k">fn</span> verify_proof(
+    leaf: &amp;[u8],
+    proof: &amp;[ProofStep],
+    expected_root: &amp;Hash,
+) -&gt; bool {
+    <span class="k">let mut</span> current = hash_leaf(leaf);
+
+    <span class="k">for</span> step <span class="k">in</span> proof {
+        current = <span class="k">if</span> step.is_left {
+            hash_node(&amp;step.sibling, &amp;current)
+        } <span class="k">else</span> {
+            hash_node(&amp;current, &amp;step.sibling)
+        };
+    }
+
+    &amp;current == expected_root
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">let</span> leaves = vec![
+        b<span class="s">"Alice"</span>.to_vec(),
+        b<span class="s">"Bob"</span>.to_vec(),
+        b<span class="s">"Carol"</span>.to_vec(),
+        b<span class="s">"Dave"</span>.to_vec(),
+    ];
+
+    <span class="k">let</span> root = merkle_root(&amp;leaves);
+
+    <span class="c">// Prove that "Carol" at index 2 is included.</span>
+    <span class="k">let</span> proof = merkle_proof(&amp;leaves, 2);
+
+    <span class="k">assert</span>!(verify_proof(
+        b<span class="s">"Carol"</span>,
+        &amp;proof,
+        &amp;root,
+    ));
+
+    <span class="c">// A different value must not verify against the same proof.</span>
+    <span class="k">assert</span>!(!verify_proof(
+        b<span class="s">"Mallory"</span>,
+        &amp;proof,
+        &amp;root,
+    ));
+
+    println!(<span class="s">"Merkle proof verified."</span>);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <h3>What the Rust code is doing</h3>
+
+  <ol class="steps">
+    <li><strong>Hash every leaf:</strong> <code class="inline">hash_leaf(data)</code> creates the bottom layer.</li>
+    <li><strong>Hash pairs:</strong> <code class="inline">hash_node(left, right)</code> creates each parent.</li>
+    <li><strong>Repeat:</strong> each level is half the size of the previous one.</li>
+    <li><strong>Root:</strong> when one hash remains, it is the Merkle root.</li>
+    <li><strong>Proof:</strong> collect one sibling hash per level for the target index.</li>
+    <li><strong>Verification:</strong> reconstruct the root from the claimed leaf and proof.</li>
+  </ol>
+</section>
+
+<section id="manual">
+  <h2>Manual proof verification</h2>
+
+  <p>Suppose the target leaf is at index 2 in:</p>
+
+  <div class="math-box">
+    <div class="formula">[A, B, C, D]</div>
+  </div>
+
+  <p>The binary index of 2 is:</p>
+
+  <div class="math-box">
+    <div class="formula">2 = 10₂</div>
+  </div>
+
+  <p>Its authentication path tells us:</p>
+
+  <div class="math-box">
+    <div class="formula">level 0 → sibling is D</div>
+    <div class="formula">level 1 → sibling is H(H(A)||H(B))</div>
+  </div>
+
+  <p>The verifier computes:</p>
+
+  <div class="math-box">
+    <div class="formula">h₂ = H(C)</div>
+    <div class="formula">p₁ = H(h₂ || H(D))</div>
+    <div class="formula">root = H(H(A)||H(B) || p₁)</div>
+  </div>
+
+  <p>If this equals the known root, the inclusion proof succeeds.</p>
+</section>
+
+<section id="multiproof">
+  <h2>What is a Merkle multiproof?</h2>
+
+  <p>Sometimes the verifier needs several leaves rather than one.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">prove A, C, and D are all members</div>
+  </div>
+
+  <p>Providing three completely independent authentication paths repeats sibling hashes unnecessarily.</p>
+
+  <p>A <strong>multiproof</strong> shares common branches between the requested leaves.</p>
+
+  <div class="note-box">
+    <strong>Idea:</strong> ordinary Merkle proofs exploit one path to the root. Multiproofs exploit several paths that merge into the same internal nodes.
+  </div>
+
+  <p>The exact format varies by implementation, but the goal is to reduce the number of hashes transmitted and recomputed.</p>
+</section>
+
+<section id="sparse">
+  <h2>Sparse Merkle trees</h2>
+
+  <p>A normal Merkle tree is naturally associated with a list of leaves.</p>
+
+  <p>A <strong>sparse Merkle tree</strong> instead represents a huge key space, often indexed by a binary key.</p>
+
+  <p>For a key:</p>
+
+  <div class="math-box">
+    <div class="formula">key = 101101…</div>
+  </div>
+
+  <p>each bit determines whether the authentication path moves left or right.</p>
+
+  <p>Most leaves are empty, so implementations can exploit known default hashes rather than explicitly storing the entire enormous tree.</p>
+
+  <p>This makes sparse Merkle trees useful for authenticated maps and state commitments.</p>
+</section>
+
+<section id="zk">
+  <h2>Why Merkle trees matter in ZK</h2>
+
+  <p>Merkle trees are everywhere in hash-based proof systems because they provide a compact commitment to a large vector of values.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>ZK component</th><th>Merkle-tree role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>STARKs</td><td>Commit to execution-trace or polynomial-evaluation vectors.</td></tr>
+      <tr><td>FRI</td><td>Commit to evaluation layers and later open queried positions.</td></tr>
+      <tr><td>query phase</td><td>Provide authentication paths for randomly selected positions.</td></tr>
+      <tr><td>authenticated state</td><td>Commit to large state structures with compact roots.</td></tr>
+      <tr><td>data availability</td><td>Commit to chunks and allow efficient membership proofs.</td></tr>
+    </tbody>
+  </table>
+
+  <p>A simplified STARK-style flow looks like:</p>
+
+  <div class="hash-flow">
+    <div class="row">
+      <span class="node">evaluation vector</span>
+      <span class="arrow">→</span>
+      <span class="node">hash leaves</span>
+      <span class="arrow">→</span>
+      <span class="node">Merkle root</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">Fiat–Shamir challenge</span>
+      <span class="arrow">→</span>
+      <span class="node">query positions</span>
+      <span class="arrow">→</span>
+      <span class="node">Merkle proofs</span>
+    </div>
+  </div>
+
+  <p>The Merkle tree does not establish that the vector is low-degree. FRI supplies the low-degree testing. The Merkle tree establishes that the queried values belong to the vector that was committed to.</p>
+</section>
+
+<section id="security">
+  <h2>What a Merkle tree does not provide</h2>
+
+  <p>It is important not to overstate what the root proves.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">not encryption</div>
+      <p>A Merkle root does not hide the leaves. Anyone who already knows a candidate leaf can hash it and test membership with an appropriate proof.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">not a zk proof</div>
+      <p>A Merkle proof proves membership in a committed structure. It does not automatically provide zero knowledge.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">not low-degree testing</div>
+      <p>A Merkle root commits to values but does not prove that those values are evaluations of a low-degree polynomial.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">hash security matters</div>
+      <p>If the underlying hash can be efficiently attacked for the required security property, the Merkle construction inherits that weakness.</p>
+    </div>
+  </div>
+</section>
+
+<section id="engineering">
+  <h2>Engineering considerations</h2>
+
+  <h3>Hash choice</h3>
+  <p>Choose a cryptographic hash appropriate for the protocol. In ZK circuits, a conventional hash may be expensive to represent as arithmetic constraints, so protocols sometimes use hashes designed to be efficient inside the relevant proof system.</p>
+
+  <h3>Leaf encoding</h3>
+  <p>The serialization of a leaf must be unambiguous. Two different logical objects should not accidentally serialize to the same byte string.</p>
+
+  <h3>Internal-node encoding</h3>
+  <p>Use a specified left/right ordering and, where appropriate, domain-separation tags.</p>
+
+  <h3>Proof format</h3>
+  <p>The verifier needs enough information to reconstruct every parent correctly. The protocol must specify index handling, sibling ordering, padding, and tree shape.</p>
+
+  <h3>Memory layout</h3>
+  <p>A naive implementation stores every tree level. Large systems may use flat arrays, streaming construction, cached subtrees, or specialized append-only structures.</p>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. Start with a collision-resistant cryptographic hash H.</div>
+    <div class="formula">2. Hash each data item into a leaf.</div>
+    <div class="formula">3. Hash pairs of children to form parent nodes.</div>
+    <div class="formula">4. Repeat until one hash remains.</div>
+    <div class="formula">5. That final hash is the Merkle root.</div>
+    <div class="formula">6. The root commits to the ordered tree of values.</div>
+    <div class="formula">7. To prove one leaf, provide one sibling hash per level.</div>
+    <div class="formula">8. The verifier reconstructs the path to the root.</div>
+    <div class="formula">9. The proof has O(log n) sibling hashes.</div>
+    <div class="formula">10. Updating one leaf changes only its path to the root.</div>
+    <div class="formula">11. Multiproofs share overlapping authentication paths.</div>
+    <div class="formula">12. Sparse Merkle trees extend the idea to huge key spaces.</div>
+    <div class="formula">13. In STARKs/FRI, Merkle trees commit to evaluation vectors while FRI checks low degree.</div>
+  </div>
+
+  <p>If polynomial commitments answer <em>“how do we commit to a polynomial?”</em>, a Merkle tree answers <em>“how do we commit to a large vector of values and later prove that selected values belong to it using only logarithmic data?”</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
