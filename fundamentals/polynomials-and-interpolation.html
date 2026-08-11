@@ -1236,6 +1236,250 @@ footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:cen
   </div>
 </section>
 
+
+<section id="rust-complete">
+  <h2>Complete Rust implementation</h2>
+
+  <p>Now let's turn the mathematics into a small, self-contained Rust implementation. This version works over the prime field <code class="inline">F₁₇</code> and implements the core operations we have derived: modular arithmetic, polynomial construction, evaluation, addition, multiplication, and Lagrange interpolation.</p>
+
+  <details open>
+    <summary>Finite-field polynomial implementation</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Polynomial arithmetic and interpolation over F_17.</span>
+<span class="c">// Coefficients are stored in ascending degree order:</span>
+<span class="c">// [a0, a1, a2] represents a0 + a1*x + a2*x^2.</span>
+
+<span class="k">const</span> MODULUS: u64 = 17;
+
+<span class="k">fn</span> mod_add(a: u64, b: u64) -&gt; u64 {
+    (a + b) % MODULUS
+}
+
+<span class="k">fn</span> mod_sub(a: u64, b: u64) -&gt; u64 {
+    (a + MODULUS - b) % MODULUS
+}
+
+<span class="k">fn</span> mod_mul(a: u64, b: u64) -&gt; u64 {
+    (a * b) % MODULUS
+}
+
+<span class="k">fn</span> mod_pow(<span class="k">mut</span> base: u64, <span class="k">mut</span> exp: u64) -&gt; u64 {
+    <span class="k">let mut</span> result = 1;
+
+    <span class="k">while</span> exp &gt; 0 {
+        <span class="k">if</span> exp &amp; 1 == 1 {
+            result = mod_mul(result, base);
+        }
+
+        base = mod_mul(base, base);
+        exp &gt;&gt;= 1;
+    }
+
+    result
+}
+
+<span class="k">fn</span> mod_inv(a: u64) -&gt; u64 {
+    assert!(a != 0, <span class="s">"division by zero"</span>);
+
+    <span class="c">// Fermat's little theorem:</span>
+    <span class="c">// a^(-1) = a^(p-2) mod p for prime p.</span>
+    mod_pow(a, MODULUS - 2)
+}
+
+<span class="k">#[derive(Debug, Clone)]</span>
+<span class="k">struct</span> Polynomial {
+    coeffs: Vec&lt;u64&gt;,
+}
+
+<span class="k">impl</span> Polynomial {
+    <span class="k">fn</span> new(coeffs: Vec&lt;u64&gt;) -&gt; Self {
+        Self {
+            coeffs: coeffs
+                .into_iter()
+                .map(|x| x % MODULUS)
+                .collect(),
+        }
+    }
+
+    <span class="c">// Remove unnecessary zero coefficients.</span>
+    <span class="k">fn</span> normalize(&amp;<span class="k">mut</span> self) {
+        <span class="k">while</span> self.coeffs.len() &gt; 1
+            &amp;&amp; *self.coeffs.last().unwrap() == 0
+        {
+            self.coeffs.pop();
+        }
+    }
+
+    <span class="c">// Degree of the polynomial.</span>
+    <span class="k">fn</span> degree(&amp;self) -&gt; usize {
+        self.coeffs.len() - 1
+    }
+
+    <span class="c">// Evaluate f(x) using Horner's method.</span>
+    <span class="k">fn</span> evaluate(&amp;self, x: u64) -&gt; u64 {
+        <span class="k">let mut</span> result = 0;
+
+        <span class="k">for</span> &amp;coeff <span class="k">in</span> self.coeffs.iter().rev() {
+            result = mod_add(mod_mul(result, x), coeff);
+        }
+
+        result
+    }
+
+    <span class="c">// Polynomial addition.</span>
+    <span class="k">fn</span> add(&amp;self, other: &amp;Self) -&gt; Self {
+        <span class="k">let</span> n = self.coeffs.len().max(other.coeffs.len());
+        <span class="k">let mut</span> coeffs = vec![0; n];
+
+        <span class="k">for</span> i <span class="k">in</span> 0..n {
+            <span class="k">let</span> a = self.coeffs.get(i).copied().unwrap_or(0);
+            <span class="k">let</span> b = other.coeffs.get(i).copied().unwrap_or(0);
+
+            coeffs[i] = mod_add(a, b);
+        }
+
+        Self::new(coeffs)
+    }
+
+    <span class="c">// Polynomial multiplication.</span>
+    <span class="c">// Coefficients are multiplied by convolution.</span>
+    <span class="k">fn</span> mul(&amp;self, other: &amp;Self) -&gt; Self {
+        <span class="k">let mut</span> coeffs =
+            vec![0; self.coeffs.len() + other.coeffs.len() - 1];
+
+        <span class="k">for</span> i <span class="k">in</span> 0..self.coeffs.len() {
+            <span class="k">for</span> j <span class="k">in</span> 0..other.coeffs.len() {
+                <span class="k">let</span> product =
+                    mod_mul(self.coeffs[i], other.coeffs[j]);
+
+                coeffs[i + j] =
+                    mod_add(coeffs[i + j], product);
+            }
+        }
+
+        Self::new(coeffs)
+    }
+}
+
+<span class="c">// Lagrange interpolation.</span>
+<span class="c">// Given distinct x_i and corresponding y_i, return</span>
+<span class="c">// the unique polynomial f of degree &lt; n such that</span>
+<span class="c">// f(x_i) = y_i for every i.</span>
+<span class="k">fn</span> lagrange_interpolate(xs: &amp;[u64], ys: &amp;[u64]) -&gt; Polynomial {
+    assert_eq!(xs.len(), ys.len());
+    assert!(!xs.is_empty());
+
+    <span class="k">let mut</span> result = Polynomial::new(vec![0]);
+
+    <span class="k">for</span> i <span class="k">in</span> 0..xs.len() {
+        <span class="c">// numerator = ∏_{j != i} (x - x_j)</span>
+        <span class="k">let mut</span> basis = Polynomial::new(vec![1]);
+
+        <span class="k">for</span> j <span class="k">in</span> 0..xs.len() {
+            <span class="k">if</span> i == j {
+                <span class="k">continue</span>;
+            }
+
+            <span class="k">let</span> factor = Polynomial::new(vec![
+                mod_sub(0, xs[j]),
+                1,
+            ]);
+
+            basis = basis.mul(&amp;factor);
+        }
+
+        <span class="c">// denominator = ∏_{j != i} (x_i - x_j)</span>
+        <span class="k">let mut</span> denominator = 1;
+
+        <span class="k">for</span> j <span class="k">in</span> 0..xs.len() {
+            <span class="k">if</span> i == j {
+                <span class="k">continue</span>;
+            }
+
+            denominator = mod_mul(
+                denominator,
+                mod_sub(xs[i], xs[j]),
+            );
+        }
+
+        <span class="c">// Scale L_i(x) by y_i / denominator.</span>
+        <span class="k">let</span> scale = mod_mul(
+            ys[i],
+            mod_inv(denominator),
+        );
+
+        <span class="k">let</span> scaled_basis = Polynomial::new(
+            basis.coeffs
+                .iter()
+                .map(|&amp;c| mod_mul(c, scale))
+                .collect(),
+        );
+
+        result = result.add(&amp;scaled_basis);
+    }
+
+    <span class="k">let mut</span> result = result;
+    result.normalize();
+    result
+}
+
+<span class="k">fn</span> main() {
+    <span class="c">// f(x) = 1 + x + x^2 over F_17.</span>
+    <span class="k">let</span> f = Polynomial::new(vec![1, 1, 1]);
+
+    assert_eq!(f.degree(), 2);
+    assert_eq!(f.evaluate(0), 1);
+    assert_eq!(f.evaluate(1), 3);
+    assert_eq!(f.evaluate(2), 7);
+
+    <span class="c">// Recover the same polynomial from its evaluations.</span>
+    <span class="k">let</span> xs = [0, 1, 2];
+    <span class="k">let</span> ys = [1, 3, 7];
+
+    <span class="k">let</span> recovered =
+        lagrange_interpolate(&amp;xs, &amp;ys);
+
+    assert_eq!(recovered.coeffs, vec![1, 1, 1]);
+
+    <span class="c">// Verify interpolation at additional field points.</span>
+    <span class="k">for</span> x <span class="k">in</span> 0..MODULUS {
+        assert_eq!(
+            f.evaluate(x),
+            recovered.evaluate(x)
+        );
+    }
+
+    println!(<span class="s">"f(x) = 1 + x + x^2 over F_17"</span>);
+    println!(<span class="s">"interpolation verified"</span>);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <h3>What the implementation is actually doing</h3>
+
+  <ol class="steps">
+    <li><strong>Represent the polynomial:</strong> <code class="inline">[a₀, a₁, a₂, ...]</code> stores coefficients in increasing degree order.</li>
+    <li><strong>Evaluate:</strong> Horner's method evaluates the polynomial in <code class="inline">O(n)</code> field operations.</li>
+    <li><strong>Add:</strong> coefficients with the same degree are added.</li>
+    <li><strong>Multiply:</strong> every coefficient is multiplied with every other coefficient, producing convolution.</li>
+    <li><strong>Construct Lagrange bases:</strong> each basis is <code class="inline">∏(x−xⱼ)</code> for all <code class="inline">j ≠ i</code>.</li>
+    <li><strong>Normalize the basis:</strong> divide by <code class="inline">∏(xᵢ−xⱼ)</code>, implemented as multiplication by a field inverse.</li>
+    <li><strong>Scale by yᵢ:</strong> this makes the basis contribute exactly the desired value at <code class="inline">xᵢ</code>.</li>
+    <li><strong>Sum the bases:</strong> the result is the unique polynomial passing through all supplied points.</li>
+  </ol>
+
+  <div class="note-box">
+    <strong>Important:</strong> this is intentionally a learning implementation. A production ZK prover would use a proper field type, overflow-safe arithmetic, optimized polynomial multiplication, and FFT-based interpolation over structured domains rather than repeatedly constructing Lagrange bases.
+  </div>
+</section>
+
 <section id="summary">
   <h2>The whole idea in one map</h2>
 
