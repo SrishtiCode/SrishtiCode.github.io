@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polynomials &amp; Interpolation — Srishti Rathi</title>
+<meta name="description" content="Polynomials and interpolation from first principles: evaluation, degree, roots, polynomial division, Lagrange and Newton interpolation, finite-field interpolation, and their role in zero-knowledge proving systems.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1>Polynomials &amp; <em>Interpolation</em></h1>
+  <p class="dek">from expressions and coefficients to evaluation, roots, polynomial division, interpolation, finite fields, and the role of polynomials in ZK proving systems</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="why">
+  <h2>Why polynomials, at all</h2>
+
+  <p>A polynomial is one of the simplest mathematical objects that can encode a large amount of structured information. It is just a sum of powers of a variable multiplied by coefficients:</p>
+
+  <div class="math-box">
+    <div class="label">polynomial</div>
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + … + aₙxⁿ</div>
+  </div>
+
+  <p>That looks simple, but polynomials are incredibly useful because we can move between two different views of the same object:</p>
+
+  <div class="polynomial-map">
+    <div class="row">
+      <span class="node">coefficients</span>
+      <span class="arrow">→ evaluate →</span>
+      <span class="node">values</span>
+      <span class="arrow">→ interpolate →</span>
+      <span class="node">polynomial</span>
+    </div>
+  </div>
+
+  <p>This coefficient/value duality is everywhere in a proving system. A prover may construct a polynomial in coefficient form, evaluate it over a structured domain, commit to those evaluations, and later reason about the original polynomial again.</p>
+
+  <div class="note-box">
+    <strong>Core mental model:</strong> a polynomial is one mathematical object, but it can be represented by its coefficients or by enough evaluations. Interpolation is the algorithm that reconstructs the polynomial from those evaluations.
+  </div>
+</section>
+
+<section id="polynomial-definition">
+  <h2>What exactly is a polynomial</h2>
+
+  <p>Over a field <code class="inline">F</code>, a polynomial in one variable is an expression</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + … + aₙxⁿ</div>
+    <div class="formula">where a₀, a₁, …, aₙ ∈ F</div>
+  </div>
+
+  <p>The numbers <code class="inline">a₀, a₁, …</code> are the <strong>coefficients</strong>. The variable <code class="inline">x</code> is an indeterminate. The important distinction is that a polynomial is the formal object itself; plugging a particular value into it produces an evaluation.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = 3 + 2x + 5x²</div>
+    <div class="formula">f(2) = 3 + 2·2 + 5·2² = 27</div>
+  </div>
+
+  <p>The <strong>degree</strong> is the largest exponent whose coefficient is non-zero. Therefore the polynomial above has degree 2.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Polynomial</th><th>Degree</th><th>Leading coefficient</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>7</td><td>0</td><td>7</td></tr>
+      <tr><td>2x + 1</td><td>1</td><td>2</td></tr>
+      <tr><td>x² − 4x + 3</td><td>2</td><td>1</td></tr>
+      <tr><td>5x⁴ + x − 9</td><td>4</td><td>5</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="representation">
+  <h2>One polynomial, several representations</h2>
+
+  <p>Consider:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = 2 + 3x + x²</div>
+  </div>
+
+  <p>Its coefficient representation is simply:</p>
+
+  <div class="math-box">
+    <div class="formula">[2, 3, 1]</div>
+  </div>
+
+  <p>But we could instead store values. For example:</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">coefficient form</div>
+      <p><code class="inline">[2, 3, 1]</code> directly describes the polynomial.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">evaluation form</div>
+      <p><code class="inline">f(0)=2, f(1)=6, f(2)=12</code> describes the same polynomial at selected points.</p>
+    </div>
+  </div>
+
+  <p>For a degree-2 polynomial, three distinct evaluations are enough to recover it. This is not an accident. A polynomial of degree at most <code class="inline">d</code> has <code class="inline">d+1</code> degrees of freedom, represented by its <code class="inline">d+1</code> coefficients.</p>
+
+  <div class="math-box">
+    <div class="label">degrees of freedom</div>
+    <div class="formula">degree ≤ d  →  d + 1 coefficients  →  d + 1 independent evaluations</div>
+  </div>
+</section>
+
+<section id="operations">
+  <h2>Polynomial arithmetic</h2>
+
+  <p>Polynomials over a field inherit familiar arithmetic operations.</p>
+
+  <h3>Addition</h3>
+
+  <p>Add corresponding coefficients:</p>
+
+  <div class="math-box">
+    <div class="formula">(a₀+a₁x+a₂x²) + (b₀+b₁x+b₂x²)</div>
+    <div class="formula">= (a₀+b₀) + (a₁+b₁)x + (a₂+b₂)x²</div>
+  </div>
+
+  <h3>Multiplication</h3>
+
+  <p>Multiply every term by every term, then combine equal powers:</p>
+
+  <div class="math-box">
+    <div class="formula">(a₀+a₁x)(b₀+b₁x)</div>
+    <div class="formula">= a₀b₀ + (a₀b₁+a₁b₀)x + a₁b₁x²</div>
+  </div>
+
+  <p>This is convolution of coefficient vectors. That observation becomes important later because FFTs can accelerate polynomial multiplication.</p>
+
+  <h3>Evaluation</h3>
+
+  <p>Given <code class="inline">x = r</code>, evaluate by substituting:</p>
+
+  <div class="math-box">
+    <div class="formula">f(r) = a₀ + a₁r + a₂r² + … + aₙrⁿ</div>
+  </div>
+
+  <p>Naively this computes powers separately. Horner's method rewrites the same polynomial as nested multiplication:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = (((aₙx + aₙ₋₁)x + aₙ₋₂)x + …)x + a₀</div>
+  </div>
+
+  <p>That reduces evaluation to roughly one multiplication and one addition per coefficient.</p>
+</section>
+
+<section id="roots">
+  <h2>Roots and the factor theorem</h2>
+
+  <p>A value <code class="inline">r</code> is a <strong>root</strong> or <strong>zero</strong> of <code class="inline">f</code> if:</p>
+
+  <div class="math-box">
+    <div class="formula">f(r) = 0</div>
+  </div>
+
+  <p>If <code class="inline">r</code> is a root, then <code class="inline">(x−r)</code> divides the polynomial.</p>
+
+  <div class="math-box">
+    <div class="label">factor theorem</div>
+    <div class="formula">f(r)=0  ⇔  (x−r) is a factor of f(x)</div>
+  </div>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = x² − 5x + 6</div>
+    <div class="formula">f(2) = 0</div>
+    <div class="formula">f(3) = 0</div>
+    <div class="formula">f(x) = (x−2)(x−3)</div>
+  </div>
+
+  <p>This simple relationship between roots and factors is one of the reasons polynomial identities are so powerful in proof systems.</p>
+</section>
+
+<section id="division">
+  <h2>Polynomial division and the remainder</h2>
+
+  <p>Polynomial division behaves like integer division. Given polynomials <code class="inline">f(x)</code> and non-zero <code class="inline">g(x)</code>, we can write:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = q(x)g(x) + r(x)</div>
+    <div class="formula">deg(r) &lt; deg(g)</div>
+  </div>
+
+  <p>The polynomial <code class="inline">q</code> is the quotient and <code class="inline">r</code> is the remainder.</p>
+
+  <p>If we divide by <code class="inline">x−a</code>, the remainder is exactly <code class="inline">f(a)</code>:</p>
+
+  <div class="math-box">
+    <div class="label">remainder theorem</div>
+    <div class="formula">f(x) = q(x)(x−a) + f(a)</div>
+  </div>
+
+  <p>Therefore:</p>
+
+  <div class="math-box">
+    <div class="formula">f(a)=0  ⇔  (x−a) divides f(x)</div>
+  </div>
+
+  <p>In ZK systems this style of reasoning appears constantly. A claim that a polynomial vanishes on a domain can be converted into a divisibility statement by a polynomial that vanishes on that same domain.</p>
+</section>
+
+<section id="interpolation">
+  <h2>What is interpolation?</h2>
+
+  <p>Now reverse the problem.</p>
+
+  <p>Instead of starting with coefficients and asking for values, suppose someone gives us values:</p>
+
+  <div class="math-box">
+    <div class="formula">(x₀,y₀), (x₁,y₁), …, (x_d,y_d)</div>
+  </div>
+
+  <p>where the <code class="inline">xᵢ</code> are distinct. We want to construct the unique polynomial of degree at most <code class="inline">d</code> satisfying:</p>
+
+  <div class="math-box">
+    <div class="formula">f(xᵢ) = yᵢ   for i = 0,…,d</div>
+  </div>
+
+  <p>That process is <strong>polynomial interpolation</strong>.</p>
+
+  <div class="note-box">
+    <strong>Fundamental fact:</strong> through any <code class="inline">d+1</code> points with distinct x-coordinates, there exists exactly one polynomial of degree at most <code class="inline">d</code>.
+  </div>
+</section>
+
+<section id="lagrange">
+  <h2>Lagrange interpolation from first principles</h2>
+
+  <p>The cleanest derivation starts by constructing special polynomials. For every point <code class="inline">xᵢ</code>, we want a polynomial that is 1 at <code class="inline">xᵢ</code> and 0 at every other sample point.</p>
+
+  <p>Define the <strong>Lagrange basis polynomial</strong>:</p>
+
+  <div class="math-box">
+    <div class="label">Lagrange basis</div>
+    <div class="formula">Lᵢ(x) = ∏<sub>j≠i</sub> (x−xⱼ)/(xᵢ−xⱼ)</div>
+  </div>
+
+  <p>Why does this work?</p>
+
+  <p>Evaluate it at <code class="inline">x=xᵢ</code>. Every numerator becomes <code class="inline">xᵢ−xⱼ</code>, exactly matching its denominator:</p>
+
+  <div class="math-box">
+    <div class="formula">Lᵢ(xᵢ) = 1</div>
+  </div>
+
+  <p>Now evaluate it at some other sample point <code class="inline">x=xₖ</code>, where <code class="inline">k≠i</code>. One numerator becomes <code class="inline">xₖ−xₖ=0</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">Lᵢ(xₖ) = 0</div>
+  </div>
+
+  <p>So each basis polynomial behaves like a selector: it selects exactly one input point.</p>
+
+  <div class="polynomial-map">
+    <div class="row">
+      <span class="node">L₀</span><span class="arrow">→</span><span class="node">1 at x₀</span><span class="arrow">→</span><span class="node">0 everywhere else</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">L₁</span><span class="arrow">→</span><span class="node">1 at x₁</span><span class="arrow">→</span><span class="node">0 everywhere else</span>
+    </div>
+  </div>
+
+  <p>Because we have a basis polynomial for each data point, we can combine them with the desired y-values:</p>
+
+  <div class="math-box">
+    <div class="label">Lagrange interpolation formula</div>
+    <div class="formula">f(x) = Σᵢ yᵢ Lᵢ(x)</div>
+  </div>
+
+  <p>At <code class="inline">x=xₖ</code>, every basis term disappears except <code class="inline">Lₖ</code>. Therefore:</p>
+
+  <div class="math-box">
+    <div class="formula">f(xₖ) = yₖ</div>
+  </div>
+</section>
+
+<section id="lagrange-example">
+  <h2>Lagrange example: three points</h2>
+
+  <p>Take the points:</p>
+
+  <div class="math-box">
+    <div class="formula">(0,1), (1,3), (2,7)</div>
+  </div>
+
+  <p>There are three points, so we seek a polynomial of degree at most 2.</p>
+
+  <p>The first basis polynomial is:</p>
+
+  <div class="math-box">
+    <div class="formula">L₀(x) = (x−1)(x−2) / ((0−1)(0−2))</div>
+    <div class="formula">     = (x−1)(x−2) / 2</div>
+  </div>
+
+  <p>The second:</p>
+
+  <div class="math-box">
+    <div class="formula">L₁(x) = (x−0)(x−2) / ((1−0)(1−2))</div>
+    <div class="formula">     = −x(x−2)</div>
+  </div>
+
+  <p>The third:</p>
+
+  <div class="math-box">
+    <div class="formula">L₂(x) = (x−0)(x−1) / ((2−0)(2−1))</div>
+    <div class="formula">     = x(x−1) / 2</div>
+  </div>
+
+  <p>Combine them with their y-values:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = 1·L₀(x) + 3·L₁(x) + 7·L₂(x)</div>
+    <div class="formula">     = x² + x + 1</div>
+  </div>
+
+  <p>Check:</p>
+
+  <div class="math-box">
+    <div class="formula">f(0)=1</div>
+    <div class="formula">f(1)=3</div>
+    <div class="formula">f(2)=7</div>
+  </div>
+</section>
+
+<section id="uniqueness">
+  <h2>Why is the interpolating polynomial unique?</h2>
+
+  <p>Suppose two degree-≤<code class="inline">d</code> polynomials, <code class="inline">f</code> and <code class="inline">g</code>, agree on <code class="inline">d+1</code> distinct points.</p>
+
+  <p>Consider their difference:</p>
+
+  <div class="math-box">
+    <div class="formula">h(x) = f(x) − g(x)</div>
+  </div>
+
+  <p>Then <code class="inline">h</code> has degree at most <code class="inline">d</code>, but it has at least <code class="inline">d+1</code> distinct roots because f and g agree at every sample point.</p>
+
+  <p>A non-zero polynomial of degree <code class="inline">d</code> over a field cannot have more than <code class="inline">d</code> roots. Therefore <code class="inline">h</code> must be the zero polynomial:</p>
+
+  <div class="math-box">
+    <div class="formula">h(x)=0  →  f(x)=g(x)</div>
+  </div>
+
+  <p>That is the mathematical reason interpolation is unique.</p>
+</section>
+
+<section id="finite-field">
+  <h2>Interpolation over a finite field</h2>
+
+  <p>Everything above works over a field, not just over the real numbers. That means we can interpolate directly inside a finite field.</p>
+
+  <p>For example, in <code class="inline">F₁₇</code>, division means multiplication by a modular inverse. Suppose we need:</p>
+
+  <div class="math-box">
+    <div class="formula">1 / 4  in F₁₇</div>
+  </div>
+
+  <p>Since <code class="inline">4·13 = 52 ≡ 1 (mod 17)</code>, the inverse of 4 is 13:</p>
+
+  <div class="math-box">
+    <div class="formula">4⁻¹ = 13  (mod 17)</div>
+  </div>
+
+  <p>Therefore the denominator in the Lagrange formula is not a floating-point division. It is exact field arithmetic.</p>
+
+  <div class="note-box">
+    <strong>This is crucial for ZK:</strong> interpolation never needs approximate arithmetic. Every coefficient and every inverse is an exact element of the proving field.
+  </div>
+</section>
+
+<section id="newton">
+  <h2>Newton interpolation</h2>
+
+  <p>Lagrange interpolation is conceptually clean, but there is another useful representation: Newton's form.</p>
+
+  <div class="math-box">
+    <div class="label">Newton form</div>
+    <div class="formula">f(x) = c₀ + c₁(x−x₀) + c₂(x−x₀)(x−x₁) + …</div>
+  </div>
+
+  <p>The coefficients <code class="inline">cᵢ</code> are built from <strong>divided differences</strong>. For example:</p>
+
+  <div class="math-box">
+    <div class="formula">c₀ = y₀</div>
+    <div class="formula">c₁ = (y₁−y₀)/(x₁−x₀)</div>
+  </div>
+
+  <p>For three points:</p>
+
+  <div class="math-box">
+    <div class="formula">c₂ = [y₀,y₁,y₂]</div>
+    <div class="formula">[y₀,y₁,y₂] = ([y₁,y₂]−[y₀,y₁])/(x₂−x₀)</div>
+  </div>
+
+  <p>Newton form is particularly useful when points are added incrementally because a new point can extend the representation without rebuilding every previous basis polynomial from scratch.</p>
+</section>
+
+<section id="interpolation-domain">
+  <h2>Why the choice of points matters</h2>
+
+  <p>Interpolation requires distinct x-coordinates. In Lagrange interpolation, the denominators contain:</p>
+
+  <div class="math-box">
+    <div class="formula">xᵢ − xⱼ</div>
+  </div>
+
+  <p>If two points have the same x-coordinate, that difference is zero and has no multiplicative inverse.</p>
+
+  <p>In a finite field, this is an exact algebraic requirement. There is no concept of “almost equal” points that can rescue the denominator.</p>
+
+  <p>This leads directly to an important ZK engineering decision: choose evaluation domains with convenient algebraic structure, often multiplicative subgroups generated by roots of unity.</p>
+
+  <div class="polynomial-map">
+    <div class="row">
+      <span class="node">finite field</span>
+      <span class="arrow">→ choose distinct points →</span>
+      <span class="node">evaluation domain</span>
+      <span class="arrow">→ interpolate / FFT →</span>
+      <span class="node">polynomial</span>
+    </div>
+  </div>
+</section>
+
+<section id="vanishing">
+  <h2>Vanishing polynomials</h2>
+
+  <p>Suppose we have a set of distinct points:</p>
+
+  <div class="math-box">
+    <div class="formula">D = {x₀, x₁, …, xₙ₋₁}</div>
+  </div>
+
+  <p>There is a natural polynomial that vanishes at every point of the domain:</p>
+
+  <div class="math-box">
+    <div class="label">vanishing polynomial</div>
+    <div class="formula">Z_D(x) = ∏ᵢ (x−xᵢ)</div>
+  </div>
+
+  <p>For every <code class="inline">xᵢ ∈ D</code>, one factor becomes zero, so:</p>
+
+  <div class="math-box">
+    <div class="formula">Z_D(xᵢ)=0</div>
+  </div>
+
+  <p>For a multiplicative subgroup generated by a primitive n-th root of unity, the domain is:</p>
+
+  <div class="math-box">
+    <div class="formula">D = {1, ω, ω², …, ωⁿ⁻¹}</div>
+  </div>
+
+  <p>and the vanishing polynomial becomes especially simple:</p>
+
+  <div class="math-box">
+    <div class="formula">Z_D(x) = xⁿ − 1</div>
+  </div>
+
+  <p>This is one of the most important bridges between the previous topic and this one: <strong>roots of unity create the domain, and the domain has a compact polynomial that vanishes on every point.</strong></p>
+</section>
+
+<section id="zk">
+  <h2>Why polynomials are everywhere in ZK</h2>
+
+  <p>A proving system needs to turn a computation into something algebraically checkable. Polynomials provide exactly that abstraction.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>ZK concept</th><th>Polynomial connection</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>execution trace</td><td>Trace values can be interpolated into trace polynomials.</td></tr>
+      <tr><td>AIR constraints</td><td>Transition and boundary constraints become polynomial relations.</td></tr>
+      <tr><td>composition polynomial</td><td>Several constraints can be combined into one algebraic object.</td></tr>
+      <tr><td>evaluation domain</td><td>Polynomials are evaluated over structured finite-field points.</td></tr>
+      <tr><td>FRI</td><td>Proves that an evaluation vector is close to evaluations of a low-degree polynomial.</td></tr>
+      <tr><td>KZG</td><td>Commits to a polynomial and proves evaluations using polynomial division and pairings.</td></tr>
+      <tr><td>FFT</td><td>Efficiently converts between coefficient and evaluation representations.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The conceptual chain is:</p>
+
+  <div class="math-box">
+    <div class="formula">computation → field values → trace → interpolation → polynomials → evaluation domain → commitments / FRI → proof</div>
+  </div>
+</section>
+
+<section id="fft">
+  <h2>Interpolation and FFT: the important connection</h2>
+
+  <p>Naive interpolation is mathematically straightforward but can be expensive. If we have <code class="inline">n</code> points, constructing all Lagrange basis polynomials directly can require roughly quadratic work.</p>
+
+  <p>When the interpolation points form a multiplicative subgroup:</p>
+
+  <div class="math-box">
+    <div class="formula">D = {1, ω, ω², …, ωⁿ⁻¹}</div>
+  </div>
+
+  <p>we can exploit the structure of the domain and use the FFT / inverse FFT.</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">forward FFT</div>
+      <p>Coefficients → evaluations on the structured domain.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">inverse FFT</div>
+      <p>Evaluations on the structured domain → coefficients.</p>
+    </div>
+  </div>
+
+  <p>Instead of treating interpolation as a generic problem, the FFT recursively exploits the fact that powers of a root of unity form smaller root-of-unity domains.</p>
+
+  <p>This is why the previous page on <strong>groups and roots of unity</strong> naturally leads into this topic: the group gives the domain structure, and interpolation tells us how values on that domain correspond to a polynomial.</p>
+</section>
+
+<section id="rust">
+  <h2>From the math to Rust</h2>
+
+  <p>A minimal implementation can start with a polynomial represented by its coefficient vector. The coefficient at index <code class="inline">i</code> represents the coefficient of <code class="inline">xⁱ</code>.</p>
+
+  <details>
+    <summary>Polynomial representation and evaluation</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// f(x) = 2 + 3x + x^2</span>
+<span class="k">struct</span> Polynomial {
+    coeffs: Vec&lt;u64&gt;,
+}
+
+<span class="k">impl</span> Polynomial {
+    <span class="c">// Horner evaluation.</span>
+    <span class="k">fn</span> evaluate(&amp;self, x: u64, modulus: u64) -&gt; u64 {
+        <span class="k">let mut</span> acc = 0;
+
+        <span class="k">for</span> &amp;coeff <span class="k">in</span> self.coeffs.iter().rev() {
+            acc = (acc * x + coeff) % modulus;
+        }
+
+        acc
+    }
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">let</span> f = Polynomial {
+        coeffs: vec![2, 3, 1],
+    };
+
+    assert_eq!(f.evaluate(2, 17), 12);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Lagrange interpolation over a prime field</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Interpolate points (x_i, y_i) in F_p.</span>
+<span class="c">// Every x_i must be distinct.</span>
+
+<span class="k">fn</span> mod_pow(mut base: u64, mut exp: u64, p: u64) -&gt; u64 {
+    <span class="k">let mut</span> result = 1;
+
+    <span class="k">while</span> exp &gt; 0 {
+        <span class="k">if</span> exp &amp; 1 == 1 {
+            result = result * base % p;
+        }
+
+        base = base * base % p;
+        exp &gt;&gt;= 1;
+    }
+
+    result
+}
+
+<span class="k">fn</span> inv(a: u64, p: u64) -&gt; u64 {
+    <span class="c">// Fermat: a^(p-2) = a^(-1) mod p.</span>
+    mod_pow(a, p - 2, p)
+}
+
+<span class="c">// Returns coefficients in ascending degree order.</span>
+<span class="k">fn</span> lagrange(xs: &amp;[u64], ys: &amp;[u64], p: u64) -&gt; Vec&lt;u64&gt; {
+    assert_eq!(xs.len(), ys.len());
+
+    <span class="k">let</span> n = xs.len();
+    <span class="k">let mut</span> result = vec![0; n];
+
+    <span class="k">for</span> i <span class="k">in</span> 0..n {
+        <span class="k">let mut</span> basis = vec![1u64];
+
+        <span class="c">// Build ∏_{j != i} (x - x_j).</span>
+        <span class="k">for</span> j <span class="k">in</span> 0..n {
+            <span class="k">if</span> i == j {
+                <span class="k">continue</span>;
+            }
+
+            <span class="k">let</span> xj = xs[j];
+            <span class="k">let mut</span> next = vec![0; basis.len() + 1];
+
+            <span class="k">for</span> k <span class="k">in</span> 0..basis.len() {
+                next[k] = (next[k] + p - basis[k] * xj % p) % p;
+                next[k + 1] = (next[k + 1] + basis[k]) % p;
+            }
+
+            basis = next;
+        }
+
+        <span class="c">// Divide by ∏_{j != i} (x_i - x_j).</span>
+        <span class="k">let</span> <span class="k">mut</span> denom = 1;
+        <span class="k">for</span> j <span class="k">in</span> 0..n {
+            <span class="k">if</span> i != j {
+                denom = denom * ((xs[i] + p - xs[j]) % p) % p;
+            }
+        }
+
+        <span class="k">let</span> scale = ys[i] * inv(denom, p) % p;
+
+        <span class="k">for</span> k <span class="k">in</span> 0..basis.len() {
+            result[k] = (result[k] + scale * basis[k]) % p;
+        }
+    }
+
+    result
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>The second implementation follows the mathematics almost line by line:</p>
+
+  <ol class="steps">
+    <li>Build the numerator polynomial <code class="inline">∏(x−xⱼ)</code> for each interpolation point.</li>
+    <li>Compute its denominator <code class="inline">∏(xᵢ−xⱼ)</code>.</li>
+    <li>Invert that denominator inside the field.</li>
+    <li>Scale the basis polynomial by <code class="inline">yᵢ</code>.</li>
+    <li>Add all scaled basis polynomials together.</li>
+  </ol>
+</section>
+
+<section id="complexity">
+  <h2>Naive interpolation vs. production techniques</h2>
+
+  <p>The direct Lagrange algorithm is excellent for understanding the mathematics, but a production prover cannot blindly use it for millions of points.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Approach</th><th>Main idea</th><th>Typical use</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>naive Lagrange</td><td>Construct every basis polynomial explicitly.</td><td>Learning, small inputs, reference implementations.</td></tr>
+      <tr><td>Newton</td><td>Use divided differences and nested products.</td><td>Incremental interpolation and general-purpose interpolation.</td></tr>
+      <tr><td>FFT / IFFT</td><td>Exploit a structured root-of-unity domain.</td><td>Large finite-field polynomial workloads in provers.</td></tr>
+      <tr><td>specialized barycentric methods</td><td>Rearrange interpolation for efficient evaluation.</td><td>Fast evaluation/interpolation variants.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The engineering lesson is not that Lagrange is “bad”. It is that <strong>the representation and domain determine which algorithm is appropriate</strong>.</p>
+</section>
+
+<section id="identity-testing">
+  <h2>Polynomial identities and why they are useful in proofs</h2>
+
+  <p>Suppose two polynomials <code class="inline">f</code> and <code class="inline">g</code> are claimed to be equal. Define:</p>
+
+  <div class="math-box">
+    <div class="formula">h(x) = f(x) − g(x)</div>
+  </div>
+
+  <p>The claim <code class="inline">f=g</code> is equivalent to <code class="inline">h=0</code>. If <code class="inline">h</code> is non-zero and has degree at most <code class="inline">d</code>, it cannot vanish at more than <code class="inline">d</code> points over a field.</p>
+
+  <p>This gives the basic intuition behind polynomial identity testing: checking values at carefully chosen or random points can provide strong evidence that two polynomials are the same, provided the field and degree bounds are handled correctly.</p>
+
+  <div class="note-box">
+    <strong>ZK connection:</strong> many proving systems reduce computational correctness to polynomial identities. Instead of checking every algebraic relation symbolically, the protocol can work with evaluations of those relations over a field.
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. A polynomial is a finite linear combination of powers of x.</div>
+    <div class="formula">2. Its coefficients are one representation.</div>
+    <div class="formula">3. Evaluations at enough distinct points are another representation.</div>
+    <div class="formula">4. Degree d gives d+1 coefficients.</div>
+    <div class="formula">5. Therefore d+1 distinct evaluations determine a degree-≤d polynomial.</div>
+    <div class="formula">6. Lagrange basis polynomials act like selectors.</div>
+    <div class="formula">7. Summing yᵢLᵢ(x) reconstructs the polynomial.</div>
+    <div class="formula">8. Finite-field interpolation uses exact modular inverses.</div>
+    <div class="formula">9. Vanishing polynomials describe entire evaluation domains.</div>
+    <div class="formula">10. Roots-of-unity domains make FFT-based interpolation fast.</div>
+    <div class="formula">11. ZK systems use these representations for traces, constraints, commitments, and FRI.</div>
+  </div>
+
+  <p>If finite fields answer <em>“where does the arithmetic happen?”</em>, groups and roots of unity answer <em>“what structured points can we use?”</em>, and polynomials answer <em>“how do we encode and manipulate the computation algebraically?”</em> Interpolation is the bridge between the polynomial's coefficients and its values.</p>
+</section>
+
+</article>
+
+</main>
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
