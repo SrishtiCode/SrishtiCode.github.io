@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groups &amp; Roots of Unity — Srishti Rathi</title>
+<meta name="description" content="Groups, cyclic groups, roots of unity, primitive roots, finite-field multiplicative groups, and why they matter for FFTs and zero-knowledge proving systems.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1>Groups &amp; <em>Roots of Unity</em></h1>
+  <p class="dek">from the idea of symmetry to cyclic groups, primitive roots, finite-field multiplicative groups, and the roots that make FFTs possible</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="why-groups">
+  <h2>Why groups, at all</h2>
+
+  <p>Cryptography and proving systems repeatedly perform the same kind of operation: take objects, combine them according to a rule, and keep combining the results. We need to know that this repeated computation behaves predictably. <strong>Group theory is the language for exactly that.</strong></p>
+
+  <p>A group is not primarily about numbers. It is about a <span class="hl">set of objects plus an operation</span> that has four guarantees. Once those guarantees hold, we can reason about repeated operations without caring about the concrete representation underneath.</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="k">addition</div>
+      <p>Integers under <code class="inline">+</code> form a group. You can move forward and backward and always stay in the set.</p>
+    </div>
+    <div class="concept-card">
+      <div class="k">multiplication</div>
+      <p>Non-zero elements of a finite field form a group under multiplication. This group is central to roots of unity.</p>
+    </div>
+    <div class="concept-card">
+      <div class="k">symmetry</div>
+      <p>Rotations and permutations can form groups. The same algebraic laws describe these very different objects.</p>
+    </div>
+    <div class="concept-card">
+      <div class="k">cryptography</div>
+      <p>Elliptic-curve points form groups, allowing efficient repeated operations while making inverse problems hard.</p>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>The key mental model:</strong> a group gives us a safe environment for repeated application of one operation. A cyclic group goes one step further: one element can generate the entire group.
+  </div>
+</section>
+
+<section id="group-definition">
+  <h2>What exactly is a group</h2>
+
+  <p>Let <code class="inline">G</code> be a set and let <code class="inline">⋆</code> be an operation that takes two elements of <code class="inline">G</code> and produces another element. We write <code class="inline">(G, ⋆)</code> for the resulting algebraic structure.</p>
+
+  <p>It is a <strong>group</strong> when four properties hold.</p>
+
+  <ol class="steps">
+    <li><strong>Closure.</strong> For every <code class="inline">a,b ∈ G</code>, the result <code class="inline">a ⋆ b</code> is also in <code class="inline">G</code>. The operation never leaves the set.</li>
+    <li><strong>Associativity.</strong> For every <code class="inline">a,b,c ∈ G</code>, <code class="inline">(a ⋆ b) ⋆ c = a ⋆ (b ⋆ c)</code>. Parentheses can move without changing the answer.</li>
+    <li><strong>Identity.</strong> There is an element <code class="inline">e ∈ G</code> such that <code class="inline">e ⋆ a = a ⋆ e = a</code>. It does nothing.</li>
+    <li><strong>Inverse.</strong> Every <code class="inline">a ∈ G</code> has an element <code class="inline">a⁻¹ ∈ G</code> such that <code class="inline">a ⋆ a⁻¹ = a⁻¹ ⋆ a = e</code>.</li>
+  </ol>
+
+  <div class="math-box">
+    <div class="label">group checklist</div>
+    <div class="formula">
+      closure + associativity + identity + inverse = group
+    </div>
+  </div>
+
+  <p>Notice what is <em>not</em> required: the operation does not have to be commutative. If <code class="inline">a ⋆ b = b ⋆ a</code> for every pair, the group is called <strong>abelian</strong>. Otherwise it is non-abelian.</p>
+</section>
+
+<section id="examples">
+  <h2>Start with familiar examples</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Set</th><th>Operation</th><th>Identity</th><th>Inverse</th><th>Group?</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ℤ</td><td>+</td><td>0</td><td>−a</td><td>Yes, abelian</td>
+      </tr>
+      <tr>
+        <td>ℚ \ {0}</td><td>×</td><td>1</td><td>1/a</td><td>Yes, abelian</td>
+      </tr>
+      <tr>
+        <td>ℤ/5ℤ</td><td>+</td><td>0</td><td>−a mod 5</td><td>Yes, abelian</td>
+      </tr>
+      <tr>
+        <td>ℤ/5ℤ</td><td>×</td><td>1</td><td>1/a</td><td>No: 0 has no inverse</td>
+      </tr>
+      <tr>
+        <td>(ℤ/5ℤ)×</td><td>×</td><td>1</td><td>a⁻¹ mod 5</td><td>Yes, abelian</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The last row is important. The whole finite field <code class="inline">F₅ = {0,1,2,3,4}</code> is a field, but its <strong>non-zero elements</strong> form a multiplicative group:</p>
+
+  <div class="math-box">
+    <div class="label">the multiplicative group of F₅</div>
+    <div class="formula">F₅× = {1, 2, 3, 4}</div>
+    <div class="formula">2·3 = 6 ≡ 1 (mod 5), so 3 = 2⁻¹</div>
+    <div class="formula">2⁴ = 16 ≡ 1 (mod 5)</div>
+  </div>
+
+  <p>This distinction is fundamental in ZK work: <strong>addition lives on all field elements, while multiplication-with-inverses lives on the non-zero elements.</strong></p>
+</section>
+
+<section id="powers">
+  <h2>Repeated multiplication gives powers</h2>
+
+  <p>Suppose we choose one element <code class="inline">g</code> in a multiplicative group. We can repeatedly multiply it by itself:</p>
+
+  <div class="math-box">
+    <div class="label">powers of one element</div>
+    <div class="formula">g⁰ = 1</div>
+    <div class="formula">g¹ = g</div>
+    <div class="formula">g² = g·g</div>
+    <div class="formula">g³ = g·g·g</div>
+    <div class="formula">…</div>
+  </div>
+
+  <p>Because a finite group contains only finitely many elements, these powers must eventually repeat. Once a repetition occurs, the sequence cycles forever.</p>
+
+  <p>The smallest positive integer <code class="inline">n</code> such that</p>
+
+  <div class="math-box">
+    <div class="label">order of an element</div>
+    <div class="formula">gⁿ = 1</div>
+  </div>
+
+  <p>is called the <strong>order of g</strong>, written <code class="inline">ord(g)</code>.</p>
+
+  <p>For example, in <code class="inline">F₅× = {1,2,3,4}</code>, take <code class="inline">g=2</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">2⁰ = 1</div>
+    <div class="formula">2¹ = 2</div>
+    <div class="formula">2² = 4</div>
+    <div class="formula">2³ = 8 ≡ 3 (mod 5)</div>
+    <div class="formula">2⁴ = 16 ≡ 1 (mod 5)</div>
+  </div>
+
+  <p>We visited every non-zero element before returning to 1. Therefore <code class="inline">ord(2)=4</code>.</p>
+</section>
+
+<section id="cyclic">
+  <h2>Cyclic groups and generators</h2>
+
+  <p>If the powers of one element visit <strong>every element of the group</strong>, that element is called a <strong>generator</strong>, and the group is <strong>cyclic</strong>.</p>
+
+  <p>We write the cyclic group generated by <code class="inline">g</code> as:</p>
+
+  <div class="math-box">
+    <div class="label">cyclic subgroup</div>
+    <div class="formula">⟨g⟩ = {g⁰, g¹, g², …}</div>
+  </div>
+
+  <p>If <code class="inline">|G| = n</code> and <code class="inline">ord(g)=n</code>, then <code class="inline">g</code> generates the entire group.</p>
+
+  <div class="figure-row">
+    <div class="figure-card">
+      <svg viewBox="0 0 260 150" aria-hidden="true">
+        <circle cx="130" cy="75" r="53" fill="none" stroke="var(--teal)" stroke-width="1"/>
+        <g font-family="var(--mono)" font-size="11" fill="var(--ink-soft)">
+          <text x="130" y="14" text-anchor="middle">1</text>
+          <text x="181" y="46" text-anchor="middle">g</text>
+          <text x="174" y="112" text-anchor="middle">g²</text>
+          <text x="86" y="112" text-anchor="middle">g³</text>
+          <text x="79" y="46" text-anchor="middle">g⁴</text>
+        </g>
+        <path d="M130 24 C170 25 190 55 176 82" fill="none" stroke="var(--purple)" stroke-width="1.2"/>
+        <path d="M176 82 C156 115 104 123 82 88" fill="none" stroke="var(--purple)" stroke-width="1.2"/>
+        <path d="M82 88 C64 56 89 25 130 24" fill="none" stroke="var(--purple)" stroke-width="1.2"/>
+        <circle cx="130" cy="75" r="2.5" fill="var(--ink)"/>
+      </svg>
+      <div class="caption">fig. 1 — powers of g cycle through a finite group</div>
+    </div>
+    <div class="figure-card">
+      <svg viewBox="0 0 260 150" aria-hidden="true">
+        <line x1="25" y1="75" x2="235" y2="75" stroke="var(--border)" stroke-width="1"/>
+        <circle cx="45" cy="75" r="4" fill="var(--purple)"/>
+        <circle cx="85" cy="75" r="4" fill="var(--purple)"/>
+        <circle cx="125" cy="75" r="4" fill="var(--purple)"/>
+        <circle cx="165" cy="75" r="4" fill="var(--purple)"/>
+        <circle cx="205" cy="75" r="4" fill="var(--teal)"/>
+        <g font-family="var(--mono)" font-size="10" fill="var(--ink-dim)">
+          <text x="45" y="98" text-anchor="middle">g⁰</text>
+          <text x="85" y="98" text-anchor="middle">g¹</text>
+          <text x="125" y="98" text-anchor="middle">g²</text>
+          <text x="165" y="98" text-anchor="middle">…</text>
+          <text x="205" y="98" text-anchor="middle">gⁿ=1</text>
+        </g>
+      </svg>
+      <div class="caption">fig. 2 — the first return to the identity determines the order</div>
+    </div>
+  </div>
+</section>
+
+<section id="roots">
+  <h2>Now: what is a root of unity?</h2>
+
+  <p>A <strong>root of unity</strong> is simply a number whose positive power equals 1.</p>
+
+  <div class="math-box">
+    <div class="label">definition</div>
+    <div class="formula">ωⁿ = 1</div>
+  </div>
+
+  <p>If <code class="inline">ω</code> is a solution to <code class="inline">xⁿ − 1 = 0</code>, then <code class="inline">ω</code> is an <code class="inline">n</code>-th root of unity.</p>
+
+  <p>Over the complex numbers, the picture is especially intuitive. The solutions of <code class="inline">xⁿ=1</code> lie equally around the unit circle:</p>
+
+  <div class="figure-row">
+    <div class="figure-card">
+      <svg viewBox="0 0 260 210" aria-hidden="true">
+        <circle cx="130" cy="105" r="72" fill="none" stroke="var(--border)" stroke-width="1"/>
+        <line x1="40" y1="105" x2="220" y2="105" stroke="var(--border-soft)" stroke-width="1"/>
+        <line x1="130" y1="15" x2="130" y2="195" stroke="var(--border-soft)" stroke-width="1"/>
+        <g stroke="var(--purple)" stroke-width="1">
+          <line x1="130" y1="105" x2="202" y2="105"/>
+          <line x1="130" y1="105" x2="181" y2="54"/>
+          <line x1="130" y1="105" x2="130" y2="33"/>
+          <line x1="130" y1="105" x2="79" y2="54"/>
+          <line x1="130" y1="105" x2="58" y2="105"/>
+          <line x1="130" y1="105" x2="79" y2="156"/>
+          <line x1="130" y1="105" x2="130" y2="177"/>
+          <line x1="130" y1="105" x2="181" y2="156"/>
+        </g>
+        <g fill="var(--teal)">
+          <circle cx="202" cy="105" r="3"/>
+          <circle cx="181" cy="54" r="3"/>
+          <circle cx="130" cy="33" r="3"/>
+          <circle cx="79" cy="54" r="3"/>
+          <circle cx="58" cy="105" r="3"/>
+          <circle cx="79" cy="156" r="3"/>
+          <circle cx="130" cy="177" r="3"/>
+          <circle cx="181" cy="156" r="3"/>
+        </g>
+        <text x="138" y="28" font-family="var(--mono)" font-size="10" fill="var(--ink-dim)">ω</text>
+      </svg>
+      <div class="caption">fig. 3 — the eight complex roots of x⁸ = 1 are equally spaced around the unit circle</div>
+    </div>
+    <div class="figure-card">
+      <svg viewBox="0 0 260 210" aria-hidden="true">
+        <circle cx="130" cy="105" r="72" fill="none" stroke="var(--border)" stroke-width="1"/>
+        <path d="M202 105 A72 72 0 0 1 58 105 A72 72 0 0 1 202 105" fill="none" stroke="var(--teal)" stroke-width="1.1" stroke-dasharray="3 3"/>
+        <circle cx="202" cy="105" r="4" fill="var(--purple)"/>
+        <circle cx="58" cy="105" r="4" fill="var(--purple)"/>
+        <line x1="130" y1="105" x2="202" y2="105" stroke="var(--purple)" stroke-width="1.2"/>
+        <line x1="130" y1="105" x2="58" y2="105" stroke="var(--purple)" stroke-width="1.2"/>
+        <text x="205" y="95" font-family="var(--mono)" font-size="10" fill="var(--ink-soft)">1</text>
+        <text x="45" y="95" font-family="var(--mono)" font-size="10" fill="var(--ink-soft)">−1</text>
+        <text x="136" y="100" font-family="var(--mono)" font-size="10" fill="var(--ink-dim)">n=2</text>
+      </svg>
+      <div class="caption">fig. 4 — for n=2 the roots are simply 1 and −1</div>
+    </div>
+  </div>
+
+  <p>The same definition works inside a finite field. We do not need a geometric circle. We only need an element <code class="inline">ω</code> satisfying <code class="inline">ωⁿ=1</code>.</p>
+</section>
+
+<section id="primitive">
+  <h2>Primitive roots of unity</h2>
+
+  <p>There can be several <code class="inline">n</code>-th roots of unity. A <strong>primitive n-th root of unity</strong> is one whose order is exactly <code class="inline">n</code>:</p>
+
+  <div class="math-box">
+    <div class="label">primitive root</div>
+    <div class="formula">ωⁿ = 1  and  ωᵏ ≠ 1 for 0 &lt; k &lt; n</div>
+  </div>
+
+  <p>So there is a direct connection:</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="k">group language</div>
+      <p><code class="inline">ω</code> has order <code class="inline">n</code>.</p>
+    </div>
+    <div class="concept-card">
+      <div class="k">polynomial language</div>
+      <p><code class="inline">ω</code> is a root of <code class="inline">xⁿ−1</code>.</p>
+    </div>
+  </div>
+
+  <p>These are the same fact viewed from two directions. The polynomial tells us the equation; the group tells us the repetition structure.</p>
+</section>
+
+<section id="finite-field-roots">
+  <h2>Roots of unity inside a finite field</h2>
+
+  <p>Now connect this to finite fields. Let <code class="inline">F_q</code> be a finite field with <code class="inline">q</code> elements. Its non-zero elements form a multiplicative group:</p>
+
+  <div class="math-box">
+    <div class="label">finite-field multiplicative group</div>
+    <div class="formula">F_q× = F_q \ {0}</div>
+    <div class="formula">|F_q×| = q − 1</div>
+  </div>
+
+  <p>In fact, the multiplicative group of every finite field is <strong>cyclic</strong>. Therefore there exists a generator <code class="inline">g</code> whose order is exactly <code class="inline">q−1</code>.</p>
+
+  <p>That immediately gives us roots of unity. If <code class="inline">n</code> divides <code class="inline">q−1</code>, define</p>
+
+  <div class="math-box">
+    <div class="label">constructing an n-th root</div>
+    <div class="formula">ω = g^((q−1)/n)</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">ωⁿ = g^((q−1)/n · n) = g^(q−1) = 1</div>
+  </div>
+
+  <p>And with <code class="inline">g</code> primitive, this <code class="inline">ω</code> has order exactly <code class="inline">n</code>.</p>
+
+  <div class="note-box">
+    <strong>Existence rule:</strong> a finite field <code class="inline">F_q</code> contains a primitive <code class="inline">n</code>-th root of unity exactly when <code class="inline">n | (q−1)</code>.
+  </div>
+</section>
+
+<section id="example-f17">
+  <h2>Concrete example: roots in F₁₇</h2>
+
+  <p>Take <code class="inline">F₁₇</code>. Its non-zero elements form a group of size <code class="inline">16</code>. Because <code class="inline">16 = 2⁴</code>, this field has primitive roots of unity of orders <code class="inline">2,4,8,16</code>.</p>
+
+  <p>Take <code class="inline">g=3</code>. It is a generator of <code class="inline">F₁₇×</code>. For an 8-th root of unity:</p>
+
+  <div class="math-box">
+    <div class="label">n = 8</div>
+    <div class="formula">ω = 3^(16/8) = 3² = 9 mod 17</div>
+    <div class="formula">9² = 81 ≡ 13</div>
+    <div class="formula">9⁴ = 13² = 169 ≡ 16</div>
+    <div class="formula">9⁸ = 16² = 256 ≡ 1</div>
+  </div>
+
+  <p>And the intermediate powers do not equal 1, so <code class="inline">9</code> has order 8. Therefore 9 is a primitive 8-th root of unity in <code class="inline">F₁₇</code>.</p>
+
+  <table class="article-table">
+    <thead><tr><th>power</th><th>value mod 17</th></tr></thead>
+    <tbody>
+      <tr><td>ω⁰</td><td>1</td></tr>
+      <tr><td>ω¹</td><td>9</td></tr>
+      <tr><td>ω²</td><td>13</td></tr>
+      <tr><td>ω³</td><td>15</td></tr>
+      <tr><td>ω⁴</td><td>16 = −1</td></tr>
+      <tr><td>ω⁵</td><td>8</td></tr>
+      <tr><td>ω⁶</td><td>4</td></tr>
+      <tr><td>ω⁷</td><td>2</td></tr>
+      <tr><td>ω⁸</td><td>1</td></tr>
+    </tbody>
+  </table>
+
+  <p>This is the finite-field analogue of walking around a circle: the values are not visually arranged on a real-number circle, but the multiplication law produces the same cyclic structure.</p>
+</section>
+
+<section id="subgroups">
+  <h2>Subgroups: smaller cycles inside a group</h2>
+
+  <p>A <strong>subgroup</strong> is a subset that is itself a group under the same operation. If <code class="inline">G</code> is cyclic, its powers naturally create subgroups.</p>
+
+  <p>For the order-8 element above:</p>
+
+  <div class="math-box">
+    <div class="formula">⟨ω⟩ = {1, ω, ω², …, ω⁷}</div>
+  </div>
+
+  <p>The elements <code class="inline">{1, ω², ω⁴, ω⁶}</code> form a subgroup of order 4. The elements <code class="inline">{1, ω⁴}</code> form a subgroup of order 2.</p>
+
+  <p>This matters because FFTs do not need the entire field's multiplicative group. They need a convenient subgroup of a specific size, usually a power of two.</p>
+</section>
+
+<section id="fft-connection">
+  <h2>Why roots of unity make FFTs possible</h2>
+
+  <p>This is the connection that matters most for a ZK prover.</p>
+
+  <p>Suppose we want to evaluate a polynomial</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + … + aₙ₋₁xⁿ⁻¹</div>
+  </div>
+
+  <p>at a structured set of points. Pick a primitive <code class="inline">n</code>-th root of unity <code class="inline">ω</code>. The evaluation domain becomes:</p>
+
+  <div class="math-box">
+    <div class="label">multiplicative subgroup domain</div>
+    <div class="formula">D = {1, ω, ω², …, ωⁿ⁻¹}</div>
+  </div>
+
+  <p>The crucial property is that multiplying a domain point by <code class="inline">ω</code> simply moves to the next point. That symmetry is what the FFT exploits.</p>
+
+  <div class="concept-grid">
+    <div class="concept-card">
+      <div class="k">without structure</div>
+      <p>Evaluate the polynomial independently at every point: roughly O(n²) work.</p>
+    </div>
+    <div class="concept-card">
+      <div class="k">with roots of unity</div>
+      <p>Exploit the recursive symmetry of the domain: roughly O(n log n) work.</p>
+    </div>
+  </div>
+
+  <p>The same root-of-unity structure appears in interpolation. The FFT converts coefficient form to evaluations; the inverse FFT converts those evaluations back to coefficients.</p>
+</section>
+
+<section id="fft-first-principles">
+  <h2>Deriving the FFT idea from scratch</h2>
+
+  <p>Start with an even-sized polynomial of degree less than <code class="inline">n</code>. Split its coefficients into even and odd powers:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = f_even(x²) + x · f_odd(x²)</div>
+  </div>
+
+  <p>Now evaluate at <code class="inline">x = ωᵏ</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">f(ωᵏ) = f_even(ω²ᵏ) + ωᵏ f_odd(ω²ᵏ)</div>
+  </div>
+
+  <p>Because <code class="inline">ω</code> has order <code class="inline">n</code>, <code class="inline">ω²</code> has order <code class="inline">n/2</code>. So the original problem of size <code class="inline">n</code> becomes two problems of size <code class="inline">n/2</code>.</p>
+
+  <p>That is the heart of the radix-2 FFT: <strong>the roots of unity give us exactly the recursive domain structure that the divide-and-conquer algorithm needs.</strong></p>
+
+  <div class="math-box">
+    <div class="label">butterfly</div>
+    <div class="formula">y₀ = A + ωᵏB</div>
+    <div class="formula">y₁ = A − ωᵏB</div>
+  </div>
+</section>
+
+<section id="two-adic">
+  <h2>Why ZK provers love powers of two</h2>
+
+  <p>Modern STARK implementations frequently choose an evaluation domain of size <code class="inline">2ᵐ</code>. To support that efficiently, the field needs a large power-of-two subgroup.</p>
+
+  <p>For a prime field <code class="inline">F_p</code>, the multiplicative group has size <code class="inline">p−1</code>. Therefore we want:</p>
+
+  <div class="math-box">
+    <div class="label">two-adicity</div>
+    <div class="formula">p − 1 = 2ˢ · t,  where t is odd</div>
+  </div>
+
+  <p>The integer <code class="inline">s</code> is the field's <strong>2-adicity</strong>. It tells us how large a power-of-two subgroup the field can contain.</p>
+
+  <p>If <code class="inline">s ≥ m</code>, then the field contains a primitive <code class="inline">2ᵐ</code>-th root of unity, which gives an FFT domain of size <code class="inline">2ᵐ</code>.</p>
+
+  <div class="note-box">
+    <strong>Implementation consequence:</strong> field selection is not arbitrary. A prover engineer cares about the modulus, its arithmetic cost, and whether it provides the roots of unity needed by the FFT sizes used by the proving system.
+  </div>
+</section>
+
+<section id="rust">
+  <h2>From the math to Rust</h2>
+
+  <p>At implementation level, a root of unity is just a field element with a known multiplicative order. We can represent it with the same field type used everywhere else.</p>
+
+  <details>
+    <summary>Finding a generator and checking its order</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">const MODULUS: u64 = 17;</span>
+
+<span class="c">// Multiplication in F_17.</span>
+<span class="k">fn</span> mul(a: u64, b: u64) -&gt; u64 {
+    (a * b) % MODULUS
+}
+
+<span class="c">// Compute a^e with binary exponentiation.</span>
+<span class="k">fn</span> pow(mut base: u64, mut e: u64) -&gt; u64 {
+    <span class="k">let mut</span> result = 1;
+
+    <span class="k">while</span> e &gt; 0 {
+        <span class="k">if</span> e &amp; 1 == 1 {
+            result = mul(result, base);
+        }
+
+        base = mul(base, base);
+        e &gt;&gt;= 1;
+    }
+
+    result
+}
+
+<span class="c">// ord(g) is the smallest positive n with g^n = 1.</span>
+<span class="k">fn</span> order(g: u64) -&gt; u64 {
+    <span class="k">let mut</span> x = 1;
+
+    <span class="k">for</span> n <span class="k">in</span> 1..MODULUS {
+        x = mul(x, g);
+
+        <span class="k">if</span> x == 1 {
+            <span class="k">return</span> n;
+        }
+    }
+
+    unreachable!()
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">for</span> g <span class="k">in</span> 2..MODULUS {
+        <span class="k">if</span> order(g) == MODULUS - 1 {
+            println!("generator = {g}");
+            <span class="k">break</span>;
+        }
+    }
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Constructing a primitive n-th root of unity</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// If g generates F_p^*, and n divides p - 1:</span>
+<span class="k">fn</span> root_of_unity(generator: u64, n: u64, p: u64) -&gt; u64 {
+    assert!((p - 1) % n == 0);
+
+    <span class="c">// omega = g^((p - 1) / n)</span>
+    pow_mod(generator, (p - 1) / n, p)
+}
+
+<span class="k">fn</span> pow_mod(mut base: u64, mut exp: u64, p: u64) -&gt; u64 {
+    <span class="k">let mut</span> result = 1;
+
+    <span class="k">while</span> exp &gt; 0 {
+        <span class="k">if</span> exp &amp; 1 == 1 {
+            result = (result * base) % p;
+        }
+
+        base = (base * base) % p;
+        exp &gt;&gt;= 1;
+    }
+
+    result
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">let</span> p = 17;
+    <span class="k">let</span> g = 3;
+
+    <span class="k">let</span> omega = root_of_unity(g, 8, p);
+
+    assert_eq!(pow_mod(omega, 8, p), 1);
+    println!("omega = {omega}");
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>The code is a direct translation of the mathematics:</p>
+
+  <ol class="steps">
+    <li>Represent the finite field and its multiplication.</li>
+    <li>Implement exponentiation using repeated squaring.</li>
+    <li>Find an element whose order is <code class="inline">p−1</code>; that is a generator of <code class="inline">F_p×</code>.</li>
+    <li>Choose a desired domain size <code class="inline">n</code> dividing <code class="inline">p−1</code>.</li>
+    <li>Compute <code class="inline">ω = g^((p−1)/n)</code>.</li>
+    <li>Use <code class="inline">{1,ω,ω²,…}</code> as the structured evaluation domain.</li>
+  </ol>
+</section>
+
+<section id="zk-connection">
+  <h2>Where this appears in a STARK prover</h2>
+
+  <p>Once you understand groups and roots of unity, a large part of a STARK prover becomes easier to see.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Concept</th><th>Role in the prover</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Field</td><td>Provides the arithmetic universe for traces, polynomials, constraints, and evaluations.</td></tr>
+      <tr><td>Multiplicative group</td><td>Provides the cyclic structure used to construct evaluation domains.</td></tr>
+      <tr><td>Generator</td><td>Lets us derive elements of a desired order.</td></tr>
+      <tr><td>Root of unity</td><td>Defines a structured multiplicative subgroup.</td></tr>
+      <tr><td>Subgroup</td><td>Becomes an FFT / interpolation domain.</td></tr>
+      <tr><td>FFT</td><td>Moves efficiently between polynomial coefficients and evaluations.</td></tr>
+      <tr><td>FRI</td><td>Works over evaluations on structured domains and repeatedly folds them.</td></tr>
+    </tbody>
+  </table>
+
+  <p>The conceptual chain is:</p>
+
+  <div class="math-box">
+    <div class="formula">finite field → multiplicative group → cyclic generator → root of unity → subgroup → FFT domain → polynomial evaluations → STARK/FRI</div>
+  </div>
+
+  <p>That chain is why this topic belongs immediately after finite fields. The field gives you the arithmetic; the group gives you the structure; roots of unity give you the structured points on which polynomial algorithms become fast.</p>
+</section>
+
+<section id="mistakes">
+  <h2>Common mistakes to avoid</h2>
+
+  <ol class="steps">
+    <li><strong>A field is not the same thing as its multiplicative group.</strong> The field contains zero; the multiplicative group does not.</li>
+    <li><strong>Not every non-zero element is a generator.</strong> Its order may be a proper divisor of <code class="inline">q−1</code>.</li>
+    <li><strong><code class="inline">ωⁿ=1</code> does not by itself prove that ω is primitive.</strong> You also need its order to be exactly <code class="inline">n</code>.</li>
+    <li><strong>Roots of unity are not inherently complex numbers.</strong> They are solutions of <code class="inline">xⁿ=1</code> in whatever field you are working in.</li>
+    <li><strong>The FFT needs the right domain size.</strong> In a prime field, that means checking that the desired size divides <code class="inline">p−1</code>.</li>
+    <li><strong>Field choice affects implementation.</strong> A mathematically valid field may still be a poor engineering choice if its arithmetic or available roots of unity are inconvenient.</li>
+  </ol>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one picture</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. A group gives a set + predictable operation.</div>
+    <div class="formula">2. Repeated multiplication creates powers of an element.</div>
+    <div class="formula">3. The first power returning to 1 is the element's order.</div>
+    <div class="formula">4. An element whose order equals the group size is a generator.</div>
+    <div class="formula">5. A root of unity is an element satisfying ωⁿ = 1.</div>
+    <div class="formula">6. A primitive root of unity has order exactly n.</div>
+    <div class="formula">7. F_q× is cyclic and has q−1 elements.</div>
+    <div class="formula">8. Therefore n | (q−1) gives an n-th root of unity.</div>
+    <div class="formula">9. Those roots form a structured subgroup.</div>
+    <div class="formula">10. That subgroup becomes the FFT evaluation domain used throughout proving systems.</div>
+  </div>
+
+  <p>If finite fields answer <em>“what arithmetic universe are we computing in?”</em>, groups answer <em>“what structure does repeated operation have?”</em>, and roots of unity answer <em>“where can we find a perfectly structured set of evaluation points?”</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
