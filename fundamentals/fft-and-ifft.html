@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FFT / IFFT — Srishti Rathi</title>
+<meta name="description" content="FFT and IFFT from first principles: roots of unity, DFT, inverse DFT, divide-and-conquer FFT, radix-2 butterflies, finite-field FFTs, and their role in ZK proving systems.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>FFT</em> / IFFT</h1>
+  <p class="dek">from polynomial evaluation to divide-and-conquer butterflies, roots of unity, finite-field FFTs, and why ZK provers care about them</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="why">
+  <h2>Why do we need the FFT?</h2>
+
+  <p>In the previous topic, we saw that a polynomial can be represented in two important ways:</p>
+
+  <div class="fft-flow">
+    <div class="row">
+      <span class="node">coefficients</span>
+      <span class="arrow">↔</span>
+      <span class="node">evaluations</span>
+    </div>
+  </div>
+
+  <p>Suppose we have:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + … + aₙ₋₁xⁿ⁻¹</div>
+  </div>
+
+  <p>and we want to evaluate it at many points:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x₀), f(x₁), …, f(xₙ₋₁)</div>
+  </div>
+
+  <p>If we evaluate the polynomial independently at every point, the straightforward method takes roughly <code class="inline">O(n²)</code> work.</p>
+
+  <p>The <strong>Fast Fourier Transform</strong> is a clever algorithm that computes the same transformation in <code class="inline">O(n log n)</code> time by exploiting a special structure in the evaluation points.</p>
+
+  <div class="note-box">
+    <strong>Core mental model:</strong> FFT is not a different mathematical transform from the DFT. It is a fast algorithm for computing the same transform by recursively reusing work.
+  </div>
+</section>
+
+<section id="dft">
+  <h2>Start with the DFT</h2>
+
+  <p>Before understanding the FFT, we need to understand the <strong>Discrete Fourier Transform</strong>.</p>
+
+  <p>Choose an integer <code class="inline">n</code> and a special element <code class="inline">ω</code> satisfying:</p>
+
+  <div class="math-box">
+    <div class="formula">ωⁿ = 1</div>
+  </div>
+
+  <p>Ideally, <code class="inline">ω</code> has exact order <code class="inline">n</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">ωⁿ = 1</div>
+    <div class="formula">ωᵏ ≠ 1  for 0 &lt; k &lt; n</div>
+  </div>
+
+  <p>Such an element is called a <strong>primitive n-th root of unity</strong>.</p>
+
+  <p>Now evaluate the polynomial at the structured points:</p>
+
+  <div class="math-box">
+    <div class="formula">1, ω, ω², …, ωⁿ⁻¹</div>
+  </div>
+
+  <p>At point <code class="inline">ωᵏ</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">f(ωᵏ) = Σⱼ aⱼ(ωᵏ)ʲ</div>
+    <div class="formula">       = Σⱼ aⱼωʲᵏ</div>
+  </div>
+
+  <p>Therefore the DFT is:</p>
+
+  <div class="math-box">
+    <div class="label">forward DFT</div>
+    <div class="formula">yₖ = Σⱼ₌₀ⁿ⁻¹ aⱼωʲᵏ</div>
+  </div>
+
+  <p>This is exactly the evaluation of a polynomial at the powers of <code class="inline">ω</code>.</p>
+</section>
+
+<section id="matrix">
+  <h2>The DFT as a matrix</h2>
+
+  <p>The DFT can also be written as matrix multiplication.</p>
+
+  <div class="math-box">
+    <div class="formula">
+      [y₀]   [1      1      1      …] [a₀]
+    </div>
+    <div class="formula">
+      [y₁] = [1      ω      ω²     …] [a₁]
+    </div>
+    <div class="formula">
+      [y₂]   [1      ω²     ω⁴     …] [a₂]
+    </div>
+    <div class="formula">
+      [ ⋮ ]   [ ⋮      ⋮      ⋮      ⋱] [ ⋮ ]
+    </div>
+  </div>
+
+  <p>The matrix contains powers of <code class="inline">ω</code>. A generic matrix-vector multiplication needs <code class="inline">n²</code> multiplications, which is exactly the expensive part we want to avoid.</p>
+
+  <p>The FFT does not change this matrix. Instead, it discovers that the matrix has a recursive structure.</p>
+</section>
+
+<section id="key-identity">
+  <h2>The key identity behind the FFT</h2>
+
+  <p>Assume <code class="inline">n</code> is even. Split the polynomial into its even and odd coefficients:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + a₃x³ + …</div>
+    <div class="formula">     = (a₀ + a₂x² + a₄x⁴ + …)</div>
+    <div class="formula">       + x(a₁ + a₃x² + a₅x⁴ + …)</div>
+  </div>
+
+  <p>Define:</p>
+
+  <div class="math-box">
+    <div class="formula">E(x) = a₀ + a₂x + a₄x² + …</div>
+    <div class="formula">O(x) = a₁ + a₃x + a₅x² + …</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = E(x²) + xO(x²)</div>
+  </div>
+
+  <p>This equation is the heart of radix-2 FFT.</p>
+
+  <div class="note-box">
+    <strong>The breakthrough:</strong> an n-point polynomial evaluation problem becomes two problems of size n/2, plus a small amount of work to combine their answers.
+  </div>
+</section>
+
+<section id="roots">
+  <h2>Why roots of unity make the split work</h2>
+
+  <p>We evaluate at:</p>
+
+  <div class="math-box">
+    <div class="formula">1, ω, ω², …, ωⁿ⁻¹</div>
+  </div>
+
+  <p>For the first half of the points, we use:</p>
+
+  <div class="math-box">
+    <div class="formula">f(ωᵏ) = E(ω²ᵏ) + ωᵏO(ω²ᵏ)</div>
+  </div>
+
+  <p>Now look at the second half:</p>
+
+  <div class="math-box">
+    <div class="formula">f(ωᵏ⁺ⁿᐟ²)</div>
+    <div class="formula">= E(ω²ᵏ⁺ⁿ) + ωᵏ⁺ⁿᐟ²O(ω²ᵏ⁺ⁿ)</div>
+  </div>
+
+  <p>Because <code class="inline">ωⁿ = 1</code>:</p>
+
+  <div class="math-box">
+    <div class="formula">ω²ᵏ⁺ⁿ = ω²ᵏ</div>
+  </div>
+
+  <p>And because <code class="inline">ωⁿᐟ² = −1</code> for a primitive even-order root:</p>
+
+  <div class="math-box">
+    <div class="formula">f(ωᵏ⁺ⁿᐟ²) = E(ω²ᵏ) − ωᵏO(ω²ᵏ)</div>
+  </div>
+
+  <p>So once we know the even and odd transforms, two outputs are obtained with just:</p>
+
+  <div class="math-box">
+    <div class="formula">yₖ       = Eₖ + ωᵏOₖ</div>
+    <div class="formula">yₖ₊ₙᐟ² = Eₖ − ωᵏOₖ</div>
+  </div>
+</section>
+
+<section id="butterfly">
+  <h2>The butterfly</h2>
+
+  <p>Those two equations are called a <strong>butterfly operation</strong>.</p>
+
+  <div class="butterfly">
+<pre>
+             Eₖ
+              │
+              ├────── (+) ────── yₖ
+              │        ↑
+              │       ωᵏ
+              │        │
+             Oₖ ───────┘
+              │
+              ├────── (−) ────── yₖ₊ₙ/₂
+              │
+              └── multiply by ωᵏ
+</pre>
+  </div>
+
+  <p>More precisely:</p>
+
+  <div class="math-box">
+    <div class="formula">t = ωᵏOₖ</div>
+    <div class="formula">yₖ       = Eₖ + t</div>
+    <div class="formula">yₖ₊ₙᐟ² = Eₖ − t</div>
+  </div>
+
+  <p>The same pattern appears repeatedly at every level of the FFT recursion.</p>
+</section>
+
+<section id="four">
+  <h2>A complete 4-point FFT by hand</h2>
+
+  <p>Take four coefficients:</p>
+
+  <div class="math-box">
+    <div class="formula">a₀, a₁, a₂, a₃</div>
+  </div>
+
+  <p>The polynomial is:</p>
+
+  <div class="math-box">
+    <div class="formula">f(x) = a₀ + a₁x + a₂x² + a₃x³</div>
+  </div>
+
+  <p>Split into even and odd parts:</p>
+
+  <div class="math-box">
+    <div class="formula">E(x) = a₀ + a₂x</div>
+    <div class="formula">O(x) = a₁ + a₃x</div>
+  </div>
+
+  <p>Now each is only a 2-point transform. If <code class="inline">ω</code> is a primitive 4th root of unity, then:</p>
+
+  <div class="math-box">
+    <div class="formula">ω² = −1</div>
+  </div>
+
+  <p>The first two outputs are:</p>
+
+  <div class="math-box">
+    <div class="formula">y₀ = E₀ + O₀</div>
+    <div class="formula">y₁ = E₁ + ωO₁</div>
+  </div>
+
+  <p>and the remaining two are:</p>
+
+  <div class="math-box">
+    <div class="formula">y₂ = E₀ − O₀</div>
+    <div class="formula">y₃ = E₁ − ωO₁</div>
+  </div>
+
+  <p>Notice what happened: four evaluations were reduced to smaller two-point transforms and a handful of butterflies.</p>
+</section>
+
+<section id="complexity">
+  <h2>Where does O(n log n) come from?</h2>
+
+  <p>At every recursion level, the total number of elements being processed is still <code class="inline">n</code>.</p>
+
+  <p>For a power-of-two input, the recursion has:</p>
+
+  <div class="math-box">
+    <div class="formula">log₂(n) levels</div>
+  </div>
+
+  <p>Each level performs roughly <code class="inline">n</code> work, so:</p>
+
+  <div class="math-box">
+    <div class="formula">n × log₂(n) = O(n log n)</div>
+  </div>
+
+  <div class="comparison-grid">
+    <div class="comparison-card">
+      <div class="label">naive DFT</div>
+      <p>For every output, sum n terms. Total: approximately n² operations.</p>
+    </div>
+    <div class="comparison-card">
+      <div class="label">FFT</div>
+      <p>Reuse the even/odd structure recursively. Total: approximately n log₂ n operations.</p>
+    </div>
+  </div>
+
+  <p>For large proving systems, this difference is enormous.</p>
+</section>
+
+<section id="ifft">
+  <h2>What is the IFFT?</h2>
+
+  <p>The inverse FFT reverses the forward transformation.</p>
+
+  <p>The forward transform is:</p>
+
+  <div class="math-box">
+    <div class="formula">yₖ = Σⱼ aⱼωʲᵏ</div>
+  </div>
+
+  <p>To recover the coefficients, use the inverse root:</p>
+
+  <div class="math-box">
+    <div class="formula">ω⁻¹</div>
+  </div>
+
+  <p>and divide by <code class="inline">n</code>:</p>
+
+  <div class="math-box">
+    <div class="label">inverse DFT</div>
+    <div class="formula">aⱼ = n⁻¹ Σₖ yₖω⁻ʲᵏ</div>
+  </div>
+
+  <p>The inverse FFT is simply a fast algorithm for computing this inverse transform.</p>
+
+  <div class="note-box">
+    <strong>Important:</strong> IFFT is not “FFT with a different output.” It is the inverse linear transformation. The inverse root of unity and multiplication by the field element <code class="inline">n⁻¹</code> are essential.
+  </div>
+</section>
+
+<section id="inverse-derivation">
+  <h2>Why does the inverse formula work?</h2>
+
+  <p>The key identity is the orthogonality of roots of unity:</p>
+
+  <div class="math-box">
+    <div class="formula">
+      Σₖ₌₀ⁿ⁻¹ ωᵏᵐ =
+      { n,  if m ≡ 0 (mod n)
+      { 0,  otherwise
+    </div>
+  </div>
+
+  <p>Start with the proposed inverse:</p>
+
+  <div class="math-box">
+    <div class="formula">n⁻¹ Σₖ yₖω⁻ʲᵏ</div>
+  </div>
+
+  <p>Substitute the forward transform:</p>
+
+  <div class="math-box">
+    <div class="formula">
+      n⁻¹ Σₖ (Σᵣ aᵣωʳᵏ)ω⁻ʲᵏ
+    </div>
+    <div class="formula">
+      = n⁻¹ Σᵣ aᵣ Σₖ ωᵏ(r−j)
+    </div>
+  </div>
+
+  <p>Every term disappears except the one where <code class="inline">r=j</code>. That surviving term contributes <code class="inline">n</code>, which is canceled by <code class="inline">n⁻¹</code>.</p>
+
+  <div class="math-box">
+    <div class="formula">aⱼ = aⱼ</div>
+  </div>
+
+  <p>That is the algebraic reason the inverse transform recovers the original coefficients.</p>
+</section>
+
+<section id="finite-field">
+  <h2>FFT over a finite field</h2>
+
+  <p>In ZK systems, we usually do not perform FFTs over floating-point complex numbers. We perform them <strong>inside a finite field</strong>.</p>
+
+  <p>The same mathematics works as long as the field contains a primitive n-th root of unity.</p>
+
+  <div class="math-box">
+    <div class="formula">ωⁿ = 1</div>
+    <div class="formula">ord(ω) = n</div>
+  </div>
+
+  <p>For a prime field <code class="inline">Fₚ</code>, the non-zero elements form a multiplicative group of size:</p>
+
+  <div class="math-box">
+    <div class="formula">p − 1</div>
+  </div>
+
+  <p>Therefore an n-th root of unity can exist only when:</p>
+
+  <div class="math-box">
+    <div class="formula">n | (p − 1)</div>
+  </div>
+
+  <p>This is one of the most important field-selection requirements for FFT-friendly proving systems.</p>
+</section>
+
+<section id="example-field">
+  <h2>Example: a 4-point FFT in F₁₇</h2>
+
+  <p>Take the field:</p>
+
+  <div class="math-box">
+    <div class="formula">F₁₇ = {0,1,2,…,16}</div>
+  </div>
+
+  <p>We need a primitive 4th root of unity. Take:</p>
+
+  <div class="math-box">
+    <div class="formula">ω = 4</div>
+  </div>
+
+  <p>Check:</p>
+
+  <div class="math-box">
+    <div class="formula">4² = 16 ≡ −1 (mod 17)</div>
+    <div class="formula">4⁴ = 16² ≡ 1 (mod 17)</div>
+  </div>
+
+  <p>And neither <code class="inline">4¹</code> nor <code class="inline">4²</code> equals 1, so 4 has order 4.</p>
+
+  <p>Therefore our evaluation domain is:</p>
+
+  <div class="math-box">
+    <div class="formula">{1, 4, 16, 13}</div>
+  </div>
+
+  <p>because:</p>
+
+  <div class="math-box">
+    <div class="formula">4⁰ = 1</div>
+    <div class="formula">4¹ = 4</div>
+    <div class="formula">4² = 16</div>
+    <div class="formula">4³ = 64 ≡ 13 (mod 17)</div>
+    <div class="formula">4⁴ = 52 ≡ 1 (mod 17)</div>
+  </div>
+
+  <p>The FFT evaluates the polynomial exactly at those four field elements. There are no floating-point approximations.</p>
+</section>
+
+<section id="recursive">
+  <h2>Recursive radix-2 FFT</h2>
+
+  <p>The mathematical recursion can be written almost directly as code:</p>
+
+  <div class="math-box">
+    <div class="formula">FFT(a) = combine(FFT(even(a)), FFT(odd(a)))</div>
+  </div>
+
+  <p>For each pair of outputs:</p>
+
+  <div class="math-box">
+    <div class="formula">t = ωᵏ · odd[k]</div>
+    <div class="formula">out[k]       = even[k] + t</div>
+    <div class="formula">out[k+n/2]   = even[k] − t</div>
+  </div>
+
+  <p>At the base case, a one-element transform is already complete.</p>
+</section>
+
+<section id="rust">
+  <h2>From the math to Rust</h2>
+
+  <p>Here is a small recursive FFT implementation over <code class="inline">F₁₇</code>. It deliberately mirrors the derivation above rather than hiding the algorithm behind a library.</p>
+
+  <details open>
+    <summary>Recursive FFT / IFFT over F₁₇</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// Radix-2 FFT / IFFT over F_17.</span>
+<span class="c">// Input length must be a power of two.</span>
+
+<span class="k">const</span> P: u64 = 17;
+
+<span class="k">fn</span> add(a: u64, b: u64) -&gt; u64 {
+    (a + b) % P
+}
+
+<span class="k">fn</span> sub(a: u64, b: u64) -&gt; u64 {
+    (a + P - b) % P
+}
+
+<span class="k">fn</span> mul(a: u64, b: u64) -&gt; u64 {
+    (a * b) % P
+}
+
+<span class="k">fn</span> pow(<span class="k">mut</span> base: u64, <span class="k">mut</span> exp: u64) -&gt; u64 {
+    <span class="k">let mut</span> result = 1;
+
+    <span class="k">while</span> exp &gt; 0 {
+        <span class="k">if</span> exp &amp; 1 == 1 {
+            result = mul(result, base);
+        }
+
+        base = mul(base, base);
+        exp &gt;&gt;= 1;
+    }
+
+    result
+}
+
+<span class="k">fn</span> inv(a: u64) -&gt; u64 {
+    assert!(a != 0);
+    pow(a, P - 2)
+}
+
+<span class="k">fn</span> is_power_of_two(n: usize) -&gt; bool {
+    n != 0 &amp;&amp; (n &amp; (n - 1)) == 0
+}
+
+<span class="c">// Recursive radix-2 FFT.</span>
+<span class="c">// root is a primitive n-th root of unity.</span>
+<span class="k">fn</span> fft(values: &amp;[u64], root: u64) -&gt; Vec&lt;u64&gt; {
+    <span class="k">let</span> n = values.len();
+
+    assert!(is_power_of_two(n));
+
+    <span class="k">if</span> n == 1 {
+        <span class="k">return</span> vec![values[0] % P];
+    }
+
+    <span class="c">// Split into even and odd coefficients.</span>
+    <span class="k">let</span> even: Vec&lt;u64&gt; =
+        values.iter().step_by(2).copied().collect();
+
+    <span class="k">let</span> odd: Vec&lt;u64&gt; =
+        values.iter().skip(1).step_by(2).copied().collect();
+
+    <span class="c">// root^2 is a primitive (n/2)-th root.</span>
+    <span class="k">let</span> half_root = mul(root, root);
+
+    <span class="k">let</span> even_fft = fft(&amp;even, half_root);
+    <span class="k">let</span> odd_fft = fft(&amp;odd, half_root);
+
+    <span class="k">let mut</span> output = vec![0; n];
+
+    <span class="c">// Butterfly stage.</span>
+    <span class="k">let mut</span> omega = 1;
+
+    <span class="k">for</span> k <span class="k">in</span> 0..n / 2 {
+        <span class="k">let</span> t = mul(omega, odd_fft[k]);
+
+        output[k] =
+            add(even_fft[k], t);
+
+        output[k + n / 2] =
+            sub(even_fft[k], t);
+
+        omega = mul(omega, root);
+    }
+
+    output
+}
+
+<span class="k">fn</span> ifft(values: &amp;[u64], root: u64) -&gt; Vec&lt;u64&gt; {
+    <span class="k">let</span> n = values.len();
+
+    <span class="c">// Inverse FFT uses root^(-1).</span>
+    <span class="k">let</span> inverse_root = inv(root);
+
+    <span class="k">let</span> mut result =
+        fft(values, inverse_root);
+
+    <span class="c">// Multiply every coefficient by n^(-1).</span>
+    <span class="k">let</span> n_inv = inv(n as u64);
+
+    <span class="k">for</span> value <span class="k">in</span> &amp;mut result {
+        *value = mul(*value, n_inv);
+    }
+
+    result
+}
+
+<span class="k">fn</span> main() {
+    <span class="c">// 4 is a primitive 4th root of unity in F_17.</span>
+    <span class="k">let</span> root = 4;
+
+    <span class="c">// f(x) = 1 + 2x + 3x^2 + 4x^3</span>
+    <span class="k">let</span> coefficients = vec![1, 2, 3, 4];
+
+    <span class="k">let</span> evaluations =
+        fft(&amp;coefficients, root);
+
+    println!(<span class="s">"evaluations = {:?}"</span>, evaluations);
+
+    <span class="k">let</span> recovered =
+        ifft(&amp;evaluations, root);
+
+    println!(<span class="s">"recovered    = {:?}"</span>, recovered);
+
+    assert_eq!(recovered, coefficients);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>Notice how closely the implementation follows the mathematics:</p>
+
+  <ol class="steps">
+    <li>Split the input into even and odd coefficients.</li>
+    <li>Recursively transform both halves.</li>
+    <li>Square the root to obtain the root for the smaller problem.</li>
+    <li>Multiply the odd result by the appropriate power of <code class="inline">ω</code>.</li>
+    <li>Add and subtract to form the butterfly outputs.</li>
+    <li>For IFFT, use <code class="inline">ω⁻¹</code>.</li>
+    <li>Finally multiply every result by <code class="inline">n⁻¹</code>.</li>
+  </ol>
+</section>
+
+<section id="iterative">
+  <h2>Why production FFT implementations look different</h2>
+
+  <p>The recursive version is excellent for understanding the algorithm, but a high-performance prover normally avoids allocating new vectors at every recursion level.</p>
+
+  <p>Production implementations commonly use an <strong>iterative in-place FFT</strong>:</p>
+
+  <div class="comparison-grid">
+    <div class="comparison-card">
+      <div class="label">educational version</div>
+      <p>Recursive, simple, directly matches the mathematical derivation.</p>
+    </div>
+    <div class="comparison-card">
+      <div class="label">production version</div>
+      <p>Usually iterative and in-place, minimizing allocations and improving cache behavior.</p>
+    </div>
+  </div>
+
+  <p>For radix-2 FFT, the iterative algorithm typically starts with a <strong>bit-reversal permutation</strong>, then executes butterfly layers of size 2, 4, 8, and so on until the entire vector has been transformed.</p>
+
+  <div class="math-box">
+    <div class="formula">n = 8</div>
+    <div class="formula">stages: 2 → 4 → 8</div>
+  </div>
+
+  <p>The mathematics is the same. Only the execution order changes.</p>
+</section>
+
+<section id="zk">
+  <h2>Why FFT is so important in ZK</h2>
+
+  <p>FFT is not just a generic optimization that happens to be useful for cryptography. It is one of the core pieces that makes large polynomial workloads practical.</p>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>ZK component</th><th>FFT connection</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>trace interpolation</td><td>Convert execution-trace values into polynomial representations.</td></tr>
+      <tr><td>low-degree extension</td><td>Evaluate trace polynomials over a larger structured domain.</td></tr>
+      <tr><td>polynomial multiplication</td><td>FFT can turn convolution into pointwise multiplication.</td></tr>
+      <tr><td>AIR / composition</td><td>Large polynomial expressions can be evaluated efficiently over domains.</td></tr>
+      <tr><td>FRI</td><td>Works on evaluations of low-degree polynomials over structured domains.</td></tr>
+      <tr><td>KZG</td><td>Polynomial operations and evaluations are central to commitment/opening workflows.</td></tr>
+    </tbody>
+  </table>
+
+  <p>A simplified STARK-style flow is:</p>
+
+  <div class="fft-flow">
+    <div class="row">
+      <span class="node">execution trace</span>
+      <span class="arrow">→</span>
+      <span class="node">trace values</span>
+      <span class="arrow">→ FFT / interpolation</span>
+      <span class="node">trace polynomial</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">trace polynomial</span>
+      <span class="arrow">→ evaluate on larger domain</span>
+      <span class="node">LDE</span>
+      <span class="arrow">→</span>
+      <span class="node">FRI</span>
+    </div>
+  </div>
+</section>
+
+<section id="convolution">
+  <h2>FFT and polynomial multiplication</h2>
+
+  <p>There is another extremely important reason FFT matters: polynomial multiplication is convolution of coefficients.</p>
+
+  <p>If:</p>
+
+  <div class="math-box">
+    <div class="formula">A(x) = Σᵢ aᵢxⁱ</div>
+    <div class="formula">B(x) = Σⱼ bⱼxʲ</div>
+  </div>
+
+  <p>then:</p>
+
+  <div class="math-box">
+    <div class="formula">C(x) = A(x)B(x)</div>
+    <div class="formula">cₖ = Σᵢ aᵢbₖ₋ᵢ</div>
+  </div>
+
+  <p>That is exactly convolution.</p>
+
+  <p>FFT converts this into a much easier operation:</p>
+
+  <div class="fft-flow">
+    <div class="row">
+      <span class="node">A coefficients</span>
+      <span class="arrow">→ FFT →</span>
+      <span class="node">A evaluations</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">B coefficients</span>
+      <span class="arrow">→ FFT →</span>
+      <span class="node">B evaluations</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">A(x)·B(x)</span>
+      <span class="arrow">← pointwise multiply ←</span>
+      <span class="node">A evaluations × B evaluations</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">product coefficients</span>
+      <span class="arrow">← IFFT ←</span>
+      <span class="node">product evaluations</span>
+    </div>
+  </div>
+
+  <p>So polynomial multiplication can be reduced to:</p>
+
+  <div class="math-box">
+    <div class="formula">FFT(A) + FFT(B) + pointwise multiplication + IFFT</div>
+  </div>
+
+  <p>This is the same high-level idea behind fast convolution algorithms.</p>
+</section>
+
+<section id="domain">
+  <h2>FFT-friendly domains and 2-adicity</h2>
+
+  <p>Radix-2 FFT repeatedly needs domains whose size can be divided by two:</p>
+
+  <div class="math-box">
+    <div class="formula">n, n/2, n/4, n/8, …, 1</div>
+  </div>
+
+  <p>Therefore powers of two are especially convenient:</p>
+
+  <div class="math-box">
+    <div class="formula">n = 2ᵏ</div>
+  </div>
+
+  <p>For a prime field <code class="inline">Fₚ</code>, we need:</p>
+
+  <div class="math-box">
+    <div class="formula">2ᵏ | (p−1)</div>
+  </div>
+
+  <p>The largest power of two dividing <code class="inline">p−1</code> is related to the field's <strong>2-adicity</strong>.</p>
+
+  <p>This matters enormously in ZK engineering because large radix-2 evaluation domains allow efficient FFTs and FRI-friendly polynomial processing.</p>
+</section>
+
+<section id="mistakes">
+  <h2>Common mistakes</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">mistake 01</div>
+      <p>Thinking FFT and DFT are different mathematical transforms. FFT is a fast way to compute the DFT.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 02</div>
+      <p>Forgetting the inverse scaling factor <code class="inline">n⁻¹</code> in IFFT.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 03</div>
+      <p>Using an element that satisfies <code class="inline">ωⁿ=1</code> but does not actually have order n.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 04</div>
+      <p>Assuming the complex-number FFT is directly what a STARK prover uses. ZK provers generally work in finite fields.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 05</div>
+      <p>Ignoring domain size requirements. A radix-2 FFT needs the appropriate roots of unity at every recursive level.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 06</div>
+      <p>Writing a recursive implementation and assuming it is automatically production-fast. Allocation and memory behavior matter.</p>
+    </div>
+  </div>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. A polynomial can be represented by coefficients or evaluations.</div>
+    <div class="formula">2. Evaluating at n arbitrary points naively costs O(n²).</div>
+    <div class="formula">3. Choose structured points 1, ω, ω², …, ωⁿ⁻¹.</div>
+    <div class="formula">4. Require ω to be a primitive n-th root of unity.</div>
+    <div class="formula">5. Split coefficients into even and odd parts.</div>
+    <div class="formula">6. Recursively transform both halves.</div>
+    <div class="formula">7. Combine them using the butterfly.</div>
+    <div class="formula">8. This gives O(n log n) instead of O(n²).</div>
+    <div class="formula">9. IFFT uses ω⁻¹ and multiplies by n⁻¹.</div>
+    <div class="formula">10. In ZK, the transform happens over finite fields.</div>
+    <div class="formula">11. Roots of unity and field 2-adicity determine FFT-friendly domains.</div>
+    <div class="formula">12. FFT/IFFT power interpolation, LDE, polynomial multiplication, and major parts of STARK/FRI pipelines.</div>
+  </div>
+
+  <p>If polynomials answer <em>“what algebraic object represents the computation?”</em>, FFT answers <em>“how can we move between its coefficient and evaluation representations fast enough to actually build a prover?”</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
