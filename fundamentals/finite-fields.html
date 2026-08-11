@@ -134,11 +134,7 @@ ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);
 .fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
 .fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
 
-.code-block{
-  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple-border);
-  padding:1.2rem 1.35rem; margin:1.4rem 0; overflow-x:auto;
-  font-family:var(--mono); font-size:11.5px; line-height:1.85; color:var(--ink-muted);
-}
+
 .code-block .k{color:var(--purple);}
 .code-block .t{color:var(--sage);}
 .code-block .s{color:#8a6d3c;}
@@ -147,12 +143,143 @@ ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);
   font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
   margin-bottom:0.6rem; font-family:var(--mono);
 }
-details{margin:1.4rem 0;}
-summary{
-  cursor:pointer; font-family:var(--mono); font-size:11.5px; letter-spacing:0.03em; color:var(--purple);
-  padding:11px 16px; background:var(--bg-card); border:1px solid var(--purple-border);
-  list-style:none; display:flex; align-items:center; justify-content:space-between;
+details{
+  margin:1.8rem 0;
 }
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
 summary::-webkit-details-marker{display:none;}
 summary::after{content:'+'; font-size:14px; color:var(--purple);}
 details[open] summary::after{content:'–';}
@@ -308,7 +435,13 @@ footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:cen
   <p>Below is <code class="inline">F17</code> implemented as a small Rust type, <code class="inline">Fp</code>. The core idea: every constructor reduces its input <code class="inline">mod 17</code>, so a value can never leave the field's representable range — and every arithmetic trait (<code class="inline">Add</code>, <code class="inline">Sub</code>, <code class="inline">Mul</code>, <code class="inline">Neg</code>, <code class="inline">Div</code>) reduces its result the same way.</p>
 
   <div class="code-block">
-<div class="code-fname">// fp.rs — construction and modulus</div><span class="c">/// Prime modulus. Our field is F_17 = {0, 1, 2, ..., 16}</span>
+  <div class="code-toolbar">
+    <span class="code-lang">rust</span>
+    <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+  </div>
+  <div class="code-body">
+    <div class="line-numbers" aria-hidden="true"></div>
+    <pre class="code-source"><code>// fp.rs — construction and modulus<span class="c">/// Prime modulus. Our field is F_17 = {0, 1, 2, ..., 16}</span>
 <span class="k">const</span> MODULUS: u64 = 17;
 
 <span class="k">struct</span> <span class="t">Fp</span> { value: u64 }
@@ -317,14 +450,22 @@ footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:cen
     <span class="k">pub fn</span> new(value: u64) -&gt; <span class="t">Self</span> {
         <span class="t">Self</span> { value: value % MODULUS }
     }
-}</div>
+}</code></pre>
+  </div>
+</div>
 
   <p>Two inverse strategies are worth knowing side by side. <strong>Fermat's Little Theorem</strong> says <code class="inline">aᵖ⁻¹ ≡ 1 (mod p)</code> for prime <code class="inline">p</code>, so <code class="inline">a⁻¹ = a<sup>p−2</sup> mod p</code> — computed with fast binary exponentiation. The <strong>Extended Euclidean Algorithm</strong> finds the same inverse directly, by solving <code class="inline">a·x ≡ 1 (mod p)</code>. Both are implemented below, and the test suite checks they always agree.</p>
 
   <details>
     <summary>Full Fp implementation, arithmetic traits, and tests</summary>
-    <div class="code-block" style="margin-top:1rem;">
-<span class="c">use std::ops::{Add, Div, Mul, Neg, Sub};</span>
+    <div class="code-block">
+  <div class="code-toolbar">
+    <span class="code-lang">rust</span>
+    <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+  </div>
+  <div class="code-body">
+    <div class="line-numbers" aria-hidden="true"></div>
+    <pre class="code-source"><code><span class="c">use std::ops::{Add, Div, Mul, Neg, Sub};</span>
 
 <span class="c">/// Prime modulus.
 /// Our field is F_17 = {0, 1, 2, ..., 16}</span>
@@ -489,7 +630,9 @@ footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:cen
         assert_eq!(<span class="t">Fp</span>::new(18), <span class="t">Fp</span>::one());  <span class="c">// 18 = 1</span>
         assert_eq!(<span class="t">Fp</span>::new(34), <span class="t">Fp</span>::zero()); <span class="c">// 34 = 0</span>
     }
-}</div>
+}</code></pre>
+  </div>
+</div>
   </details>
 </section>
 
@@ -569,6 +712,32 @@ footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:cen
 <footer>
   <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
 </footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
