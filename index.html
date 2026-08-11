@@ -277,6 +277,14 @@
     font-size: 14.5px;
     color: var(--ink);
   }
+  .glossary-item .t a{
+    color: var(--ink);
+    text-decoration: none;
+    transition: color .15s ease;
+  }
+  .glossary-item .t a:hover{
+    color: var(--accent);
+  }
 
   /* ---------- projects ---------- */
   .project{
@@ -598,7 +606,7 @@
     <p class="intro-copy reveal">Concepts I can comfortably explain from the math through to the implementation — not just recite from memory.</p>
 
     <div class="glossary reveal">
-      <div class="glossary-item"><span class="n">01</span><span class="t">Finite fields and modular arithmetic</span></div>
+      <div class="glossary-item"><span class="n">01</span><span class="t"><a href="fundamentals/finite-fields.html">Finite fields and modular arithmetic</a></span></div>
       <div class="glossary-item"><span class="n">02</span><span class="t">Groups and roots of unity</span></div>
       <div class="glossary-item"><span class="n">03</span><span class="t">Polynomials and interpolation</span></div>
       <div class="glossary-item"><span class="n">04</span><span class="t">FFT / IFFT</span></div>
