@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Witness and Public Inputs — Srishti Rathi</title>
+<meta name="description" content="Witness and public inputs explained from first principles: statements, witnesses, constraints, private and public data, circuits, R1CS, AIR, proving, verification, and Rust implementation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --serif:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+  --sans:"IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display:"Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:16px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(246,245,241,0.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--border-soft);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-muted);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease, color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--serif); font-weight:500; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(30px,4.4vw,42px); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--serif); font-size:22px; font-weight:500; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:16px; line-height:1.65; font-family:var(--sans);}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{
+  margin:1.8rem 0;
+}
+
+details > summary{
+  position:relative;
+  cursor:pointer;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.025em;
+  color:var(--purple);
+  padding:15px 18px;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-radius:7px;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 2px 8px rgba(22,23,28,.025);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+details > summary::-webkit-details-marker{display:none;}
+details > summary::after{
+  content:"−";
+  font-family:var(--mono);
+  color:var(--purple);
+  font-size:13px;
+  margin-left:18px;
+}
+details:not([open]) > summary::after{content:"+";}
+details > summary:hover{
+  border-color:var(--purple-border);
+  box-shadow:0 4px 14px rgba(22,23,28,.045);
+}
+
+.code-block{
+  position:relative;
+  margin:1.6rem 0;
+  background:var(--paper-raised, var(--bg-card));
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(22,23,28,.045);
+}
+
+.code-toolbar{
+  height:54px;
+  display:flex;
+  align-items:center;
+  padding:0 14px 0 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(253,252,250,.96);
+}
+
+.code-lang{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:7px;
+  background:var(--purple-soft);
+  color:var(--purple);
+  font-family:var(--mono);
+  font-size:10.5px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.code-copy{
+  margin-left:auto;
+  border:0;
+  padding:5px 7px;
+  background:transparent;
+  color:var(--ink-dim);
+  font-family:var(--mono);
+  font-size:10.5px;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+
+.code-copy:hover{
+  color:var(--purple);
+  background:var(--purple-soft);
+  border-radius:5px;
+}
+
+.code-body{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  min-height:0;
+}
+
+.line-numbers{
+  padding:17px 14px 18px 0;
+  border-right:1px solid var(--border);
+  background:rgba(246,245,241,.45);
+  color:var(--ink-dim);
+  text-align:right;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.75;
+}
+
+.line-numbers span{
+  display:block;
+  height:1.75em;
+}
+
+.code-source{
+  margin:0;
+  padding:17px 20px 18px;
+  overflow:auto;
+  color:var(--ink);
+  background:transparent;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.75;
+  tab-size:4;
+}
+
+.code-source code{
+  font-family:inherit;
+}
+
+.code-source .c{color:#81799b;}
+.code-source .k{color:#4b3b7c;}
+.code-source .t{color:#2f6f62;}
+
+@media (max-width:780px){
+  .code-body{grid-template-columns:48px minmax(0,1fr);}
+  .line-numbers{padding-right:10px;}
+  .code-source{padding-left:14px; padding-right:14px; font-size:11.5px;}
+}
+
+
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+
+/* ---------- groups / roots article additions ---------- */
+.article-table{
+  width:100%;
+  border-collapse:collapse;
+  margin:1.5rem 0 1.8rem;
+  font-size:14px;
+}
+.article-table th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+  font-weight:500;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+}
+.article-table td{
+  padding:11px 12px;
+  border-bottom:1px solid var(--border-soft);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+.article-table td:first-child{
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+}
+.math-box{
+  margin:1.6rem 0;
+  padding:18px 20px;
+  background:var(--purple-soft);
+  border:1px solid var(--purple-border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+}
+.math-box .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--purple);
+}
+.math-box .formula{
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.8;
+  color:var(--ink);
+}
+.note-box{
+  margin:1.5rem 0;
+  padding:15px 18px;
+  border-left:3px solid var(--teal);
+  background:var(--teal-soft);
+  border-radius:0 6px 6px 0;
+  color:var(--ink-soft);
+}
+.note-box strong{color:var(--ink);}
+.steps{
+  counter-reset:steps;
+  list-style:none;
+  padding:0;
+  margin:1.4rem 0;
+}
+.steps li{
+  counter-increment:steps;
+  position:relative;
+  padding:0 0 16px 42px;
+  color:var(--ink-soft);
+}
+.steps li::before{
+  content:counter(steps, decimal-leading-zero);
+  position:absolute;
+  left:0;
+  top:1px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--purple);
+}
+.concept-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.concept-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.concept-card .k{
+  font-family:var(--mono);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal);
+}
+.concept-card p{
+  margin:.45rem 0 0;
+  font-size:13.5px;
+}
+.figure-row{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+  margin:1.5rem 0;
+}
+.figure-card{
+  border:1px solid var(--border);
+  border-radius:7px;
+  padding:14px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.figure-card svg{display:block;width:100%;height:auto;}
+.figure-card .caption{
+  margin-top:8px;
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.55;
+  color:var(--ink-dim);
+}
+@media (max-width:780px){
+  .concept-grid,.figure-row{grid-template-columns:1fr;}
+  .article-table{font-size:13px;}
+}
+
+
+/* ---------- polynomial article additions ---------- */
+.polynomial-map{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.polynomial-map .row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.polynomial-map .node{
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.polynomial-map .arrow{
+  color:var(--ink-dim);
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.example-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.example-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.example-card p{
+  margin:.5rem 0 0;
+  font-size:13.5px;
+}
+.formula-stack{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.formula-stack .formula{
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.7;
+}
+@media (max-width:780px){
+  .example-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- FFT article additions ---------- */
+.fft-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.fft-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.fft-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.fft-flow .arrow{color:var(--ink-dim);}
+.butterfly{
+  margin:1.5rem 0;
+  padding:18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.butterfly pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.comparison-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.comparison-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.comparison-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.comparison-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .comparison-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Polynomial commitment additions ---------- */
+.commitment-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.commitment-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.commitment-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.commitment-flow .arrow{color:var(--ink-dim);}
+.scheme-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin:1.5rem 0;
+}
+.scheme-card{
+  padding:15px 16px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.scheme-card .label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--teal);
+}
+.scheme-card p{margin:.5rem 0 0;font-size:13.5px;}
+@media (max-width:780px){
+  .scheme-grid{grid-template-columns:1fr;}
+}
+
+
+/* ---------- Merkle tree additions ---------- */
+.merkle-diagram{
+  margin:1.5rem 0 1.8rem;
+  padding:20px 14px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  overflow:auto;
+}
+.merkle-diagram pre{
+  margin:0;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:11.5px;
+  line-height:1.75;
+  color:var(--ink);
+}
+.hash-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.hash-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.hash-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.hash-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .merkle-diagram pre{font-size:9px;}
+}
+
+
+/* ---------- Fiat-Shamir additions ---------- */
+.protocol-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.protocol-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.protocol-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.protocol-flow .arrow{color:var(--ink-dim);}
+.protocol-flow .challenge{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.transcript{
+  margin:1.5rem 0;
+  padding:16px 18px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.8;
+}
+.transcript .k{color:var(--teal);}
+.transcript .v{color:var(--purple);}
+@media (max-width:780px){
+  .protocol-flow .row{font-size:11px;}
+}
+
+
+/* ---------- Witness / public-input additions ---------- */
+.input-card{
+  margin:1.5rem 0;
+  padding:18px 20px;
+  border:1px solid var(--border);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.input-card .label{
+  margin-bottom:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--ink-dim);
+}
+.input-card .value{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--purple);
+}
+.data-flow{
+  margin:1.5rem 0 1.8rem;
+  padding:20px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--purple);
+  border-radius:7px;
+  background:var(--paper-raised, var(--bg-card));
+}
+.data-flow .row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.data-flow .node{
+  padding:7px 11px;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:var(--purple-soft);
+  color:var(--purple);
+}
+.data-flow .private{
+  border-color:var(--purple);
+}
+.data-flow .public{
+  border-color:var(--teal);
+  background:var(--teal-tint);
+  color:var(--teal);
+}
+.data-flow .arrow{color:var(--ink-dim);}
+@media (max-width:780px){
+  .data-flow .row{font-size:11px;}
+}
+
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../index.html">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../index.html#about">about</a>
+      <a href="../index.html#fundamentals">fundamentals</a>
+      <a href="../index.html#projects">projects</a>
+      <a href="../index.html#research">research</a>
+      <a href="../index.html#writing">writing</a>
+      <a href="../index.html#ctf">ctf</a>
+      <a href="../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+
+
+
+
+
+
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1><em>Witness and public inputs</em></h1>
+  <p class="dek">from statements and secrets to constraints, circuits, execution traces, and what the prover knows versus what the verifier is allowed to see</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="starting">
+  <h2>Start with the actual problem</h2>
+
+  <p>A zero-knowledge proof is usually not trying to prove an arbitrary sentence directly.</p>
+
+  <p>Instead, we describe a precise mathematical statement:</p>
+
+  <div class="math-box">
+    <div class="formula">∃ w : C(x, w) = true</div>
+  </div>
+
+  <p>Here:</p>
+
+  <div class="input-card">
+    <div class="label">public input</div>
+    <div class="value">x — information the verifier is allowed to know</div>
+  </div>
+
+  <div class="input-card">
+    <div class="label">witness</div>
+    <div class="value">w — secret information known to the prover</div>
+  </div>
+
+  <div class="input-card">
+    <div class="label">constraint system</div>
+    <div class="value">C(x, w) — the rules that must be satisfied</div>
+  </div>
+
+  <p>The prover is saying:</p>
+
+  <div class="math-box">
+    <div class="formula">“I know a witness w such that C(x, w) is satisfied.”</div>
+  </div>
+
+  <p>The verifier does not need to learn the witness itself.</p>
+
+  <div class="note-box">
+    <strong>Mental model:</strong> the public input identifies <em>what statement is being proved</em>. The witness is the hidden information that makes that statement true.
+  </div>
+</section>
+
+<section id="simple-example">
+  <h2>The simplest example</h2>
+
+  <p>Suppose we want to prove knowledge of a number whose square is 25.</p>
+
+  <div class="math-box">
+    <div class="formula">x² = 25</div>
+  </div>
+
+  <p>We can formulate the problem as:</p>
+
+  <div class="math-box">
+    <div class="formula">public input: x = 25</div>
+    <div class="formula">witness: w = 5</div>
+    <div class="formula">constraint: w² = x</div>
+  </div>
+
+  <p>The prover knows:</p>
+
+  <div class="math-box">
+    <div class="formula">w = 5</div>
+  </div>
+
+  <p>The verifier knows:</p>
+
+  <div class="math-box">
+    <div class="formula">x = 25</div>
+  </div>
+
+  <p>The prover proves that:</p>
+
+  <div class="math-box">
+    <div class="formula">5² = 25</div>
+  </div>
+
+  <p>without necessarily revealing <code class="inline">5</code>.</p>
+</section>
+
+<section id="terminology">
+  <h2>Why are they called “inputs”?</h2>
+
+  <p>A proving system generally receives some external data before it constructs constraints and generates a proof.</p>
+
+  <p>That data can be divided into two conceptual categories:</p>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">public inputs</div>
+      <p>Values that are part of the statement and are normally provided to the verifier as well.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">private witness</div>
+      <p>Values required to satisfy the statement but intended to remain hidden from the verifier.</p>
+    </div>
+  </div>
+
+  <p>The exact API differs between proving systems, but this public/private split is fundamental to many ZK protocols.</p>
+</section>
+
+<section id="relation">
+  <h2>The relation between x and w</h2>
+
+  <p>It is useful to think of a ZK statement as a relation:</p>
+
+  <div class="math-box">
+    <div class="formula">R(x, w) = 1</div>
+  </div>
+
+  <p>where:</p>
+
+  <ul>
+    <li><code class="inline">x</code> is the public statement;</li>
+    <li><code class="inline">w</code> is a witness;</li>
+    <li><code class="inline">R</code> defines which witness values are valid for a particular statement.</li>
+  </ul>
+
+  <p>The language represented by the relation is:</p>
+
+  <div class="math-box">
+    <div class="formula">L = { x | ∃ w such that R(x,w) = 1 }</div>
+  </div>
+
+  <p>So the prover does not necessarily prove that it has one specific secret value. It proves that <strong>there exists a valid witness</strong> for the public statement.</p>
+</section>
+
+<section id="example-hash">
+  <h2>Example: knowledge of a hash preimage</h2>
+
+  <p>Suppose a public hash value is:</p>
+
+  <div class="math-box">
+    <div class="formula">y = H(m)</div>
+  </div>
+
+  <p>The prover claims to know the secret message <code class="inline">m</code>.</p>
+
+  <p>We can formulate:</p>
+
+  <div class="math-box">
+    <div class="formula">public input: y</div>
+    <div class="formula">witness: m</div>
+    <div class="formula">constraint: H(m) = y</div>
+  </div>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node private">secret m</span>
+      <span class="arrow">→</span>
+      <span class="node">H(m)</span>
+      <span class="arrow">=</span>
+      <span class="node public">public y</span>
+    </div>
+  </div>
+
+  <p>The verifier learns that a preimage exists, but a zero-knowledge proof can be designed so that the preimage itself is not revealed.</p>
+
+  <p>In practice, representing a hash function inside a circuit can be expensive, which is why ZK systems often use hash functions selected for their arithmetic efficiency.</p>
+</section>
+
+<section id="circuit">
+  <h2>From a statement to a circuit</h2>
+
+  <p>Proof systems cannot directly reason about an English sentence such as:</p>
+
+  <div class="math-box">
+    <div class="formula">“I know a secret number whose square is 25.”</div>
+  </div>
+
+  <p>We translate the statement into mathematical constraints.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">w · w − x = 0</div>
+  </div>
+
+  <p>Now the proving system can work with field elements and algebraic constraints.</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node public">public x</span>
+      <span class="arrow">+</span>
+      <span class="node private">private w</span>
+      <span class="arrow">→</span>
+      <span class="node">constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>This translation is the foundation of circuit-based ZK systems.</p>
+</section>
+
+<section id="witness">
+  <h2>What exactly is a witness?</h2>
+
+  <p>A witness is the collection of values that allows the constraints to be satisfied.</p>
+
+  <p>For a tiny circuit:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x · y</div>
+  </div>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">public z = 15</div>
+    <div class="formula">private x = 3</div>
+    <div class="formula">private y = 5</div>
+  </div>
+
+  <p>The witness may contain:</p>
+
+  <div class="math-box">
+    <div class="formula">w = (3, 5)</div>
+  </div>
+
+  <p>because:</p>
+
+  <div class="math-box">
+    <div class="formula">3 · 5 = 15</div>
+  </div>
+
+  <p>In a real circuit, the witness can be much larger. It may include intermediate values for every gate or constraint.</p>
+</section>
+
+<section id="assignment">
+  <h2>The witness is often more than the user’s secret</h2>
+
+  <p>This distinction is extremely important.</p>
+
+  <p>Suppose the circuit computes:</p>
+
+  <div class="math-box">
+    <div class="formula">a = x + y</div>
+    <div class="formula">b = a · z</div>
+    <div class="formula">c = b²</div>
+  </div>
+
+  <p>The prover might provide original private inputs:</p>
+
+  <div class="math-box">
+    <div class="formula">x, y, z</div>
+  </div>
+
+  <p>but the proving system may also need the intermediate assignments:</p>
+
+  <div class="math-box">
+    <div class="formula">a, b, c</div>
+  </div>
+
+  <p>So the full witness can look like:</p>
+
+  <div class="math-box">
+    <div class="formula">W = (x, y, z, a, b, c, …)</div>
+  </div>
+
+  <div class="note-box">
+    <strong>Important:</strong> “witness” can mean the secret assignment to a relation, or, in a concrete proving system, the complete assignment required to satisfy every generated constraint. Always check the system's definition.
+  </div>
+</section>
+
+<section id="public">
+  <h2>What exactly is a public input?</h2>
+
+  <p>A public input is information that is intentionally part of the statement visible to the verifier.</p>
+
+  <p>For example, in a proof of:</p>
+
+  <div class="math-box">
+    <div class="formula">H(secret) = commitment</div>
+  </div>
+
+  <p>the commitment may be public:</p>
+
+  <div class="math-box">
+    <div class="formula">x = commitment</div>
+  </div>
+
+  <p>while:</p>
+
+  <div class="math-box">
+    <div class="formula">w = secret</div>
+  </div>
+
+  <p>remains private.</p>
+
+  <p>The public input therefore defines the particular instance of the statement being proved.</p>
+</section>
+
+<section id="three">
+  <h2>Three different things you must not confuse</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">public input</div>
+      <p>The public instance x. The verifier is expected to know it.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">private input</div>
+      <p>A secret input supplied by the prover. It is part of the witness.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">intermediate witness values</div>
+      <p>Values produced while evaluating the computation and used to satisfy internal constraints.</p>
+    </div>
+  </div>
+
+  <p>A circuit compiler may turn a small set of user-provided private inputs into a much larger internal witness.</p>
+</section>
+
+<section id="r1cs">
+  <h2>Witnesses in R1CS</h2>
+
+  <p>R1CS — Rank-1 Constraint Systems — expresses constraints of the form:</p>
+
+  <div class="math-box">
+    <div class="formula">(A · W) (B · W) = C · W</div>
+  </div>
+
+  <p>where <code class="inline">W</code> is the assignment vector.</p>
+
+  <p>The vector commonly contains a constant slot, public inputs, private inputs, and intermediate variables, depending on the system's exact convention.</p>
+
+  <p>For a multiplication:</p>
+
+  <div class="math-box">
+    <div class="formula">z = x · y</div>
+  </div>
+
+  <p>the assignment may be:</p>
+
+  <div class="math-box">
+    <div class="formula">W = (1, x, y, z)</div>
+  </div>
+
+  <p>and the R1CS constraint enforces:</p>
+
+  <div class="math-box">
+    <div class="formula">x · y = z</div>
+  </div>
+
+  <p>The exact ordering of public and private elements is implementation-specific, but the conceptual distinction remains the same.</p>
+</section>
+
+<section id="qap">
+  <h2>From R1CS toward a proving system</h2>
+
+  <p>In systems based on R1CS, the witness assignment is used to evaluate the constraint system.</p>
+
+  <p>A high-level pipeline can be viewed as:</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node public">public inputs</span>
+      <span class="arrow">+</span>
+      <span class="node private">witness</span>
+      <span class="arrow">→</span>
+      <span class="node">R1CS</span>
+      <span class="arrow">→</span>
+      <span class="node">QAP / polynomial representation</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>The witness is not an optional annotation. It is the concrete assignment against which the algebraic constraints are checked.</p>
+</section>
+
+<section id="air">
+  <h2>Witnesses in AIR and zkVMs</h2>
+
+  <p>In an AIR-based system, the structure looks different from R1CS.</p>
+
+  <p>Instead of thinking primarily about a circuit's individual gates, we often begin with an execution trace.</p>
+
+  <div class="math-box">
+    <div class="formula">trace = rows of machine state over time</div>
+  </div>
+
+  <p>For a simple machine:</p>
+
+  <div class="math-box">
+    <div class="formula">row₀ → row₁ → row₂ → row₃ → …</div>
+  </div>
+
+  <p>The trace contains values such as registers, program counters, memory-related state, flags, and other VM state.</p>
+
+  <p>That trace is essentially the concrete execution witness for the computation.</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node private">program + inputs</span>
+      <span class="arrow">→ execute</span>
+      <span class="node">execution trace</span>
+      <span class="arrow">→</span>
+      <span class="node">AIR constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>The prover knows the complete trace. The verifier usually sees only the public statement and a proof that the trace satisfies the AIR.</p>
+</section>
+
+<section id="example-vm">
+  <h2>A tiny zkVM example</h2>
+
+  <p>Imagine a toy VM with a register <code class="inline">r</code> that starts at 2 and increments once per cycle.</p>
+
+  <p>The public claim might be:</p>
+
+  <div class="math-box">
+    <div class="formula">final register = 5</div>
+  </div>
+
+  <p>The private execution trace could be:</p>
+
+  <div class="math-box">
+    <div class="formula">2, 3, 4, 5</div>
+  </div>
+
+  <p>The transition constraint is:</p>
+
+  <div class="math-box">
+    <div class="formula">rᵢ₊₁ − rᵢ − 1 = 0</div>
+  </div>
+
+  <p>The boundary constraints specify:</p>
+
+  <div class="math-box">
+    <div class="formula">r₀ = 2</div>
+    <div class="formula">r₃ = 5</div>
+  </div>
+
+  <p>The trace is the witness that makes those constraints true.</p>
+</section>
+
+<section id="prover">
+  <h2>What the prover actually does</h2>
+
+  <p>At a high level, a prover receives:</p>
+
+  <div class="math-box">
+    <div class="formula">public inputs x</div>
+    <div class="formula">private witness w</div>
+  </div>
+
+  <p>and checks or constructs the computation represented by the constraint system.</p>
+
+  <p>Conceptually:</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node public">x</span>
+      <span class="arrow">+</span>
+      <span class="node private">w</span>
+      <span class="arrow">→</span>
+      <span class="node">assignment</span>
+      <span class="arrow">→</span>
+      <span class="node">constraint evaluation</span>
+      <span class="arrow">→</span>
+      <span class="node">proof</span>
+    </div>
+  </div>
+
+  <p>If the assignment does not satisfy the constraints, an honest prover cannot generate a valid proof.</p>
+</section>
+
+<section id="verifier">
+  <h2>What the verifier gets</h2>
+
+  <p>The verifier generally receives:</p>
+
+  <div class="math-box">
+    <div class="formula">public inputs x</div>
+    <div class="formula">proof π</div>
+  </div>
+
+  <p>It does not receive the complete private witness.</p>
+
+  <p>The verifier checks:</p>
+
+  <div class="math-box">
+    <div class="formula">Verify(x, π) = true</div>
+  </div>
+
+  <p>The proof system is designed so that acceptance gives confidence that there exists a valid witness:</p>
+
+  <div class="math-box">
+    <div class="formula">∃ w : R(x,w) = 1</div>
+  </div>
+
+  <p>while the proof is constructed so that the witness itself need not be disclosed.</p>
+</section>
+
+<section id="zk">
+  <h2>Where zero knowledge enters</h2>
+
+  <p>The distinction between public input and witness explains the purpose of zero knowledge.</p>
+
+  <p>The verifier needs confidence that:</p>
+
+  <div class="math-box">
+    <div class="formula">there exists a valid private witness</div>
+  </div>
+
+  <p>but should not necessarily learn:</p>
+
+  <div class="math-box">
+    <div class="formula">the witness itself</div>
+  </div>
+
+  <p>For example, proving:</p>
+
+  <div class="math-box">
+    <div class="formula">“I know the password corresponding to this commitment.”</div>
+  </div>
+
+  <p>does not require sending the password to the verifier.</p>
+
+  <div class="note-box">
+    <strong>Key distinction:</strong> public/private inputs define what is revealed as part of the statement. Zero knowledge is the cryptographic property that protects the private witness beyond what the verifier can infer from the intended statement and proof.
+  </div>
+</section>
+
+<section id="public-output">
+  <h2>Public inputs versus public outputs</h2>
+
+  <p>A circuit can also produce values that become public outputs.</p>
+
+  <p>For example, a private computation may calculate:</p>
+
+  <div class="math-box">
+    <div class="formula">y = f(w)</div>
+  </div>
+
+  <p>The protocol may expose <code class="inline">y</code> as a public result while keeping <code class="inline">w</code> private.</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node private">private witness w</span>
+      <span class="arrow">→</span>
+      <span class="node">computation f</span>
+      <span class="arrow">→</span>
+      <span class="node public">public output y</span>
+    </div>
+  </div>
+
+  <p>The resulting proof establishes that the public output is consistent with some valid private witness.</p>
+</section>
+
+<section id="input-order">
+  <h2>Why input ordering matters</h2>
+
+  <p>Cryptographic systems operate on exact encodings. The mathematical set of public inputs may be unordered conceptually, but an implementation usually commits to a specific vector order.</p>
+
+  <div class="math-box">
+    <div class="formula">public_inputs = [x₀, x₁, x₂, …]</div>
+  </div>
+
+  <p>Changing the order can change the statement being verified.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">[age, threshold]</div>
+    <div class="formula">≠</div>
+    <div class="formula">[threshold, age]</div>
+  </div>
+
+  <p>even if both contain the same numerical values.</p>
+
+  <p>Production systems therefore specify input ordering and serialization precisely.</p>
+</section>
+
+<section id="rust">
+  <h2>Simple Rust model of public inputs and witness</h2>
+
+  <p>Before using a real proving library, it is useful to model the relationship directly in Rust.</p>
+
+  <details open>
+    <summary>Complete Rust implementation</summary>
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span class="code-lang">rust</span>
+        <button class="code-copy" type="button" aria-label="Copy Rust code">copy</button>
+      </div>
+      <div class="code-body">
+        <div class="line-numbers" aria-hidden="true"></div>
+        <pre class="code-source"><code><span class="c">// A tiny educational model of a ZK relation.</span>
+
+<span class="k">struct</span> PublicInputs {
+    target: u64,
+}
+
+<span class="k">struct</span> Witness {
+    secret: u64,
+}
+
+<span class="k">fn</span> satisfies(
+    public: &amp;PublicInputs,
+    witness: &amp;Witness,
+) -&gt; bool {
+    witness.secret * witness.secret == public.target
+}
+
+<span class="k">fn</span> main() {
+    <span class="k">let</span> public = PublicInputs {
+        target: 25,
+    };
+
+    <span class="k">let</span> witness = Witness {
+        secret: 5,
+    };
+
+    <span class="k">assert</span>!(satisfies(&amp;public, &amp;witness));
+
+    println!(<span class="s">"The witness satisfies the public statement."</span>);
+}</code></pre>
+      </div>
+    </div>
+  </details>
+
+  <p>This is <strong>not a ZK proof system</strong>. It simply demonstrates the core mathematical relation:</p>
+
+  <div class="math-box">
+    <div class="formula">R(public, witness) = true</div>
+  </div>
+
+  <p>A real proving system replaces the direct boolean check with a cryptographic proof that the relation is satisfied without revealing the witness.</p>
+</section>
+
+<section id="rust-field">
+  <h2>Why real ZK systems use field elements</h2>
+
+  <p>In most algebraic proving systems, values are represented inside a finite field rather than ordinary machine integers.</p>
+
+  <p>The relation becomes:</p>
+
+  <div class="math-box">
+    <div class="formula">w² − x = 0  in F</div>
+  </div>
+
+  <p>where <code class="inline">F</code> is a finite field.</p>
+
+  <p>This matters because polynomial arithmetic, interpolation, FFTs, R1CS, AIR, FRI, and many commitment schemes are naturally expressed over finite fields.</p>
+
+  <p>The conceptual split remains unchanged:</p>
+
+  <div class="math-box">
+    <div class="formula">public x ∈ F</div>
+    <div class="formula">private w ∈ F</div>
+    <div class="formula">R(x,w) = 1</div>
+  </div>
+</section>
+
+<section id="multiple">
+  <h2>Multiple public inputs and witnesses</h2>
+
+  <p>Real statements usually contain many values.</p>
+
+  <p>For example:</p>
+
+  <div class="math-box">
+    <div class="formula">public = (root, nullifier, commitment)</div>
+    <div class="formula">witness = (secret, path, randomness, …)</div>
+  </div>
+
+  <p>The relation might enforce several conditions simultaneously:</p>
+
+  <div class="math-box">
+    <div class="formula">hash(secret) = commitment</div>
+    <div class="formula">MerkleVerify(path, commitment, root) = true</div>
+    <div class="formula">nullifier = H(secret)</div>
+  </div>
+
+  <p>The prover demonstrates that all constraints hold for one consistent witness.</p>
+</section>
+
+<section id="binding">
+  <h2>Public inputs are part of what is being proved</h2>
+
+  <p>This is a subtle but important point.</p>
+
+  <p>A proof should not simply prove:</p>
+
+  <div class="math-box">
+    <div class="formula">“some valid witness exists.”</div>
+  </div>
+
+  <p>It should prove:</p>
+
+  <div class="math-box">
+    <div class="formula">“there exists a witness valid for this exact public statement.”</div>
+  </div>
+
+  <p>Mathematically:</p>
+
+  <div class="math-box">
+    <div class="formula">∃ w : R(x,w) = 1</div>
+  </div>
+
+  <p>The value <code class="inline">x</code> is therefore cryptographically significant. It cannot be treated as unrelated metadata.</p>
+</section>
+
+<section id="wrong">
+  <h2>What happens with a wrong witness?</h2>
+
+  <p>Suppose:</p>
+
+  <div class="math-box">
+    <div class="formula">public target = 25</div>
+    <div class="formula">witness secret = 7</div>
+  </div>
+
+  <p>Then:</p>
+
+  <div class="math-box">
+    <div class="formula">7² = 49 ≠ 25</div>
+  </div>
+
+  <p>The constraint is false.</p>
+
+  <p>An honest prover cannot produce a valid proof for that assignment.</p>
+
+  <p>This is the first layer of the proving system:</p>
+
+  <div class="math-box">
+    <div class="formula">valid witness → satisfiable constraints → potentially valid proof</div>
+    <div class="formula">invalid witness → unsatisfied constraints → proof generation fails</div>
+  </div>
+</section>
+
+<section id="witness-generation">
+  <h2>Witness generation</h2>
+
+  <p>In a real application, the witness often comes from executing a computation.</p>
+
+  <p>For a circuit:</p>
+
+  <div class="math-box">
+    <div class="formula">private inputs → execute circuit → assign intermediate variables</div>
+  </div>
+
+  <p>For a zkVM:</p>
+
+  <div class="math-box">
+    <div class="formula">program + private inputs → VM execution → execution trace</div>
+  </div>
+
+  <p>That generated assignment is then used by the prover.</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node private">private input</span>
+      <span class="arrow">→ execute</span>
+      <span class="node">witness generation</span>
+      <span class="arrow">→</span>
+      <span class="node">constraints satisfied?</span>
+      <span class="arrow">→</span>
+      <span class="node">prover</span>
+    </div>
+  </div>
+</section>
+
+<section id="memory">
+  <h2>Witnesses can be large</h2>
+
+  <p>For a small arithmetic circuit, the witness might contain only a few values.</p>
+
+  <p>For a large computation, it can be enormous.</p>
+
+  <p>For a zkVM executing thousands or millions of instructions, the witness may effectively represent a large execution trace.</p>
+
+  <p>This is one reason proving-system engineering cares so much about:</p>
+
+  <ul>
+    <li>memory layout;</li>
+    <li>trace generation;</li>
+    <li>parallel witness construction;</li>
+    <li>field arithmetic performance;</li>
+    <li>FFT/NTT performance;</li>
+    <li>commitment construction;</li>
+    <li>prover memory usage.</li>
+  </ul>
+
+  <p>The witness is not merely an abstract mathematical object. In a real prover, it is a major data structure that must be generated, stored, transformed, and committed to.</p>
+</section>
+
+<section id="zkvm">
+  <h2>Witness and public inputs in a zkVM</h2>
+
+  <p>Consider a zkVM proving that a program executed correctly.</p>
+
+  <p>Possible public information:</p>
+
+  <div class="math-box">
+    <div class="formula">program hash</div>
+    <div class="formula">public input</div>
+    <div class="formula">initial state commitment</div>
+    <div class="formula">final output</div>
+  </div>
+
+  <p>Possible private witness information:</p>
+
+  <div class="math-box">
+    <div class="formula">execution trace</div>
+    <div class="formula">private memory values</div>
+    <div class="formula">private program inputs</div>
+    <div class="formula">intermediate machine states</div>
+  </div>
+
+  <p>The AIR then checks that the trace represents a valid execution.</p>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node public">public statement</span>
+      <span class="arrow">+</span>
+      <span class="node private">execution witness</span>
+      <span class="arrow">→</span>
+      <span class="node">AIR constraints</span>
+      <span class="arrow">→</span>
+      <span class="node">STARK proof</span>
+    </div>
+  </div>
+
+  <p>This is the conceptual bridge between ordinary programs and algebraic proof systems.</p>
+</section>
+
+<section id="common">
+  <h2>Common mistakes</h2>
+
+  <div class="example-grid">
+    <div class="example-card">
+      <div class="label">mistake 1</div>
+      <p>Thinking the witness is always just one secret value. In real systems it can contain a huge assignment or execution trace.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 2</div>
+      <p>Thinking public input is merely metadata. It is part of the statement that the proof must be bound to.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 3</div>
+      <p>Thinking every witness value is private. Some systems have public witness components or explicitly exposed outputs.</p>
+    </div>
+    <div class="example-card">
+      <div class="label">mistake 4</div>
+      <p>Thinking witness generation is the proof itself. Witness generation produces the assignment; the prover then transforms that assignment into a cryptographic proof.</p>
+    </div>
+  </div>
+</section>
+
+<section id="comparison">
+  <h2>Circuit systems vs zkVMs</h2>
+
+  <table class="article-table">
+    <thead>
+      <tr><th>Concept</th><th>Circuit / R1CS style</th><th>AIR / zkVM style</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>public data</td><td>public inputs / instance values</td><td>public program/input/output/state commitments</td></tr>
+      <tr><td>private data</td><td>private inputs and assignment values</td><td>execution trace and private machine state</td></tr>
+      <tr><td>constraints</td><td>algebraic gate constraints</td><td>transition and boundary constraints</td></tr>
+      <tr><td>witness representation</td><td>assignment vector</td><td>trace columns / rows</td></tr>
+      <tr><td>proof goal</td><td>prove constraints are satisfiable</td><td>prove trace represents valid execution</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="pipeline">
+  <h2>Where witness and public inputs fit</h2>
+
+  <div class="data-flow">
+    <div class="row">
+      <span class="node public">public inputs</span>
+      <span class="arrow">+</span>
+      <span class="node private">private witness</span>
+      <span class="arrow">→</span>
+      <span class="node">constraint system</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">constraint system</span>
+      <span class="arrow">+</span>
+      <span class="node">witness assignment</span>
+      <span class="arrow">→</span>
+      <span class="node">prover</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node">prover</span>
+      <span class="arrow">→</span>
+      <span class="node">proof π</span>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <span class="node public">public inputs</span>
+      <span class="arrow">+</span>
+      <span class="node">proof π</span>
+      <span class="arrow">→</span>
+      <span class="node">verifier</span>
+    </div>
+  </div>
+
+  <p>The verifier does not need to receive the complete witness. It verifies a proof that is bound to the public statement.</p>
+</section>
+
+<section id="summary">
+  <h2>The whole idea in one map</h2>
+
+  <div class="math-box">
+    <div class="label">first-principles map</div>
+    <div class="formula">1. Start with a statement x.</div>
+    <div class="formula">2. Define what it means for a witness w to satisfy that statement.</div>
+    <div class="formula">3. Express the relation as constraints.</div>
+    <div class="formula">4. The prover supplies a witness that satisfies those constraints.</div>
+    <div class="formula">5. Public inputs are visible parts of the statement.</div>
+    <div class="formula">6. Private inputs are incorporated into the witness.</div>
+    <div class="formula">7. Intermediate assignments can also become part of the witness.</div>
+    <div class="formula">8. R1CS represents the assignment as algebraic constraints.</div>
+    <div class="formula">9. AIR represents machine execution through trace constraints.</div>
+    <div class="formula">10. The prover turns the satisfied assignment into a cryptographic proof.</div>
+    <div class="formula">11. The verifier receives the public inputs and proof, not necessarily the witness.</div>
+    <div class="formula">12. Zero knowledge aims to keep the witness hidden while proving that a valid witness exists.</div>
+  </div>
+
+  <p>If finite fields answer <em>“where does the algebra happen?”</em>, polynomial commitments answer <em>“how do we commit to algebraic objects?”</em>, Merkle trees answer <em>“how do we commit to large vectors?”</em>, and Fiat–Shamir answers <em>“how do we derive verifier challenges non-interactively?”</em>, then witnesses and public inputs answer the most basic question: <em>“what exactly is the prover claiming, and what information is allowed to be visible?”</em></p>
+</section>
+
+</article>
+
+</main>
+
+
+
+
+
+
+
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+
+<script>
+  document.querySelectorAll('.code-block').forEach((block) => {
+    const code = block.querySelector('.code-source code');
+    const numbers = block.querySelector('.line-numbers');
+    const lines = code.textContent.split('
+');
+
+    numbers.innerHTML = lines.map((_, i) =>
+      `<span>${i + 1}</span>`
+    ).join('');
+
+    const button = block.querySelector('.code-copy');
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        button.textContent = 'copied';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      } catch {
+        button.textContent = 'select';
+        setTimeout(() => button.textContent = 'copy', 1200);
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
