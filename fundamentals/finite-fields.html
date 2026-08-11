@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finite Fields and Modular Arithmetic — Srishti Rathi</title>
+<meta name="description" content="Finite fields and modular arithmetic from first principles — why ZK systems need them, worked examples in F17, a Rust field implementation, and the road from here to STARKs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1;
+  --bg-card:#fdfcfa;
+  --ink:#16171c;
+  --ink-muted:#4c4e58;
+  --ink-dim:#92939c;
+  --purple:#4b3b7c;
+  --purple-soft:#efebf8;
+  --purple-border:rgba(75,59,124,0.22);
+  --sage:#2f6f62;
+  --sage-soft:#e8f1ee;
+  --sage-border:rgba(47,111,98,0.25);
+  --border:#e2e0d8;
+  --border-soft:#e2e0d8;
+  --mono:'JetBrains Mono',monospace;
+  --display:'Fraunces',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--display);
+  font-size:15.5px; font-weight:400; line-height:1.85;
+}
+a{color:var(--purple); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+nav{
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;
+  padding:1.4rem 3rem; border-bottom:1px solid var(--border-soft);
+}
+.nav-logo{font-family:var(--display); font-style:italic; font-weight:400; font-size:1rem; color:var(--ink);}
+.nav-links{display:flex; gap:1.8rem; list-style:none; font-family:var(--mono); font-size:11.5px; color:var(--ink-muted); letter-spacing:0.02em;}
+.nav-links a{color:var(--ink-muted);}
+.nav-links a:hover{color:var(--purple); text-decoration:none;}
+.nav-back{font-family:var(--mono); font-size:11.5px; color:var(--ink-muted);}
+.nav-back:hover{color:var(--purple);}
+
+main{max-width:1120px; margin:0 auto; padding:0 3rem;}
+
+header.hero{padding:5rem 0 3rem; max-width:640px;}
+.crumb{font-family:var(--mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--sage); margin-bottom:1.6rem; display:flex; align-items:center; gap:10px;}
+.crumb::after{content:''; flex:1; height:1px; background:var(--border-soft); max-width:60px;}
+h1{
+  font-family:var(--display); font-weight:600; letter-spacing:-0.02em; line-height:1.08;
+  font-size:clamp(2rem,4.6vw,2.9rem); color:var(--ink); margin-bottom:1.5rem;
+}
+h1 em{font-style:italic; font-weight:400; color:var(--purple);}
+.dek{font-family:var(--mono); font-size:12.5px; color:var(--ink-muted); line-height:1.9; margin-bottom:1.6rem; letter-spacing:0.01em;}
+.byline{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.byline .hl{color:var(--purple);}
+
+article{max-width:640px;}
+section{padding:2.4rem 0; border-top:1px solid var(--border-soft);}
+h2{
+  font-family:var(--display); font-size:1.55rem; font-weight:600; color:var(--ink);
+  letter-spacing:-0.01em; margin-bottom:1.1rem;
+}
+p{color:var(--ink-muted); margin-bottom:1.15rem; font-size:15px; line-height:1.9;}
+p .hl{color:var(--purple); font-style:italic;}
+p .hl2{color:var(--sage); font-style:italic;}
+strong{color:var(--ink); font-weight:600;}
+code.inline{
+  font-family:var(--mono); font-size:0.82em; color:var(--purple);
+  background:var(--purple-soft); padding:1px 6px; border:1px solid var(--purple-border);
+}
+ul.plain{list-style:none; margin:0 0 1.15rem;}
+ul.plain li{color:var(--ink-muted); font-size:15px; line-height:1.9; padding-left:1.2rem; position:relative;}
+ul.plain li::before{content:'—'; position:absolute; left:0; color:var(--sage);}
+
+.diagram{
+  font-family:var(--mono); font-size:12px; color:var(--ink-muted);
+  text-align:center; letter-spacing:0.02em; padding:1.3rem 1rem;
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple);
+  margin:1.6rem 0; overflow-x:auto; white-space:pre;
+}
+.diagram .op{color:var(--purple);}
+.diagram .em{color:var(--sage);}
+
+.callout{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--sage);
+  padding:1.15rem 1.35rem; margin:1.5rem 0; font-size:14px; color:var(--ink-muted); line-height:1.85;
+}
+.callout .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--sage); margin-bottom:7px; display:block;}
+.callout strong{color:var(--ink);}
+
+.fig-block{display:flex; justify-content:center; padding:1.8rem 0 0.4rem;}
+.fig-wrap{display:flex; flex-direction:column; align-items:center; gap:0.6rem;}
+.fig-caption{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:center; letter-spacing:0.02em; max-width:280px;}
+
+.code-block{
+  background:var(--bg-card); border:1px solid var(--border-soft); border-left:2px solid var(--purple-border);
+  padding:1.2rem 1.35rem; margin:1.4rem 0; overflow-x:auto;
+  font-family:var(--mono); font-size:11.5px; line-height:1.85; color:var(--ink-muted);
+}
+.code-block .k{color:var(--purple);}
+.code-block .t{color:var(--sage);}
+.code-block .s{color:#8a6d3c;}
+.code-block .c{color:var(--ink-dim);}
+.code-fname{
+  font-size:9.5px; text-transform:uppercase; letter-spacing:0.12em; color:var(--purple);
+  margin-bottom:0.6rem; font-family:var(--mono);
+}
+details{margin:1.4rem 0;}
+summary{
+  cursor:pointer; font-family:var(--mono); font-size:11.5px; letter-spacing:0.03em; color:var(--purple);
+  padding:11px 16px; background:var(--bg-card); border:1px solid var(--purple-border);
+  list-style:none; display:flex; align-items:center; justify-content:space-between;
+}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+'; font-size:14px; color:var(--purple);}
+details[open] summary::after{content:'–';}
+
+table{width:100%; border-collapse:collapse; margin:1.4rem 0; font-size:13px; font-family:var(--display);}
+th,td{padding:11px 14px; text-align:left; border:1px solid var(--border-soft);}
+th{background:var(--bg-card); color:var(--purple); font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700;}
+td{color:var(--ink-muted); background:var(--bg-card);}
+td .n{font-family:var(--display); font-weight:700; font-style:italic; color:var(--sage);}
+
+.path-chain{display:flex; flex-direction:column; gap:0; margin:1.5rem 0;}
+.path-item{
+  display:flex; align-items:center; gap:1rem; padding:0.6rem 0;
+  border-bottom:1px dashed var(--border-soft); font-family:var(--mono); font-size:12.5px;
+}
+.path-item:last-child{border-bottom:none;}
+.path-num{font-family:var(--display); font-style:italic; font-weight:700; color:var(--purple); font-size:0.95rem; width:28px; flex-shrink:0;}
+.path-item span.txt{color:var(--ink-muted);}
+.path-item.now{background:var(--purple-soft); margin:0 -1rem; padding:0.6rem 1rem; border-bottom-color:transparent;}
+.path-item.now .path-num,.path-item.now span.txt{color:var(--purple);}
+
+.chip-row{display:flex; flex-wrap:wrap; gap:8px; margin:1.4rem 0;}
+.chip{font-family:var(--mono); font-size:10.5px; padding:4px 11px; border:1px solid var(--border); color:var(--ink-dim); background:var(--bg-card);}
+.chip.hot{border-color:var(--purple-border); color:var(--purple); background:var(--purple-soft);}
+.chip.teal{border-color:transparent; color:var(--sage); background:var(--sage-soft);}
+
+.takeaway{
+  margin:2rem 0 0; padding:1.7rem 1.7rem; background:var(--bg-card);
+  border:1px solid var(--purple-border); position:relative;
+}
+.takeaway .lbl{font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:var(--purple); margin-bottom:0.75rem; display:block;}
+.takeaway p{color:var(--ink); margin-bottom:0.7rem; font-size:14.5px;}
+.takeaway p:last-child{margin-bottom:0;}
+
+footer{border-top:1px solid var(--border-soft); padding:2.6rem 0; text-align:center; max-width:1120px; margin:0 auto; padding-left:3rem; padding-right:3rem;}
+.footer-text{font-family:var(--mono); font-size:11px; color:var(--ink-dim);}
+.footer-text .hl{color:var(--purple);}
+
+@media (max-width:640px){
+  nav{padding:1rem 1.25rem;}
+  .nav-links{display:none;}
+  main{padding:0 1.25rem;}
+  footer{padding-left:1.25rem; padding-right:1.25rem;}
+  header.hero{padding:3rem 0 2rem;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">srishti rathi</a>
+  <ul class="nav-links">
+    <li><a href="../index.html#about">about</a></li>
+    <li><a href="../index.html#fundamentals">fundamentals</a></li>
+    <li><a href="../index.html#projects">projects</a></li>
+    <li><a href="../index.html#research">research</a></li>
+    <li><a href="../index.html#writing">writing</a></li>
+    <li><a href="../index.html#ctf">ctf</a></li>
+    <li><a href="../index.html#contact">contact</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<header class="hero">
+  <div class="crumb"><a href="../index.html" class="nav-back">← back to home</a></div>
+  <h1>Finite Fields &amp; <em>Modular</em> Arithmetic</h1>
+  <p class="dek">why proving systems can't do algebra over the real numbers — and what it looks like to enforce that, down to the Rust</p>
+  <p class="byline"><span class="hl">Srishti Rathi</span> · Fundamentals · Zero Knowledge</p>
+</header>
+
+<article>
+
+<section id="why">
+  <h2>Why finite fields, at all</h2>
+  <p>Ordinary arithmetic is unbounded: <code class="inline">2+3=5</code>, <code class="inline">4×5=20</code>, <code class="inline">10/2=5</code>, and results can grow as large as they like. That's fine for a calculator, but a cryptographic protocol can't work that way — computers store a finite number of bits, and a proving system needs every value to have an <span class="hl">exact, bounded representation</span>. There's no room for a number that keeps growing every time you multiply.</p>
+  <p>So instead of letting numbers grow, we wrap them. Suppose the only values allowed are <code class="inline">{0,1,2,3,4}</code>. Ordinarily <code class="inline">3+4=7</code>, but 7 doesn't belong to that set — so we wrap around using a modulus: working <code class="inline">mod 5</code>, <code class="inline">3+4 = 7 mod 5 = 2</code>. Finite fields take that wraparound idea and add stronger guarantees on top, so that addition, subtraction, multiplication, and — critically — <span class="hl2">division by every non-zero element</span> all work cleanly, every time.</p>
+
+  <div class="fig-block">
+    <div class="fig-wrap">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="78" fill="none" stroke="#2f6f62" stroke-width="1"/>
+        <g font-family="JetBrains Mono" font-size="10" fill="#92939c">
+          <text x="100" y="18" text-anchor="middle">0</text>
+          <text x="150" y="34" text-anchor="middle">1</text>
+          <text x="176" y="72" text-anchor="middle">2</text>
+          <text x="176" y="128" text-anchor="middle">3</text>
+          <text x="150" y="166" text-anchor="middle">4</text>
+          <text x="100" y="188" text-anchor="middle">5</text>
+          <text x="50" y="166" text-anchor="middle">6</text>
+          <text x="24" y="128" text-anchor="middle">.</text>
+          <text x="24" y="72" text-anchor="middle">.</text>
+          <text x="50" y="34" text-anchor="middle">.</text>
+        </g>
+        <path d="M100 100 L100 30" stroke="#4b3b7c" stroke-width="1.2"/>
+        <path d="M100 100 L152 60" stroke="#4b3b7c" stroke-width="1.2" stroke-dasharray="2 3"/>
+        <circle cx="100" cy="100" r="2.5" fill="#16171c"/>
+        <circle cx="100" cy="30" r="2.5" fill="#4b3b7c"/>
+        <circle cx="152" cy="60" r="2.5" fill="#4b3b7c"/>
+      </svg>
+      <div class="fig-caption">fig. — a field like F17 behaves like a clock face with 17 positions: every operation lands back on the wheel, nothing escapes it</div>
+    </div>
+  </div>
+</section>
+
+<section id="what-is-a-field">
+  <h2>What exactly is a field</h2>
+  <p>A <strong>field</strong> is a set equipped with addition and multiplication that satisfy a fixed list of guarantees. Let the field be <code class="inline">F</code>. For all <code class="inline">a, b, c ∈ F</code>:</p>
+  <ul class="plain">
+    <li><strong>Addition closure</strong> — <code class="inline">a+b ∈ F</code></li>
+    <li><strong>Multiplication closure</strong> — <code class="inline">ab ∈ F</code></li>
+    <li><strong>Additive identity</strong> — there exists <code class="inline">0</code> such that <code class="inline">a+0=a</code></li>
+    <li><strong>Multiplicative identity</strong> — there exists <code class="inline">1</code> such that <code class="inline">a×1=a</code></li>
+    <li><strong>Multiplicative inverse</strong> — for non-zero <code class="inline">a</code>, <code class="inline">a·a⁻¹=1</code></li>
+    <li><strong>Associativity</strong> — <code class="inline">(a+b)+c=a+(b+c)</code> and <code class="inline">(ab)c=a(bc)</code></li>
+    <li><strong>Commutativity</strong> — <code class="inline">a+b=b+a</code>, <code class="inline">ab=ba</code></li>
+    <li><strong>Distributivity</strong> — <code class="inline">a(b+c)=ab+ac</code></li>
+  </ul>
+  <p>The multiplicative-inverse requirement is the one ordinary modular arithmetic doesn't automatically give you — it's what makes <strong>division</strong> well-defined for every non-zero element, and it's the property a proving system leans on constantly.</p>
+</section>
+
+<section id="finite-field">
+  <h2>A finite field, and a first ZK example</h2>
+  <p>A field with a finite number of elements is a <strong>finite field</strong>, usually written <code class="inline">F<sub>q</sub></code> where <code class="inline">q = p<sup>n</sup></code> for some prime <code class="inline">p</code> and integer <code class="inline">n ≥ 1</code>. The simplest and most common case in ZK work is a <strong>prime field</strong>, <code class="inline">F<sub>p</sub></code>.</p>
+  <div class="callout">
+    <span class="lbl">Worked example</span>
+    Take <strong>p = 17</strong> and suppose we want to prove <code class="inline">x² = 9</code> — without revealing <code class="inline">x</code>. The prover could know <code class="inline">x = 14</code>, because <code class="inline">14² = 196</code>, and <code class="inline">196 mod 17 = 9</code>. So <code class="inline">14² ≡ 9 (mod 17)</code>, and a ZK proof system can establish that relationship while keeping <code class="inline">x</code> hidden.
+  </div>
+  <p>That's the fundamental bridge: <strong>ZK systems turn computations into algebraic constraints evaluated over a finite field.</strong> Every later stage of a proving system — polynomials, interpolation, FFTs, FRI — is built on top of this same wraparound arithmetic.</p>
+</section>
+
+<section id="negatives">
+  <h2>Negative numbers inside a field</h2>
+  <p>There's no separate negative-number system inside <code class="inline">F17</code> — negation is just "the value that adds back to zero." So:</p>
+  <div class="diagram">−1 = 16   <span class="op">because</span>   −1 + 17 = 16
+−2 = 15
+−3 = 14
+−5 = 12</div>
+  <p>This matters in practice because it means <strong>subtraction can be implemented purely with addition</strong> — compute the additive inverse of the right-hand side, then add. No separate subtraction circuit or code path needed.</p>
+</section>
+
+<section id="real-primes">
+  <h2>Real systems use much larger primes</h2>
+  <p>Nobody builds a production ZK system on <code class="inline">p = 17</code> — it's only useful for working examples by hand. Real fields use primes on the order of:</p>
+  <div class="diagram">p ≈ 2<span class="em">⁶⁴</span>     p ≈ 2<span class="em">¹²⁸</span>     p ≈ 2<span class="em">²⁵⁴</span></div>
+  <p>depending on the system's security requirements. As one concrete anchor: the scalar field of <strong>BLS12-381</strong>, a curve widely used in pairing-based proving systems, is defined over a large prime modulus of this scale.</p>
+</section>
+
+<section id="rust-impl">
+  <h2>Implementing a field in Rust</h2>
+  <p>Below is <code class="inline">F17</code> implemented as a small Rust type, <code class="inline">Fp</code>. The core idea: every constructor reduces its input <code class="inline">mod 17</code>, so a value can never leave the field's representable range — and every arithmetic trait (<code class="inline">Add</code>, <code class="inline">Sub</code>, <code class="inline">Mul</code>, <code class="inline">Neg</code>, <code class="inline">Div</code>) reduces its result the same way.</p>
+
+  <div class="code-block">
+<div class="code-fname">// fp.rs — construction and modulus</div><span class="c">/// Prime modulus. Our field is F_17 = {0, 1, 2, ..., 16}</span>
+<span class="k">const</span> MODULUS: u64 = 17;
+
+<span class="k">struct</span> <span class="t">Fp</span> { value: u64 }
+
+<span class="k">impl</span> <span class="t">Fp</span> {
+    <span class="k">pub fn</span> new(value: u64) -&gt; <span class="t">Self</span> {
+        <span class="t">Self</span> { value: value % MODULUS }
+    }
+}</div>
+
+  <p>Two inverse strategies are worth knowing side by side. <strong>Fermat's Little Theorem</strong> says <code class="inline">aᵖ⁻¹ ≡ 1 (mod p)</code> for prime <code class="inline">p</code>, so <code class="inline">a⁻¹ = a<sup>p−2</sup> mod p</code> — computed with fast binary exponentiation. The <strong>Extended Euclidean Algorithm</strong> finds the same inverse directly, by solving <code class="inline">a·x ≡ 1 (mod p)</code>. Both are implemented below, and the test suite checks they always agree.</p>
+
+  <details>
+    <summary>Full Fp implementation, arithmetic traits, and tests</summary>
+    <div class="code-block" style="margin-top:1rem;">
+<span class="c">use std::ops::{Add, Div, Mul, Neg, Sub};</span>
+
+<span class="c">/// Prime modulus.
+/// Our field is F_17 = {0, 1, 2, ..., 16}</span>
+<span class="k">const</span> MODULUS: u64 = 17;
+
+<span class="c">#[derive(Clone, Copy, Debug, PartialEq, Eq)]</span>
+<span class="k">struct</span> <span class="t">Fp</span> {
+    value: u64,
+}
+
+<span class="k">impl</span> <span class="t">Fp</span> {
+    <span class="c">// ------------------------------------------------------------
+    // CONSTRUCTION
+    // ------------------------------------------------------------</span>
+
+    <span class="c">/// Create a field element. Any integer is reduced modulo 17.
+    /// Example: Fp::new(20) == Fp::new(3)</span>
+    <span class="k">pub fn</span> new(value: u64) -&gt; <span class="t">Self</span> {
+        <span class="t">Self</span> { value: value % MODULUS }
+    }
+
+    <span class="k">pub fn</span> zero() -&gt; <span class="t">Self</span> { <span class="t">Self</span> { value: 0 } }
+    <span class="k">pub fn</span> one() -&gt; <span class="t">Self</span> { <span class="t">Self</span> { value: 1 } }
+    <span class="k">pub fn</span> is_zero(self) -&gt; bool { self.value == 0 }
+    <span class="k">pub fn</span> value(self) -&gt; u64 { self.value }
+
+    <span class="c">// ------------------------------------------------------------
+    // EXPONENTIATION — O(log exponent) via binary exponentiation
+    // ------------------------------------------------------------</span>
+    <span class="k">pub fn</span> pow(self, <span class="k">mut</span> exponent: u64) -&gt; <span class="t">Self</span> {
+        <span class="k">let mut</span> result = <span class="t">Self</span>::one();
+        <span class="k">let mut</span> base = self;
+        <span class="k">while</span> exponent &gt; 0 {
+            <span class="k">if</span> exponent &amp; 1 == 1 { result = result * base; }
+            base = base * base;
+            exponent &gt;&gt;= 1;
+        }
+        result
+    }
+
+    <span class="c">// ------------------------------------------------------------
+    // MULTIPLICATIVE INVERSE — Fermat: a^(-1) = a^(p-2) mod p
+    // ------------------------------------------------------------</span>
+    <span class="k">pub fn</span> inverse(self) -&gt; Option&lt;<span class="t">Self</span>&gt; {
+        <span class="k">if</span> self.is_zero() { <span class="k">return</span> None; }
+        Some(self.pow(MODULUS - 2))
+    }
+
+    <span class="c">// ------------------------------------------------------------
+    // EXTENDED EUCLIDEAN ALGORITHM — finds x such that a*x = 1 mod p
+    // ------------------------------------------------------------</span>
+    <span class="k">pub fn</span> inverse_euclid(self) -&gt; Option&lt;<span class="t">Self</span>&gt; {
+        <span class="k">if</span> self.is_zero() { <span class="k">return</span> None; }
+        <span class="k">let mut</span> old_r = self.value <span class="k">as</span> i128;
+        <span class="k">let mut</span> r = MODULUS <span class="k">as</span> i128;
+        <span class="k">let mut</span> old_t = 1i128;
+        <span class="k">let mut</span> t = 0i128;
+        <span class="k">while</span> r != 0 {
+            <span class="k">let</span> quotient = old_r / r;
+            <span class="k">let</span> next_r = old_r - quotient * r;
+            old_r = r; r = next_r;
+            <span class="k">let</span> next_t = old_t - quotient * t;
+            old_t = t; t = next_t;
+        }
+        <span class="k">let</span> inverse = old_t.rem_euclid(MODULUS <span class="k">as</span> i128);
+        Some(<span class="t">Self</span>::new(inverse <span class="k">as</span> u64))
+    }
+}
+
+<span class="c">// ================================================================
+// ADD / SUB / MUL / NEG / DIV
+// ================================================================</span>
+<span class="k">impl</span> Add <span class="k">for</span> <span class="t">Fp</span> {
+    <span class="k">type</span> Output = <span class="t">Self</span>;
+    <span class="k">fn</span> add(self, rhs: <span class="t">Self</span>) -&gt; <span class="t">Self</span> { <span class="t">Self</span>::new(self.value + rhs.value) }
+}
+<span class="k">impl</span> Sub <span class="k">for</span> <span class="t">Fp</span> {
+    <span class="k">type</span> Output = <span class="t">Self</span>;
+    <span class="k">fn</span> sub(self, rhs: <span class="t">Self</span>) -&gt; <span class="t">Self</span> { <span class="t">Self</span>::new(self.value + MODULUS - rhs.value) }
+}
+<span class="k">impl</span> Mul <span class="k">for</span> <span class="t">Fp</span> {
+    <span class="k">type</span> Output = <span class="t">Self</span>;
+    <span class="k">fn</span> mul(self, rhs: <span class="t">Self</span>) -&gt; <span class="t">Self</span> { <span class="t">Self</span>::new(self.value * rhs.value) }
+}
+<span class="k">impl</span> Neg <span class="k">for</span> <span class="t">Fp</span> {
+    <span class="k">type</span> Output = <span class="t">Self</span>;
+    <span class="k">fn</span> neg(self) -&gt; <span class="t">Self</span> {
+        <span class="k">if</span> self.is_zero() { <span class="t">Self</span>::zero() } <span class="k">else</span> { <span class="t">Self</span>::new(MODULUS - self.value) }
+    }
+}
+<span class="k">impl</span> Div <span class="k">for</span> <span class="t">Fp</span> {
+    <span class="k">type</span> Output = <span class="t">Self</span>;
+    <span class="k">fn</span> div(self, rhs: <span class="t">Self</span>) -&gt; <span class="t">Self</span> {
+        <span class="k">let</span> inverse = rhs.inverse().expect(<span class="s">"division by zero"</span>);
+        self * inverse
+    }
+}
+
+<span class="c">// ================================================================
+// TESTS
+// ================================================================</span>
+<span class="c">#[cfg(test)]</span>
+<span class="k">mod</span> tests {
+    <span class="k">use super::*</span>;
+
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_addition() { <span class="c">// 15 + 5 = 20 = 3 mod 17</span>
+        assert_eq!(<span class="t">Fp</span>::new(15) + <span class="t">Fp</span>::new(5), <span class="t">Fp</span>::new(3));
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_subtraction() { <span class="c">// 3 - 5 = -2 = 15 mod 17</span>
+        assert_eq!(<span class="t">Fp</span>::new(3) - <span class="t">Fp</span>::new(5), <span class="t">Fp</span>::new(15));
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_multiplication() { <span class="c">// 5 * 7 = 35 = 1 mod 17</span>
+        assert_eq!(<span class="t">Fp</span>::new(5) * <span class="t">Fp</span>::new(7), <span class="t">Fp</span>::new(1));
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_negation() { <span class="c">// -5 = 12 mod 17</span>
+        assert_eq!(-<span class="t">Fp</span>::new(5), <span class="t">Fp</span>::new(12));
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_inverse() {
+        <span class="k">let</span> a = <span class="t">Fp</span>::new(5);
+        <span class="k">let</span> inverse = a.inverse().unwrap();
+        assert_eq!(inverse, <span class="t">Fp</span>::new(7));
+        assert_eq!(a * inverse, <span class="t">Fp</span>::one());
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_inverse_euclid() {
+        <span class="k">for</span> x <span class="k">in</span> 1..MODULUS {
+            <span class="k">let</span> a = <span class="t">Fp</span>::new(x);
+            <span class="k">let</span> inv1 = a.inverse().unwrap();
+            <span class="k">let</span> inv2 = a.inverse_euclid().unwrap();
+            assert_eq!(inv1, inv2);
+            assert_eq!(a * inv1, <span class="t">Fp</span>::one());
+        }
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_division() { <span class="c">// 3 / 5 = 3 * 7 = 21 = 4 mod 17</span>
+        assert_eq!(<span class="t">Fp</span>::new(3) / <span class="t">Fp</span>::new(5), <span class="t">Fp</span>::new(4));
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_power() {
+        assert_eq!(<span class="t">Fp</span>::new(3).pow(2), <span class="t">Fp</span>::new(9));
+        assert_eq!(<span class="t">Fp</span>::new(3).pow(16), <span class="t">Fp</span>::one()); <span class="c">// 3^16 = 1 mod 17</span>
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_zero_inverse() {
+        assert_eq!(<span class="t">Fp</span>::zero().inverse(), None);
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_fermat_little_theorem() {
+        <span class="c">// For every non-zero a in F_17: a^16 = 1</span>
+        <span class="k">for</span> x <span class="k">in</span> 1..MODULUS {
+            assert_eq!(<span class="t">Fp</span>::new(x).pow(MODULUS - 1), <span class="t">Fp</span>::one());
+        }
+    }
+    <span class="c">#[test]</span>
+    <span class="k">fn</span> test_field_elements_are_canonical() {
+        assert_eq!(<span class="t">Fp</span>::new(17), <span class="t">Fp</span>::zero()); <span class="c">// 17 = 0</span>
+        assert_eq!(<span class="t">Fp</span>::new(18), <span class="t">Fp</span>::one());  <span class="c">// 18 = 1</span>
+        assert_eq!(<span class="t">Fp</span>::new(34), <span class="t">Fp</span>::zero()); <span class="c">// 34 = 0</span>
+    }
+}</div>
+  </details>
+</section>
+
+<section id="levels">
+  <h2>Four levels, one idea, increasing structure</h2>
+  <p>Every level below performs the "same" addition — the difference is how much structure sits on top of it.</p>
+  <table>
+    <tr><th>Level</th><th>Statement</th><th>What's guaranteed</th></tr>
+    <tr><td><span class="n">1</span> Integer</td><td><code class="inline">3+5=8</code></td><td>Nothing bounded — grows without limit</td></tr>
+    <tr><td><span class="n">2</span> Modular arithmetic</td><td><code class="inline">3+5=1 (mod 7)</code></td><td>Wraps around, but no inverse guarantee</td></tr>
+    <tr><td><span class="n">3</span> Finite field</td><td><code class="inline">3+5=1 ∈ F<sub>7</sub></code></td><td>Every non-zero element has an inverse</td></tr>
+    <tr><td><span class="n">4</span> ZK algebra</td><td><code class="inline">ab−c=0 ∈ F<sub>p</sub></code></td><td>An algebraic constraint a proof system can check</td></tr>
+  </table>
+  <p>That fourth row is the bridge from basic mathematics into ZK systems: once arithmetic lives inside a finite field, a computation can be re-expressed as a set of algebraic constraints — statements that are either satisfied or aren't, and that a verifier can check far more cheaply than re-running the computation.</p>
+</section>
+
+<section id="path">
+  <h2>Where finite fields sit on the road to a STARK</h2>
+  <p>This is one topic on a longer path. Everything after it — groups, polynomials, FFTs, FRI — is built directly on the guarantees a finite field provides.</p>
+  <div class="path-chain">
+    <div class="path-item now"><span class="path-num">01</span><span class="txt">Modular arithmetic</span></div>
+    <div class="path-item"><span class="path-num">02</span><span class="txt">Equivalence classes</span></div>
+    <div class="path-item"><span class="path-num">03</span><span class="txt">Groups</span></div>
+    <div class="path-item"><span class="path-num">04</span><span class="txt">Rings</span></div>
+    <div class="path-item"><span class="path-num">05</span><span class="txt">Fields</span></div>
+    <div class="path-item"><span class="path-num">06</span><span class="txt">Prime fields F<sub>p</sub></span></div>
+    <div class="path-item"><span class="path-num">07</span><span class="txt">Multiplicative groups</span></div>
+    <div class="path-item"><span class="path-num">08</span><span class="txt">Fermat's theorem</span></div>
+    <div class="path-item"><span class="path-num">09</span><span class="txt">Extended Euclidean Algorithm</span></div>
+    <div class="path-item"><span class="path-num">10</span><span class="txt">Fast exponentiation</span></div>
+    <div class="path-item"><span class="path-num">11</span><span class="txt">Polynomial arithmetic</span></div>
+    <div class="path-item"><span class="path-num">12</span><span class="txt">Polynomial interpolation</span></div>
+    <div class="path-item"><span class="path-num">13</span><span class="txt">Roots of unity</span></div>
+    <div class="path-item"><span class="path-num">14</span><span class="txt">FFT / IFFT</span></div>
+    <div class="path-item"><span class="path-num">15</span><span class="txt">Evaluation domains</span></div>
+    <div class="path-item"><span class="path-num">16</span><span class="txt">Reed–Solomon codes</span></div>
+    <div class="path-item"><span class="path-num">17</span><span class="txt">Low-degree extensions</span></div>
+    <div class="path-item"><span class="path-num">18</span><span class="txt">AIR</span></div>
+    <div class="path-item"><span class="path-num">19</span><span class="txt">FRI</span></div>
+    <div class="path-item"><span class="path-num">20</span><span class="txt">STARK</span></div>
+  </div>
+</section>
+
+<section id="production">
+  <h2>What a real field implementation has to think about</h2>
+  <p>The 17-element toy field above is for building intuition. A field used inside an actual proving system has a much longer list of concerns:</p>
+  <div class="chip-row">
+    <span class="chip hot">overflow-safe multiplication</span>
+    <span class="chip teal">constant-time arithmetic</span>
+    <span class="chip">canonical reduction</span>
+    <span class="chip hot">Montgomery representation</span>
+    <span class="chip">wide multiplication</span>
+    <span class="chip">serialization</span>
+    <span class="chip">deserialization</span>
+    <span class="chip">equality &amp; zero testing</span>
+    <span class="chip teal">batch inversion</span>
+    <span class="chip">optimized squaring</span>
+    <span class="chip">exponentiation</span>
+    <span class="chip">roots of unity</span>
+    <span class="chip">domain generation</span>
+    <span class="chip">Send / Sync behavior</span>
+    <span class="chip">fuzz testing</span>
+    <span class="chip">property-based testing</span>
+  </div>
+  <p>For a working reference at that level of rigor, the field implementations inside crates like <code class="inline">ff</code>, <code class="inline">ark-ff</code>, or whatever proving system you're studying are the natural next read.</p>
+</section>
+
+<div class="takeaway">
+  <span class="lbl">Takeaway</span>
+  <p>A finite field is modular arithmetic with one extra promise kept: every non-zero element has a multiplicative inverse, so division never breaks.</p>
+  <p>That single guarantee is what lets a ZK system rewrite "prove you ran this computation correctly" as "prove these polynomial constraints hold over F<sub>p</sub>" — the algebraic foundation everything from FFTs to FRI to a full STARK gets built on top of.</p>
+</div>
+
+</article>
+</main>
+
+<footer>
+  <div class="footer-text"><span class="hl">srishti rathi</span> · zero-knowledge engineering notes</div>
+</footer>
+
+</body>
+</html>
