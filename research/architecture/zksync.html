@@ -3,82 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <title>zkSync Airbender Architecture</title>
 <style>
 :root{
   --paper:#f6f5f1;
   --paper-raised:#fdfcfa;
   --ink:#17181d;
-  --ink-soft:#50515a;
-  --ink-faint:#92939b;
-  --rule:#e1dfd7;
-  --accent:#4b3b7c;
-  --accent-soft:#6f5b9e;
-  --accent-tint:#efebf8;
-  --teal:#2f6f62;
-  --teal-tint:#e7f1ed;
-  --warm:#8b6740;
-  --warm-tint:#f4eee5;
+  --ink-soft:#55565d;
+  --ink-faint:#7a7b82;
+  --rule:#d8d7d2;
+  --accent:#173b63;
+  --accent-soft:#c9d8e8;
+  --green:#285b43;
+  --green-soft:#dcebe1;
+  --gold:#80631c;
+  --gold-soft:#f0e8c8;
   --red:#793a36;
-  --red-tint:#f4e5e3;
-  --maxw:820px;
-
-  --serif:"Newsreader","Iowan Old Style",ui-serif,Georgia,serif;
-  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --red-soft:#f0dddb;
+  --maxw:760px;
+  --serif:"Newsreader",Georgia,serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
 }
-
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{
   margin:0;
   background:var(--paper);
   color:var(--ink);
-  font-family:var(--sans);
-  font-size:16px;
-  line-height:1.7;
-  -webkit-font-smoothing:antialiased;
-}
-::selection{background:var(--accent-tint);color:var(--accent)}
-a{color:inherit}
-a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-
-.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px 90px}
-
-h1,h2,h3{
-  font-family:var(--serif);
-  font-weight:500;
-  color:var(--ink);
-  margin:0;
-}
-h2{font-size:31px;line-height:1.2;letter-spacing:-.015em}
-h3{font-size:22px;line-height:1.3;margin-top:30px}
-p{margin:14px 0;color:var(--ink-soft)}
-strong{color:var(--ink);font-weight:600}
-em{color:var(--accent)}
-code{
   font-family:var(--mono);
-  font-size:.88em;
-  background:#eeece6;
-  border:1px solid #e3e0d8;
-  border-radius:4px;
-  padding:1px 5px;
+  font-size:13px;
+  line-height:1.72;
 }
-
-/* NAV — same as OpenVM */
+a{color:inherit}
 header.nav{
   position:sticky;
   top:0;
-  z-index:30;
-  background:rgba(246,245,241,.92);
-  backdrop-filter:saturate(140%) blur(6px);
+  z-index:20;
+  background:rgba(246,245,241,.94);
+  backdrop-filter:saturate(140%) blur(7px);
   border-bottom:1px solid var(--rule);
 }
 .nav-inner{
-  max-width:760px;
+  max-width:var(--maxw);
   margin:0 auto;
   padding:16px 28px;
   display:flex;
@@ -90,208 +56,188 @@ header.nav{
   font-family:var(--serif);
   font-style:italic;
   font-size:17px;
-  color:var(--ink);
   text-decoration:none;
   white-space:nowrap;
 }
 .nav-links{
   display:flex;
-  gap:22px;
+  gap:20px;
   flex-wrap:wrap;
-  font-family:var(--mono);
-  font-size:12px;
-  letter-spacing:.04em;
+  font-size:11.5px;
+  letter-spacing:.03em;
 }
 .nav-links a{
-  text-decoration:none;
   color:var(--ink-soft);
-  padding-bottom:2px;
-  border-bottom:1px solid transparent;
-  transition:border-color .15s ease,color .15s ease;
+  text-decoration:none;
+  white-space:nowrap;
 }
-.nav-links a:hover{
-  color:var(--ink);
-  border-color:var(--accent-soft);
-}
-
-/* HERO — same OpenVM typography */
-.article-head{
-  padding:70px 0 44px;
-  border-bottom:1px solid var(--rule);
+.nav-links a:hover{color:var(--ink)}
+.wrap{
+  max-width:var(--maxw);
+  margin:0 auto;
+  padding:0 28px 100px;
 }
 .eyebrow{
-  font-family:var(--mono);
-  text-transform:uppercase;
-  letter-spacing:.13em;
+  margin-top:58px;
+  color:var(--ink-faint);
   font-size:11px;
-  color:var(--teal);
+  letter-spacing:.16em;
+  text-transform:uppercase;
 }
-.article-head h1{
-  margin-top:9px;
-  font-size:clamp(43px,8vw,68px);
-  line-height:1;
+h1,h2,h3{
+  font-family:var(--serif);
+  font-weight:400;
+  line-height:1.1;
+}
+h1{
+  margin:12px 0 18px;
+  font-size:52px;
   letter-spacing:-.035em;
 }
-.dek{
+.lede{
   max-width:690px;
-  margin-top:19px!important;
-  font-size:18px;
-  line-height:1.65;
+  color:var(--ink-soft);
+  font-size:14px;
+  line-height:1.8;
+}
+.meta{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:24px 0 52px;
+}
+.pill{
+  border:1px solid var(--rule);
+  padding:4px 8px;
+  font-size:10px;
   color:var(--ink-soft);
 }
-.meta-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-  margin-top:23px;
-}
-.meta-tag{
-  font-family:var(--mono);
-  font-size:10.5px;
-  letter-spacing:.035em;
-  color:var(--accent);
-  background:var(--accent-tint);
-  border:1px solid #ddd6ed;
-  border-radius:999px;
-  padding:5px 9px;
-}
-.source-line{
-  margin-top:18px!important;
-  padding-top:17px;
-  border-top:1px solid var(--rule);
-  font-family:var(--mono);
-  font-size:11px;
-  color:var(--ink-faint);
-}
-.source-line a{color:var(--accent);text-decoration:none}
-
-/* SECTIONS */
 .section{
   padding:54px 0;
-  border-bottom:1px solid var(--rule);
+  border-top:1px solid var(--rule);
 }
-.kicker,.section-kicker{
-  font-family:var(--mono);
+.section:first-of-type{border-top:0}
+.kicker{
+  color:var(--accent);
+  font-size:10px;
+  letter-spacing:.15em;
   text-transform:uppercase;
-  letter-spacing:.11em;
-  color:var(--ink-faint);
-  font-size:10.5px;
   margin-bottom:10px;
 }
-.section h2{margin-bottom:14px}
-.small{font-size:11px;color:var(--ink-faint)}
-
-/* OPENVM-STYLE CALLOUTS */
-.note,.good,.warning{
-  margin:25px 0;
-  padding:16px 18px;
-  background:var(--paper-raised);
-  border:1px solid var(--rule);
-  border-left:3px solid var(--accent);
+h2{
+  font-size:34px;
+  margin:0 0 14px;
+  letter-spacing:-.025em;
 }
-.good{border-left-color:var(--teal);background:var(--teal-tint)}
-.warning{border-left-color:var(--red);background:var(--red-tint)}
-
-/* DIAGRAMS — same white-background treatment as OpenVM */
-.diagram{
-  margin-top:27px;
-  padding:24px;
+h3{
+  font-size:22px;
+  margin:30px 0 8px;
+}
+p{margin:8px 0 16px}
+.small{font-size:11px;color:var(--ink-faint)}
+.note{
+  border-left:3px solid var(--accent);
+  padding:12px 16px;
+  margin:22px 0;
   background:var(--paper-raised);
+}
+.warning{
+  border-left:3px solid var(--red);
+  background:var(--red-soft);
+  padding:12px 16px;
+  margin:22px 0;
+}
+.good{
+  border-left:3px solid var(--green);
+  background:var(--green-soft);
+  padding:12px 16px;
+  margin:22px 0;
+}
+.diagram{
+  margin:26px 0;
   border:1px solid var(--rule);
+  background:#fff;
+  padding:24px;
 }
 .flow{
-  margin-top:0;
   display:flex;
   flex-direction:column;
   align-items:center;
+  gap:8px;
 }
 .node{
-  width:min(100%,500px);
+  width:min(100%,520px);
+  border:1px solid #b9b8b2;
   background:#fff;
-  border:1px solid #d5d2c9;
-  padding:17px 20px;
+  padding:13px 15px;
   text-align:center;
-  box-shadow:0 1px 0 rgba(0,0,0,.02);
 }
-.node strong{
-  display:block;
-  font-family:var(--serif);
-  font-size:21px;
-  font-weight:500;
-}
-.node span{
-  display:block;
-  margin-top:3px;
-  font-size:12.5px;
-  color:var(--ink-soft);
-}
-.node.money{border-color:#e2d4c0;background:var(--warm-tint)}
-.node.state{border-color:#c8ddd6;background:var(--teal-tint)}
-.node.proof{border-color:#c9c0df;background:var(--accent-tint)}
-.arrow{
-  height:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--accent-soft);
-  font-size:20px;
-  line-height:1;
-}
+.node strong{display:block;font-weight:500}
+.node span{display:block;color:var(--ink-faint);font-size:10px;margin-top:3px}
+.node.money{border-color:#9c8b55;background:#fffdf4}
+.node.state{border-color:#6c8c78;background:#f8fcf9}
+.node.proof{border-color:#7d7395;background:#faf8fd}
+.arrow{font-size:17px;color:var(--ink-faint);line-height:1}
 .split{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:12px;
+  gap:10px;
   width:100%;
 }
-.split .node{width:100%;min-height:88px;display:flex;flex-direction:column;justify-content:center}
-
-/* CARDS — same as OpenVM */
-.cols,.cards{
+.split .node{width:100%;min-height:92px;display:flex;flex-direction:column;justify-content:center}
+@media(max-width:620px){
+  .split{grid-template-columns:1fr}
+}
+.cols{
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  margin-top:25px;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
 }
 .card{
-  padding:19px;
-  background:var(--paper-raised);
   border:1px solid var(--rule);
+  background:var(--paper-raised);
+  padding:18px;
 }
-.card h3{margin:0 0 5px;font-size:21px}
-.card p{font-size:13px;margin:0}
-
-/* TABLE — same OpenVM rhythm */
-.stack{margin-top:25px}
+.card h3{margin:0 0 8px;font-size:19px}
+.card p{color:var(--ink-soft);font-size:12px}
+ul{padding-left:20px}
+li{margin:5px 0}
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:13px;
+  margin:20px 0;
+  font-size:11px;
 }
 th,td{
   text-align:left;
-  padding:11px 12px 11px 0;
+  padding:9px 8px;
   border-bottom:1px solid var(--rule);
   vertical-align:top;
 }
-th{
-  font-family:var(--mono);
-  text-transform:uppercase;
-  letter-spacing:.07em;
-  font-size:9.5px;
-  font-weight:500;
-  color:var(--ink-faint);
-}
-td:first-child{
-  font-family:var(--mono);
-  font-size:11.5px;
-  color:var(--ink);
-}
-td:last-child{color:var(--ink-soft)}
+th{color:var(--ink-faint);font-weight:400;text-transform:uppercase;letter-spacing:.08em;font-size:9px}
 .priority-vh{color:var(--red);font-weight:600}
-.priority-h{color:var(--warm);font-weight:600}
+.priority-h{color:var(--gold);font-weight:600}
 .priority-l{color:var(--ink-faint)}
-
-/* STACK / FILE MAP */
+code{
+  font-family:var(--mono);
+  font-size:.92em;
+  background:#ecebe7;
+  padding:1px 4px;
+}
+pre{
+  margin:18px 0;
+  padding:18px;
+  overflow:auto;
+  border:1px solid var(--rule);
+  background:#fff;
+  color:var(--ink);
+  font:11px/1.7 var(--mono);
+}
+.stack{
+  display:grid;
+  gap:0;
+  margin:22px 0;
+}
 .stack-row{
   display:grid;
   grid-template-columns:150px 1fr;
@@ -299,68 +245,46 @@ td:last-child{color:var(--ink-soft)}
   padding:10px 0;
 }
 .stack-row:first-child{border-top:1px solid var(--rule)}
-.stack-label{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
-
-/* RESEARCH STEPS */
-.timeline,.step-list{
-  margin:25px 0 0;
-  padding:0;
-  display:grid;
-  gap:0;
-  list-style:none;
+.stack-label{color:var(--ink-faint)}
+.link{
+  text-decoration:underline;
+  text-decoration-color:var(--accent-soft);
+  text-underline-offset:3px;
+}
+.timeline{
   counter-reset:step;
+  display:grid;
+  gap:12px;
 }
 .step{
   counter-increment:step;
   display:grid;
   grid-template-columns:34px 1fr;
-  gap:14px;
-  padding:15px 0;
-  border-bottom:1px solid var(--rule);
+  gap:12px;
 }
 .step::before{
-  content:counter(step,decimal-leading-zero);
-  font-family:var(--mono);
-  font-size:10px;
-  color:var(--ink-faint);
-  padding-top:4px;
-}
-.step strong{font-size:15px;font-weight:500}
-.step .small{margin-top:2px;font-size:12.5px;color:var(--ink-soft)}
-
-/* CODE */
-pre{
-  margin:18px 0;
-  padding:17px;
-  overflow:auto;
+  content:counter(step);
+  width:28px;height:28px;
   border:1px solid var(--rule);
-  background:#fff;
-  color:var(--ink);
-  font-family:var(--mono);
-  font-size:12px;
-  line-height:1.65;
-}
-
-.footer,footer{
-  padding:38px 0 65px;
-  text-align:center;
-  font-family:var(--mono);
-  font-size:10.5px;
+  display:flex;align-items:center;justify-content:center;
   color:var(--ink-faint);
-  letter-spacing:.04em;
+  font-size:10px;
 }
-
+.step strong{font-weight:500}
+.footer{
+  border-top:1px solid var(--rule);
+  padding-top:22px;
+  color:var(--ink-faint);
+  font-size:10px;
+}
 @media(max-width:650px){
-  .wrap{padding:0 20px 70px}
-  .nav-inner{padding:14px 20px}
-  .nav-links{gap:14px}
-  .article-head{padding:52px 0 35px}
-  h2{font-size:28px}
-  .dek{font-size:16px}
-  .diagram{padding:14px}
-  .split,.cols,.cards{grid-template-columns:1fr}
+  .wrap{padding:0 20px 80px}
+  .nav-inner{padding:14px 20px;display:block}
+  .nav-links{margin-top:12px;gap:13px}
+  h1{font-size:42px}
+  h2{font-size:29px}
+  .cols{grid-template-columns:1fr}
   .stack-row{grid-template-columns:1fr;gap:3px}
-  .step{grid-template-columns:30px 1fr;gap:10px}
 }
 </style>
 </head>
@@ -539,7 +463,7 @@ pre{
       Airbender's current architecture uses a RISC-V 32I+M proving machine with
       DEEP-STARK/FRI arguments, lookup/RAM/delegation arguments and AIR constraints.
       The repository describes proving in chunks, connecting chunks with global RAM
-      and delegation arguments, and then joining them through recursion. 
+      and delegation arguments, and then joining them through recursion. citeturn0search0
     </p>
 
     <div class="cols">
@@ -607,7 +531,7 @@ pre{
       is the proving system that proves execution of RISC-V programs. The official
       ZKsync OS repository lists components such as <code>zk_ee</code>,
       <code>basic_bootloader</code>, <code>evm_interpreter</code>,
-      <code>zksync_os_runner</code> and <code>forward_system</code>.
+      <code>zksync_os_runner</code> and <code>forward_system</code>. citeturn0search4
     </p>
 
     <div class="stack">
@@ -837,7 +761,7 @@ commit / publish</pre>
     <p class="small">
       The current Airbender documentation describes the system as a RISC-V prover
       with AIR, lookup/RAM/delegation arguments, chunked proving and recursion.
-      The separate prover-service repository provides FRI and SNARK prover services.
+      The separate prover-service repository provides FRI and SNARK prover services. citeturn0search0turn0search2
     </p>
   </section>
 
