@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus — Architecture Study | Srishti Rathi</title>
+<meta name="description" content="A first-principles architecture study of Nexus: from CPU to zkVM, the Nexus Virtual Machine, execution traces, memory proving, folding and IVC, distributed proving, and the Nexus Layer 1.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#f6f5f1;
+  --paper-raised:#fdfcfa;
+  --ink:#17181d;
+  --ink-soft:#50515a;
+  --ink-faint:#92939b;
+  --rule:#e1dfd7;
+  --accent:#7a3b2e;
+  --accent-soft:#a06455;
+  --accent-tint:#f4e9e5;
+  --teal:#2f6f62;
+  --teal-tint:#e7f1ed;
+  --warm:#8b6740;
+  --warm-tint:#f4eee5;
+  --maxw:820px;
+
+  --serif:"Newsreader","Iowan Old Style",ui-serif,Georgia,serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-tint);color:var(--accent)}
+a{color:inherit}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+h1,h2,h3{
+  font-family:var(--serif);
+  font-weight:500;
+  color:var(--ink);
+  margin:0;
+}
+h2{font-size:31px;line-height:1.2;letter-spacing:-.015em}
+h3{font-size:22px;line-height:1.3;margin-top:30px}
+p{margin:14px 0;color:var(--ink-soft)}
+strong{color:var(--ink);font-weight:600}
+em{color:var(--accent)}
+code{
+  font-family:var(--mono);
+  font-size:.88em;
+  background:#eeece6;
+  border:1px solid #e3e0d8;
+  border-radius:4px;
+  padding:1px 5px;
+}
+
+/* NAV */
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:rgba(246,245,241,.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-top:2px solid var(--ink);
+  border-bottom:1px solid var(--rule);
+}
+.nav-inner{
+  max-width:920px;
+  margin:0 auto;
+  padding:18px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:20px;
+  flex-wrap:nowrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-soft);
+  white-space:nowrap;
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease,color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+/* HEADER */
+.article-head{
+  padding:70px 0 44px;
+  border-bottom:1px solid var(--rule);
+}
+.eyebrow{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-size:11px;
+  color:var(--teal);
+}
+.article-head h1{
+  margin-top:9px;
+  font-size:clamp(43px,8vw,68px);
+  line-height:1;
+  letter-spacing:-.035em;
+}
+.dek{
+  max-width:690px;
+  margin-top:19px!important;
+  font-size:18px;
+  line-height:1.65;
+  color:var(--ink-soft);
+}
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:23px;
+}
+.meta-tag{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.035em;
+  color:var(--accent);
+  background:var(--accent-tint);
+  border:1px solid #e6d3cc;
+  border-radius:999px;
+  padding:5px 9px;
+}
+.source-line{
+  margin-top:18px!important;
+  padding-top:17px;
+  border-top:1px solid var(--rule);
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-faint);
+}
+.source-line a{color:var(--accent);text-decoration:none}
+
+/* SECTIONS */
+article section{
+  padding:54px 0;
+  border-bottom:1px solid var(--rule);
+}
+.section-kicker{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.11em;
+  color:var(--ink-faint);
+  font-size:10.5px;
+  margin-bottom:10px;
+}
+
+/* HERO IDEA */
+.core-idea{
+  margin-top:25px;
+  padding:22px 24px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+  border-left:3px solid var(--accent);
+}
+.core-idea .label{
+  font-family:var(--mono);
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--accent);
+}
+.core-idea p{margin:8px 0 0;color:var(--ink);font-size:17px}
+
+/* FLOW */
+.flow{
+  margin-top:27px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.flow-step{
+  width:min(100%,500px);
+  background:var(--paper-raised);
+  border:1px solid #d9d7cf;
+  padding:17px 20px;
+  text-align:center;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.flow-step .num{
+  font-family:var(--mono);
+  color:var(--ink-faint);
+  font-size:10px;
+  letter-spacing:.08em;
+}
+.flow-step .title{
+  margin-top:2px;
+  font-family:var(--serif);
+  font-size:21px;
+}
+.flow-step .desc{
+  margin-top:3px;
+  font-size:12.5px;
+  color:var(--ink-soft);
+}
+.flow-arrow{
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent-soft);
+  font-size:20px;
+}
+
+/* ARCHITECTURE GRID */
+.arch-wrap{
+  margin-top:28px;
+  padding:24px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+}
+.arch-row{
+  display:grid;
+  grid-template-columns:1fr 44px 1fr;
+  align-items:center;
+  gap:10px;
+}
+.arch-row + .arch-row{margin-top:12px}
+.arch-box{
+  min-height:88px;
+  padding:15px;
+  border:1px solid #d5d2c9;
+  background:#fffefa;
+}
+.arch-box.primary{border-color:#dbc2b8;background:var(--accent-tint)}
+.arch-box.teal{border-color:#c8ddd6;background:var(--teal-tint)}
+.arch-box.warm{border-color:#e2d4c0;background:var(--warm-tint)}
+.arch-box .small{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:9.5px;
+  color:var(--ink-faint);
+}
+.arch-box .name{
+  margin-top:3px;
+  font-family:var(--serif);
+  font-size:19px;
+}
+.arch-box .sub{
+  margin-top:3px;
+  font-size:11.5px;
+  line-height:1.45;
+  color:var(--ink-soft);
+}
+.arch-arrow{text-align:center;color:var(--accent-soft);font-size:19px}
+.arch-center{
+  margin:12px 0;
+  padding:13px 15px;
+  text-align:center;
+  border:1px dashed #c8c4ba;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--ink-soft);
+  letter-spacing:.03em;
+}
+
+/* DIAGRAM */
+.diagram-box{
+  margin-top:25px;
+  padding:20px;
+  background:#ffffff;
+  color:var(--ink);
+  border-radius:4px;
+  overflow:auto;
+  border:1px solid var(--rule);
+}
+.diagram-label{
+  display:block;
+  margin-bottom:13px;
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.diagram-box pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.65;
+  white-space:pre;
+  color:var(--ink);
+}
+
+/* CONCEPT CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:26px;
+}
+.card{
+  padding:19px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+}
+.card .tag{
+  font-family:var(--mono);
+  font-size:9.5px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--accent);
+}
+.card h3{
+  margin:5px 0 5px;
+  font-size:21px;
+}
+.card p{font-size:13px;margin:0}
+
+/* CODE / EXAMPLE */
+.example{
+  margin-top:24px;
+  border:1px solid var(--rule);
+  background:var(--paper-raised);
+}
+.example-head{
+  padding:9px 13px;
+  border-bottom:1px solid var(--rule);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.example pre{
+  margin:0;
+  padding:17px;
+  overflow:auto;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.65;
+}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin-top:24px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th,td{
+  text-align:left;
+  padding:11px 12px 11px 0;
+  border-bottom:1px solid var(--rule);
+  vertical-align:top;
+}
+th{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  font-size:9.5px;
+  font-weight:500;
+  color:var(--ink-faint);
+}
+td:first-child{
+  font-family:var(--mono);
+  font-size:11.5px;
+  white-space:nowrap;
+  color:var(--ink);
+}
+td:last-child{color:var(--ink-soft)}
+
+/* STUDY PATH */
+.step-list{
+  margin:25px 0 0;
+  padding:0;
+  list-style:none;
+  counter-reset:step;
+}
+.step-list li{
+  counter-increment:step;
+  display:grid;
+  grid-template-columns:34px 1fr;
+  gap:14px;
+  padding:15px 0;
+  border-bottom:1px solid var(--rule);
+}
+.step-list li::before{
+  content:counter(step,decimal-leading-zero);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-faint);
+  padding-top:4px;
+}
+.step-title{font-size:15px;font-weight:500}
+.step-desc{margin-top:2px;font-size:12.5px;color:var(--ink-soft)}
+
+/* AUDIT */
+.audit-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:25px;
+}
+.audit{
+  padding:16px;
+  border:1px solid var(--rule);
+  background:var(--paper-raised);
+}
+.audit .num{
+  font-family:var(--mono);
+  font-size:9.5px;
+  color:var(--accent);
+}
+.audit h3{margin:3px 0 5px;font-size:19px}
+.audit p{font-size:12.5px;margin:0}
+
+/* FOOTER */
+footer{
+  padding:38px 0 65px;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--ink-faint);
+  letter-spacing:.04em;
+}
+
+/* MOBILE */
+@media(max-width:650px){
+  .wrap{padding:0 20px}
+  .nav-inner{padding:14px 20px}
+  .nav-links{gap:14px}
+  .article-head{padding:52px 0 35px}
+  h2{font-size:28px}
+  .dek{font-size:16px}
+  .arch-wrap{padding:14px}
+  .arch-row{grid-template-columns:1fr}
+  .arch-arrow{transform:rotate(90deg);height:18px}
+  .cards,.audit-grid{grid-template-columns:1fr}
+  .diagram-box pre{font-size:10px}
+  article section{padding:42px 0}
+}
+</style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../../index.html#top">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../../index.html#about">about</a>
+      <a href="../../index.html#fundamentals">fundamentals</a>
+      <a href="../../index.html#projects">projects</a>
+      <a href="../../index.html#architecture">architecture</a>
+      <a href="../../index.html#research">research</a>
+      <a href="../../index.html#writing">writing</a>
+      <a href="../../index.html#ctf">ctf</a>
+      <a href="../../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+<header class="article-head">
+  <div class="eyebrow">Architecture Study · Zero Knowledge</div>
+  <h1>Nexus</h1>
+  <p class="dek">
+    A first-principles study of Nexus: how a proof replaces "trust me,"
+    how a prover-optimized virtual machine turns execution into a trace,
+    how folding and recursion compress that trace, how proving work is
+    distributed across a network, and how a Layer 1 built around execution,
+    consensus, and verification turns all of it into a Universal Proof.
+  </p>
+
+  <div class="meta-row">
+    <span class="meta-tag">RISC-V-like NVM</span>
+    <span class="meta-tag">Execution Trace</span>
+    <span class="meta-tag">Folding / IVC / PCD</span>
+    <span class="meta-tag">Distributed Proving</span>
+    <span class="meta-tag">NexusEVM / NexusCore</span>
+    <span class="meta-tag">NexusBFT</span>
+    <span class="meta-tag">Universal Proof</span>
+  </div>
+
+  <p class="source-line">
+    Primary study sources:
+    <a href="https://docs.nexus.xyz/" target="_blank" rel="noopener">docs.nexus.xyz</a> ·
+    <a href="https://docs.nexus.xyz/architecture/architecture" target="_blank" rel="noopener">docs.nexus.xyz/architecture</a> ·
+    <a href="https://github.com/nexus-xyz/nexus-exchange-cli" target="_blank" rel="noopener">github.com/nexus-xyz/nexus-exchange-cli</a>
+  </p>
+</header>
+
+<article>
+
+<section>
+  <div class="section-kicker">01 · Core idea</div>
+  <h2>What problem is Nexus actually solving?</h2>
+
+  <p>
+    Strip away blockchain and ZK terminology for a moment. Someone runs a
+    program and hands you an output. You have two unattractive options:
+    <strong>trust them</strong>, or <strong>recompute the entire thing yourself</strong>.
+    Trusting is cheap but unverifiable; recomputing is verifiable but expensive.
+  </p>
+
+  <p>
+    Nexus is built around the third option: the executor produces a
+    <strong>cryptographic proof</strong> alongside the output, and a verifier
+    checks that proof without re-running the computation. Nexus's stated goal
+    is to make this work not just for one machine, but as a
+    <strong>distributed, planet-scale compute system</strong> — a network of
+    untrusted machines whose combined work can still be trusted, because bad
+    computation simply cannot produce a valid proof.
+  </p>
+
+  <div class="core-idea">
+    <div class="label">The one idea to remember</div>
+    <p>
+      <strong>Don't make everyone repeat the computation. Make computation
+      produce cryptographic evidence that it was done correctly — then
+      distribute the proving itself.</strong>
+    </p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="num">01</div>
+      <div class="title">Execute</div>
+      <div class="desc">A program runs on the Nexus Virtual Machine, cycle by cycle</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">02</div>
+      <div class="title">Trace</div>
+      <div class="desc">Every state transition is recorded as an execution trace</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">03</div>
+      <div class="title">Constrain</div>
+      <div class="desc">The trace becomes arithmetic / polynomial constraints</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">04</div>
+      <div class="title">Fold</div>
+      <div class="desc">Chunks of proof are accumulated via IVC / folding rather than proved monolithically</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">05</div>
+      <div class="title">Distribute</div>
+      <div class="desc">Many untrusted machines prove chunks in parallel across the Nexus Network</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">06</div>
+      <div class="title">Compress</div>
+      <div class="desc">Accumulated proofs are SNARK-compressed into a small final proof</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">07</div>
+      <div class="title">Verify</div>
+      <div class="desc">Anyone checks the proof without re-executing the computation</div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">02 · Three things to keep separate</div>
+  <h2>zkVM ≠ Network ≠ Layer 1</h2>
+
+  <p>
+    A common confusion when reading Nexus material is treating "Nexus" as one
+    monolithic thing. It is more useful to hold three layers apart in your head,
+    each solving a different problem.
+  </p>
+
+  <div class="arch-wrap">
+    <div class="arch-row">
+      <div class="arch-box primary">
+        <div class="small">Proving engine</div>
+        <div class="name">Nexus zkVM</div>
+        <div class="sub">Proves that a program's instructions and memory accesses executed correctly and produced a given output</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box teal">
+        <div class="small">Infrastructure</div>
+        <div class="name">Nexus Network</div>
+        <div class="sub">Distributes proving work across heterogeneous CPUs/GPUs and aggregates the results</div>
+      </div>
+    </div>
+
+    <div class="arch-center">Both feed into the chain's execution → consensus → verification pipeline</div>
+
+    <div class="arch-row">
+      <div class="arch-box warm">
+        <div class="small">Blockchain / state machine</div>
+        <div class="name">Nexus Layer 1</div>
+        <div class="sub">NexusEVM + NexusCore (execution) · NexusBFT (consensus) · Compute Network (verification)</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="small">Long-run goal</div>
+        <div class="name">Universal Proof</div>
+        <div class="sub">Progressive compression of the chain's entire computation into one verifiable statement</div>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    The current Nexus documentation frames the L1 explicitly around three
+    separated layers — execution, verification, and consensus — sharing a
+    single, unified global state, rather than one undifferentiated "chain."
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">03 · From CPU to zkVM</div>
+  <h2>Why a virtual CPU, and why keep it simple?</h2>
+
+  <p>
+    An ordinary CPU repeatedly fetches, decodes, executes, touches memory, and
+    updates state. A computation is really just a sequence of machine states
+    <code>S0 → S1 → S2 → ... → Sn</code>, where each transition is caused by
+    one instruction. A zkVM's job is to prove that every one of those
+    transitions was computed correctly — not merely to say it happened.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Normal VM vs zkVM</span>
+<pre>
+   Normal VM                    zkVM
+
+   Program                      Program
+      │                            │
+      ▼                            ▼
+   CPU / VM                     CPU / VM
+      │                            │
+      ▼                            ▼
+   Output                    Execution Trace
+                                    │
+                                    ▼
+                              Constraints
+                                    │
+                                    ▼
+                                ZK Proof
+                                    │
+                                    ▼
+                            Output + Proof
+</pre>
+  </div>
+
+  <p>
+    Building a bespoke circuit for every possible program doesn't scale — you'd
+    need a separate circuit for <code>square</code>, another for SHA-256,
+    another for sorting, and so on. Instead, a Rust program is compiled down to
+    machine instructions that run on <strong>one</strong> general virtual CPU,
+    and that single machine architecture is what gets proven.
+  </p>
+
+  <p>
+    This is also why Nexus cares intensely about keeping the CPU itself simple:
+    every instruction the machine supports becomes something that must be
+    arithmetized and constrained on every cycle. A machine with 10,000
+    instructions is expensive to prove; a small, RISC-V-like instruction set
+    with specialized functionality carved out separately is not.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">04 · The NVM</div>
+  <h2>The Nexus Virtual Machine</h2>
+
+  <p>
+    The original Nexus whitepaper introduced the <strong>NVM</strong> — a
+    minimal, extensible, prover-optimized virtual CPU. The current zkVM
+    architecture has evolved toward a machine close to
+    <strong>RISC-V RV32I</strong>, with a modified Harvard-style memory
+    architecture, 32 registers, and 32-bit words.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Compilation pipeline</span>
+<pre>
+Rust guest program
+       │
+       ▼
+ Rust compiler
+       │
+       ▼
+    Guest ELF
+       │
+       ▼
+ Nexus VM / ISA
+       │
+       ▼
+Execution trace
+       │
+       ▼
+ZK proving system
+</pre>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">State</div>
+      <h3>Machine state</h3>
+      <p>PC + registers + memory state + execution metadata, transformed one instruction at a time.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Transition</div>
+      <h3>S(i+1) = Transition(S(i), instruction)</h3>
+      <p>The equation the zkVM must prove holds for every single cycle of execution.</p>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">05 · Execution trace</div>
+  <h2>How execution becomes something provable</h2>
+
+  <p>
+    Suppose a program computes <code>c = a + b</code>. The machine produces a
+    row-by-row record of its state over time — a trace. The prover doesn't ask
+    the verifier to simply trust this table; it generates algebraic
+    constraints that enforce the required relationships between rows.
+  </p>
+
+  <div class="example">
+    <div class="example-head">Simplified execution trace</div>
+<pre>
+Cycle      PC       r1      r2      r3
+────────────────────────────────────────
+0          0        5       0       0
+1          4        5       7       0
+2          8        5       7      12
+3         12        5       7      12
+
+constraint:
+    r3(next) = r1(current) + r2(current)
+
+constraint:
+    PC(next) = PC(current) + instruction_size
+</pre>
+  </div>
+
+  <p>
+    Real constraint sets are much richer: instruction validity, register
+    updates, memory reads and writes, branching, and I/O all need their own
+    enforced relationships between consecutive rows.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">06 · Memory proving</div>
+  <h2>Memory is the hard part</h2>
+
+  <p>
+    Proving the CPU is only half the problem. If <code>MEM[100] = 42</code>
+    and a later instruction does <code>LOAD r2, [100]</code>, the proof has to
+    establish both that memory really held 42 <em>and</em> that the load
+    correctly produced 42 in the register — you can't just trust memory.
+  </p>
+
+  <p>
+    The current Nexus machine specification proves only the memory a program
+    actually uses, via a <strong>two-pass tracing approach</strong>: a first
+    pass determines the memory layout the proven execution will need, and a
+    second, proven pass runs against that fixed layout.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Two-pass memory tracing</span>
+<pre>
+Program
+   │
+   ▼
+First execution
+   │
+   ├── determine memory usage
+   │
+   ▼
+Fixed memory layout
+   │
+   ▼
+Second / proven execution
+   │
+   ▼
+Memory constraints
+</pre>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Tracing pass</div>
+      <h3>Separate segments</h3>
+      <p>Program, public input, private input, associated data, stack, heap, public output, and exit code are tracked as distinct regions during tracing.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Proven pass</div>
+      <h3>Unified fixed layout</h3>
+      <p>Those segments collapse into a single, structured memory layout that the prover can constrain efficiently.</p>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">07 · Precompiles</div>
+  <h2>Why not put everything in the CPU?</h2>
+
+  <p>
+    Running something like SHA-256 through ordinary VM instructions means
+    thousands of cycles and a correspondingly huge proving cost. Nexus's
+    answer, much like an EVM precompile, is to move specialized operations
+    into dedicated <strong>co-processor circuits</strong> the prover checks
+    directly, rather than fully emulating them cycle by cycle.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">General CPU + specialized co-processors</span>
+<pre>
+             NVM
+              │
+     ┌────────┼─────────┐
+     │        │         │
+    ADD      MUL      SHA256
+                       │
+                       ▼
+                  Co-processor
+                       │
+                       ▼
+                  specialized
+                    circuit
+</pre>
+  </div>
+
+  <p>
+    More CPU functionality means more constraints on every single cycle, which
+    means slower proving. A small general-purpose CPU paired with efficient,
+    purpose-built co-processors keeps the common case cheap while still
+    supporting expensive cryptographic primitives when needed.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">08 · Folding & recursion</div>
+  <h2>Proving a billion cycles without one giant proof</h2>
+
+  <p>
+    A real program might run for a billion cycles. Rather than building one
+    enormous proof, execution is split into chunks, each proved independently,
+    and then the resulting proofs are <strong>folded</strong> together instead
+    of being kept as a large, unwieldy collection.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Folding as a tree</span>
+<pre>
+π1 ─────┐
+        ├──► π12
+π2 ─────┘
+
+
+π3 ─────┐
+        ├──► π34
+π4 ─────┘
+
+
+π12 ────┐
+        ├──► π1234
+π34 ────┘
+
+                 π1234
+                /      \
+             π12       π34
+            /  \       /  \
+          π1   π2    π3   π4
+</pre>
+  </div>
+
+  <p>
+    The original Nexus whitepaper builds this on a research stack of
+    <strong>Nova, CycleFold, HyperNova</strong>, and parallel variants, using
+    <strong>CCS</strong> (Customizable Constraint Systems) as a generalized
+    constraint representation. The current SDK's proving path has moved to a
+    STWO-based prover, while legacy zkVM modes still document Nova / HyperNova
+    / Jolt — worth keeping straight when reading whitepaper material alongside
+    current docs.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Sequential</div>
+      <h3>IVC</h3>
+      <p>Incrementally Verifiable Computation: each step S(i) → S(i+1) produces a proof that recursively accumulates the proof of everything before it.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Distributed</div>
+      <h3>PCD</h3>
+      <p>Proof-Carrying Data generalizes IVC beyond a single sequential chain, letting independently computed branches merge their proofs together.</p>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">09 · Distributed proving</div>
+  <h2>The Nexus Network</h2>
+
+  <p>
+    Folding is what makes it possible to hand different chunks of the same
+    computation to different, mutually untrusted machines. The whitepaper
+    describes the Nexus Network as a heterogeneous network of CPUs and GPUs
+    whose collective proving capacity scales the zkVM's throughput.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Chunked, distributed proof pipeline</span>
+<pre>
+             USER PROGRAM
+                  │
+                  ▼
+             COMPILATION
+                  │
+                  ▼
+             VM EXECUTION
+                  │
+                  ▼
+           EXECUTION TRACE
+                  │
+                  ▼
+       ┌─────────────────────┐
+       │ Split into chunks   │
+       └──────────┬──────────┘
+                  │
+       ┌──────────┼──────────┐
+       ▼          ▼          ▼
+     Node A     Node B     Node C
+       │          │          │
+      πA         πB         πC
+       │          │          │
+       └──────────┼──────────┘
+                  ▼
+               Folding
+                  │
+                  ▼
+            Accumulated proof
+                  │
+                  ▼
+              Compression
+                  │
+                  ▼
+             Final proof π
+</pre>
+  </div>
+
+  <div class="core-idea">
+    <div class="label">Why this beats SETI@home-style computation</div>
+    <p>
+      <strong>Volunteer computing needs redundancy to catch a lying node.
+      Proof-carrying computation doesn't: bad computation cannot produce a
+      valid proof, so a single honest verifier can catch a dishonest worker
+      without re-running its work.</strong>
+    </p>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">10 · Compression</div>
+  <h2>Folding is not the final proof</h2>
+
+  <p>
+    Folding is excellent for cheaply accumulating many proofs, but the
+    resulting accumulated object can still be relatively large. Nexus's
+    architecture historically separates <strong>fast accumulation</strong>
+    from a final <strong>SNARK compression</strong> step that produces a small,
+    succinct proof suitable for on-chain or lightweight verification.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Accumulation vs compression</span>
+<pre>
+π1 π2 π3 π4 π5 ... πN
+             │
+             ▼
+        Folding / IVC
+             │
+             ▼
+       accumulated proof
+             │
+             ▼
+        compression
+             │
+             ▼
+       succinct proof
+</pre>
+  </div>
+
+  <p>
+    Folding ≠ final succinct proof — they solve different problems, and mixing
+    them up is a common source of confusion when reading Nexus's proving stack.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">11 · The Nexus Layer 1</div>
+  <h2>Execution, consensus, and verification as separate layers</h2>
+
+  <p>
+    Nexus's L1 pairs a general-purpose smart-contract environment with a
+    specialized, high-performance financial execution engine, under one
+    consensus layer and a distributed proof system.
+  </p>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>Components</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Execution</td><td>NexusEVM · NexusCore</td><td>Runs general-purpose contracts and specialized financial co-processors.</td></tr>
+      <tr><td>Verification</td><td>Compute Network</td><td>Progressively produces validity proofs of execution that anyone can independently verify.</td></tr>
+      <tr><td>Consensus</td><td>NexusBFT</td><td>Orders transactions and finalizes blocks with single-slot finality.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">General purpose</div>
+      <h3>NexusEVM</h3>
+      <p>Ethereum-compatible virtual machine producing 1-second blocks, supporting the standard Ethereum toolchain.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Specialized</div>
+      <h3>NexusCore</h3>
+      <p>High-performance engine hosting enshrined financial co-processors — order matching, risk, oracles, liquidations — running deterministically at 200 ms intervals.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Consensus</div>
+      <h3>NexusBFT</h3>
+      <p>Custom BFT consensus built on CometBFT. Blocks are final when committed — no probabilistic finality window, no reorgs.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Verification</div>
+      <h3>Compute Network</h3>
+      <p>Generates validity proofs of execution using the Nexus zkVM; proof coverage expands incrementally toward both NexusEVM and NexusCore.</p>
+    </div>
+  </div>
+
+  <p>
+    NexusEVM and NexusCore interoperate through atomic cross-core messaging,
+    so a contract call and a native financial co-processor can act within a
+    single, consistent transaction — combining smart-contract flexibility with
+    exchange-grade execution.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">12 · Full pipeline</div>
+  <h2>From transaction to Universal Proof</h2>
+
+  <div class="diagram-box">
+    <span class="diagram-label">End-to-end flow</span>
+<pre>
+                         USER
+                          │
+                          │ transactions / programs
+                          ▼
+                 ┌───────────────────┐
+                 │    Nexus Layer 1  │
+                 └─────────┬─────────┘
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+             ▼                           ▼
+      ┌─────────────┐             ┌─────────────┐
+      │  NexusEVM   │             │ NexusCore   │
+      │  general    │             │ specialized │
+      │  execution  │             │ execution   │
+      └──────┬──────┘             └──────┬──────┘
+             │                           │
+             └─────────────┬─────────────┘
+                           ▼
+                    Execution State
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  NexusBFT   │
+                    │  Consensus  │
+                    └──────┬──────┘
+                           │
+                           ▼
+                    Finalized State
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │   Nexus zkVM    │
+                  │  CPU · Memory   │
+                  │  Precompiles    │
+                  │  Trace          │
+                  └────────┬────────┘
+                           │
+                           ▼
+                    Proof Generation
+                           │
+             ┌─────────────┼─────────────┐
+             ▼             ▼             ▼
+          Prover A      Prover B      Prover C
+             │             │             │
+             ▼             ▼             ▼
+            πA            πB            πC
+             │             │             │
+             └─────────────┼─────────────┘
+                           ▼
+                       Folding
+                           │
+                           ▼
+                   Proof Aggregation
+                           │
+                           ▼
+                    Proof Compression
+                           │
+                           ▼
+                 ┌──────────────────┐
+                 │ Universal Proof  │
+                 └──────────────────┘
+</pre>
+  </div>
+
+  <p>
+    Today, a developer submits an EVM transaction, NexusEVM executes it, and
+    NexusBFT commits the block with single-slot finality; the Compute Network
+    is live on Nexus Testnet and progressively expands proof coverage. As
+    NexusCore comes fully online, a trader's signed order will be routed
+    through matching, risk checks, and position updates at 200 ms intervals
+    before the same consensus and proving pipeline finalizes and proves it.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">13 · Public vs private inputs</div>
+  <h2>Verifiable ≠ automatically private</h2>
+
+  <p>
+    It's a common interview mistake to describe a zkVM as inherently private.
+    More precisely: a zkVM proves <strong>verifiable computation</strong>,
+    which may or may not also be zero-knowledge. Correct execution is the
+    core guarantee; what the proof reveals about inputs is a separate,
+    additional property.
+  </p>
+
+  <div class="example">
+    <div class="example-head">Public and private inputs</div>
+<pre>
+x = public  = 5
+y = private = 3
+
+program:
+    output = x * y
+
+proof establishes:
+    5 × 3 = 15
+
+verifier checks:
+    Verify(program, x=5, output=15, π) = TRUE
+
+without ever learning y.
+</pre>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">14 · Technology map</div>
+  <h2>Nexus stack, layer by layer</h2>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Concepts</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>L1</td><td>Rust</td><td>Language of the zkVM implementation and SDK.</td></tr>
+      <tr><td>L2</td><td>CPU, registers, RAM, compiler/ELF</td><td>Computer-architecture fundamentals behind the machine model.</td></tr>
+      <tr><td>L3</td><td>Finite fields, curves, commitments, Fiat-Shamir</td><td>Cryptographic primitives underneath the proof system.</td></tr>
+      <tr><td>L4</td><td>ISA, execution trace, memory, precompiles</td><td>zkVM internals — the CPU/memory model actually being proven.</td></tr>
+      <tr><td>L5</td><td>R1CS, CCS, AIR, polynomial constraints</td><td>How execution becomes an algebraic statement.</td></tr>
+      <tr><td>L6</td><td>Nova, HyperNova, CycleFold, STWO</td><td>Folding schemes that accumulate proofs cheaply.</td></tr>
+      <tr><td>L7</td><td>IVC, PCD, proof aggregation</td><td>Sequential and distributed proof composition.</td></tr>
+      <tr><td>L8</td><td>NexusEVM, NexusCore, NexusBFT, Nexus Network, Universal Proof</td><td>The Layer 1 and distributed proving infrastructure built on top.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">15 · Study path</div>
+  <h2>How to study the Nexus codebase</h2>
+
+  <p>
+    Since folding, IVC, and zkVM fundamentals transfer directly from other
+    proving systems, the most efficient path skips straight past "what is a
+    zkVM" and into Nexus's specific machine and proving choices.
+  </p>
+
+  <ol class="step-list">
+    <li>
+      <div>
+        <div class="step-title">Machine architecture</div>
+        <div class="step-desc">Nexus's RISC-V-like ISA, registers, and modified Harvard memory model.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Execution trace</div>
+        <div class="step-desc">How cycle-by-cycle state becomes a table with enforced row-to-row constraints.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Memory proving</div>
+        <div class="step-desc">The two-pass tracing approach and the fixed memory layout it produces.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Constraint systems</div>
+        <div class="step-desc">CCS / R1CS and how they generalize the constraints derived from the trace.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Precompiles / co-processors</div>
+        <div class="step-desc">Why expensive primitives like SHA-256 are moved out of the general CPU.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Folding stack</div>
+        <div class="step-desc">Nova, CycleFold, HyperNova, and the current STWO-based prover.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">IVC / PCD</div>
+        <div class="step-desc">How sequential and distributed proof accumulation actually compose.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Distributed proving</div>
+        <div class="step-desc">How chunks are assigned to untrusted nodes and their proofs recombined.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Compression</div>
+        <div class="step-desc">How an accumulated proof becomes a small succinct final proof.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Nexus L1</div>
+        <div class="step-desc">NexusEVM, NexusCore, NexusBFT, and the Compute Network as separated layers.</div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+
+<section>
+  <div class="section-kicker">16 · Security lens</div>
+  <h2>Where bugs are most interesting</h2>
+
+  <p>
+    As with any proving system, the most dangerous class of bug is a
+    <strong>semantic mismatch</strong>: what the machine actually did diverging
+    from what the constraints, folding scheme, or L1 accepts as valid.
+  </p>
+
+  <div class="audit-grid">
+    <div class="audit">
+      <div class="num">01</div>
+      <h3>ISA semantics</h3>
+      <p>Can the Nexus ISA and its constraints diverge for an instruction or edge case?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">02</div>
+      <h3>Memory layout</h3>
+      <p>Can the first (tracing) pass and second (proven) pass disagree about memory usage?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">03</div>
+      <h3>Precompiles</h3>
+      <p>Can a co-processor circuit accept an operation it does not actually represent correctly?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">04</div>
+      <h3>Folding boundaries</h3>
+      <p>Does a folded proof really preserve every constraint of its constituent chunks?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">05</div>
+      <h3>Distributed proving</h3>
+      <p>Can a malicious node submit a malformed chunk proof that still folds successfully?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">06</div>
+      <h3>Compression</h3>
+      <p>Does the succinct final proof faithfully represent everything the accumulated proof attested to?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">07</div>
+      <h3>Cross-core messaging</h3>
+      <p>Can NexusEVM and NexusCore disagree about the effects of an atomic cross-core transaction?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">08</div>
+      <h3>Consensus / finality</h3>
+      <p>Can a block be treated as final by one part of the system before NexusBFT has actually committed it?</p>
+    </div>
+  </div>
+
+  <div class="core-idea">
+    <div class="label">Audit lens</div>
+    <p>
+      <strong>Execution → Trace → Constraints → Folding → Distributed Proving → Compression → L1 Verification</strong>
+    </p>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">17 · Final mental model</div>
+  <h2>Nexus in one picture</h2>
+
+  <div class="diagram-box">
+    <span class="diagram-label">The architecture to remember</span>
+<pre>
+                    NEXUS
+                      │
+                      ▼
+               "Compute + prove"
+                      │
+        ┌─────────────┴─────────────┐
+        │                           │
+    EXECUTION                  VERIFICATION
+        │                           │
+        ▼                           ▼
+ NexusEVM/Core                 Nexus zkVM
+        │                           │
+        ▼                           ▼
+  state transition             execution trace
+                                    │
+                                    ▼
+                              constraints
+                                    │
+                                    ▼
+                             proof generation
+                                    │
+                                    ▼
+                              distributed
+                                provers
+                                    │
+                                    ▼
+                              folding /
+                              aggregation
+                                    │
+                                    ▼
+                              final proof
+                                    │
+                                    ▼
+                           Universal Proof
+</pre>
+  </div>
+
+  <div class="core-idea">
+    <div class="label">The sentence to remember</div>
+    <p>
+      <strong>Nexus compiles programs onto a small, prover-optimized virtual
+      machine, turns their execution into a constrained trace, folds that
+      trace's proofs across a distributed network of untrusted machines, and
+      composes the result into a small, independently verifiable proof —
+      while a separate Layer 1 keeps execution, consensus, and verification
+      as distinct, coordinated layers around the same global state.</strong>
+    </p>
+  </div>
+</section>
+
+</article>
+</div>
+
+<footer>
+  srishti rathi · zero-knowledge architecture study · nexus
+</footer>
+
+</body>
+</html>
