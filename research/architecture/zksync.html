@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>zkSync Airbender Architecture</title>
+<style>
+:root{
+  --paper:#f6f5f1;
+  --paper-raised:#fdfcfa;
+  --ink:#17181d;
+  --ink-soft:#50515a;
+  --ink-faint:#92939b;
+  --rule:#e1dfd7;
+  --accent:#4b3b7c;
+  --accent-soft:#6f5b9e;
+  --accent-tint:#efebf8;
+  --teal:#2f6f62;
+  --teal-tint:#e7f1ed;
+  --warm:#8b6740;
+  --warm-tint:#f4eee5;
+  --red:#793a36;
+  --red-tint:#f4e5e3;
+  --maxw:820px;
+
+  --serif:"Newsreader","Iowan Old Style",ui-serif,Georgia,serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-tint);color:var(--accent)}
+a{color:inherit}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px 90px}
+
+h1,h2,h3{
+  font-family:var(--serif);
+  font-weight:500;
+  color:var(--ink);
+  margin:0;
+}
+h2{font-size:31px;line-height:1.2;letter-spacing:-.015em}
+h3{font-size:22px;line-height:1.3;margin-top:30px}
+p{margin:14px 0;color:var(--ink-soft)}
+strong{color:var(--ink);font-weight:600}
+em{color:var(--accent)}
+code{
+  font-family:var(--mono);
+  font-size:.88em;
+  background:#eeece6;
+  border:1px solid #e3e0d8;
+  border-radius:4px;
+  padding:1px 5px;
+}
+
+/* NAV — same as OpenVM */
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:rgba(246,245,241,.92);
+  backdrop-filter:saturate(140%) blur(6px);
+  border-bottom:1px solid var(--rule);
+}
+.nav-inner{
+  max-width:760px;
+  margin:0 auto;
+  padding:16px 28px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:17px;
+  color:var(--ink);
+  text-decoration:none;
+  white-space:nowrap;
+}
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.04em;
+}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-soft);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease,color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
+
+/* HERO — same OpenVM typography */
+.article-head{
+  padding:70px 0 44px;
+  border-bottom:1px solid var(--rule);
+}
+.eyebrow{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-size:11px;
+  color:var(--teal);
+}
+.article-head h1{
+  margin-top:9px;
+  font-size:clamp(43px,8vw,68px);
+  line-height:1;
+  letter-spacing:-.035em;
+}
+.dek{
+  max-width:690px;
+  margin-top:19px!important;
+  font-size:18px;
+  line-height:1.65;
+  color:var(--ink-soft);
+}
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:23px;
+}
+.meta-tag{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.035em;
+  color:var(--accent);
+  background:var(--accent-tint);
+  border:1px solid #ddd6ed;
+  border-radius:999px;
+  padding:5px 9px;
+}
+.source-line{
+  margin-top:18px!important;
+  padding-top:17px;
+  border-top:1px solid var(--rule);
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-faint);
+}
+.source-line a{color:var(--accent);text-decoration:none}
+
+/* SECTIONS */
+.section{
+  padding:54px 0;
+  border-bottom:1px solid var(--rule);
+}
+.kicker,.section-kicker{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.11em;
+  color:var(--ink-faint);
+  font-size:10.5px;
+  margin-bottom:10px;
+}
+.section h2{margin-bottom:14px}
+.small{font-size:11px;color:var(--ink-faint)}
+
+/* OPENVM-STYLE CALLOUTS */
+.note,.good,.warning{
+  margin:25px 0;
+  padding:16px 18px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+  border-left:3px solid var(--accent);
+}
+.good{border-left-color:var(--teal);background:var(--teal-tint)}
+.warning{border-left-color:var(--red);background:var(--red-tint)}
+
+/* DIAGRAMS — same white-background treatment as OpenVM */
+.diagram{
+  margin-top:27px;
+  padding:24px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+}
+.flow{
+  margin-top:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.node{
+  width:min(100%,500px);
+  background:#fff;
+  border:1px solid #d5d2c9;
+  padding:17px 20px;
+  text-align:center;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.node strong{
+  display:block;
+  font-family:var(--serif);
+  font-size:21px;
+  font-weight:500;
+}
+.node span{
+  display:block;
+  margin-top:3px;
+  font-size:12.5px;
+  color:var(--ink-soft);
+}
+.node.money{border-color:#e2d4c0;background:var(--warm-tint)}
+.node.state{border-color:#c8ddd6;background:var(--teal-tint)}
+.node.proof{border-color:#c9c0df;background:var(--accent-tint)}
+.arrow{
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent-soft);
+  font-size:20px;
+  line-height:1;
+}
+.split{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  width:100%;
+}
+.split .node{width:100%;min-height:88px;display:flex;flex-direction:column;justify-content:center}
+
+/* CARDS — same as OpenVM */
+.cols,.cards{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:25px;
+}
+.card{
+  padding:19px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+}
+.card h3{margin:0 0 5px;font-size:21px}
+.card p{font-size:13px;margin:0}
+
+/* TABLE — same OpenVM rhythm */
+.stack{margin-top:25px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th,td{
+  text-align:left;
+  padding:11px 12px 11px 0;
+  border-bottom:1px solid var(--rule);
+  vertical-align:top;
+}
+th{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  font-size:9.5px;
+  font-weight:500;
+  color:var(--ink-faint);
+}
+td:first-child{
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--ink);
+}
+td:last-child{color:var(--ink-soft)}
+.priority-vh{color:var(--red);font-weight:600}
+.priority-h{color:var(--warm);font-weight:600}
+.priority-l{color:var(--ink-faint)}
+
+/* STACK / FILE MAP */
+.stack-row{
+  display:grid;
+  grid-template-columns:150px 1fr;
+  border-bottom:1px solid var(--rule);
+  padding:10px 0;
+}
+.stack-row:first-child{border-top:1px solid var(--rule)}
+.stack-label{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+
+/* RESEARCH STEPS */
+.timeline,.step-list{
+  margin:25px 0 0;
+  padding:0;
+  display:grid;
+  gap:0;
+  list-style:none;
+  counter-reset:step;
+}
+.step{
+  counter-increment:step;
+  display:grid;
+  grid-template-columns:34px 1fr;
+  gap:14px;
+  padding:15px 0;
+  border-bottom:1px solid var(--rule);
+}
+.step::before{
+  content:counter(step,decimal-leading-zero);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-faint);
+  padding-top:4px;
+}
+.step strong{font-size:15px;font-weight:500}
+.step .small{margin-top:2px;font-size:12.5px;color:var(--ink-soft)}
+
+/* CODE */
+pre{
+  margin:18px 0;
+  padding:17px;
+  overflow:auto;
+  border:1px solid var(--rule);
+  background:#fff;
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.65;
+}
+
+.footer,footer{
+  padding:38px 0 65px;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--ink-faint);
+  letter-spacing:.04em;
+}
+
+@media(max-width:650px){
+  .wrap{padding:0 20px 70px}
+  .nav-inner{padding:14px 20px}
+  .nav-links{gap:14px}
+  .article-head{padding:52px 0 35px}
+  h2{font-size:28px}
+  .dek{font-size:16px}
+  .diagram{padding:14px}
+  .split,.cols,.cards{grid-template-columns:1fr}
+  .stack-row{grid-template-columns:1fr;gap:3px}
+  .step{grid-template-columns:30px 1fr;gap:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../../index.html#top">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../../index.html#about">about</a>
+      <a href="../../index.html#fundamentals">fundamentals</a>
+      <a href="../../index.html#projects">projects</a>
+      <a href="../../index.html#architecture">architecture</a>
+      <a href="../../index.html#research">research</a>
+      <a href="../../index.html#writing">writing</a>
+      <a href="../../index.html#ctf">ctf</a>
+      <a href="../../index.html#contact">contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="eyebrow">Architecture / protocol economics / security research</div>
+  <h1>ZKsync OS<br>Money Flow Study</h1>
+  <p class="lede">
+    A first-principles map of how value moves through ZKsync OS, how execution becomes
+    a RISC-V trace, how Airbender proves that execution, and where accounting or
+    semantic mismatches could become protocol-security bugs.
+  </p>
+  <div class="meta">
+    <span class="pill">ZKsync OS</span>
+    <span class="pill">Airbender</span>
+    <span class="pill">Architecture</span>
+    <span class="pill">RISC-V</span>
+    <span class="pill">STARK / FRI</span>
+    <span class="pill">Rust</span>
+  </div>
+
+  <section class="section" id="mental-model">
+    <div class="kicker">01 / First principles</div>
+    <h2>What are we actually proving?</h2>
+    <p>
+      The most useful mental model is not “a blockchain that happens to use ZK.”
+      It is a <strong>state-transition machine whose execution is turned into a
+      proof of correct computation</strong>.
+    </p>
+
+    <div class="diagram">
+      <div class="flow">
+        <div class="node state"><strong>Old protocol state</strong><span>balances · storage · nonces · roots</span></div>
+        <div class="arrow">↓</div>
+        <div class="node"><strong>Transaction / program input</strong><span>authenticated request + execution parameters</span></div>
+        <div class="arrow">↓</div>
+        <div class="node state"><strong>ZKsync OS execution</strong><span>RISC-V program executes the state transition</span></div>
+        <div class="arrow">↓</div>
+        <div class="node state"><strong>New protocol state</strong><span>state writes + receipts + commitments</span></div>
+        <div class="arrow">↓</div>
+        <div class="node proof"><strong>Airbender proof</strong><span>proves that the transition was executed correctly</span></div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Core security equation:</strong><br>
+      <code>Old State + Valid Inputs + Correct Execution = New State</code><br>
+      The prover must not be able to produce an accepted proof when the execution
+      engine and the circuit disagree about that equation.
+    </div>
+  </section>
+
+  <section class="section" id="money">
+    <div class="kicker">02 / Economics</div>
+    <h2>How money flows in ZKsync OS</h2>
+    <p>
+      Separate the <strong>user's fee</strong>, the <strong>operator's costs</strong>,
+      and the <strong>assets represented by the rollup state</strong>. They are
+      related, but they are not the same accounting object.
+    </p>
+
+    <div class="diagram">
+      <div class="flow">
+        <div class="node money">
+          <strong>User</strong>
+          <span>pays transaction fee</span>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="node money">
+          <strong>Transaction fee accounting</strong>
+          <span>execution / pubdata / settlement components</span>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="split">
+          <div class="node money"><strong>Execution</strong><span>VM computation + resources</span></div>
+          <div class="node money"><strong>Pubdata</strong><span>data/state-diff publication costs</span></div>
+          <div class="node money"><strong>L1 settlement</strong><span>Ethereum transaction / proof settlement costs</span></div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="node money">
+          <strong>Operator / protocol economics</strong>
+          <span>revenue minus proving, L1 and infrastructure costs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="good">
+      <strong>Important distinction:</strong>
+      “operator profit = user fees − costs” is an economic model, not a claim that
+      every fee component is literally transferred to one operator account at that
+      exact point in the execution code. Audit the actual fee-credit/debit paths before
+      treating a balance movement as protocol revenue.
+    </div>
+
+    <h3>Pubdata is not “just gas”</h3>
+    <p>
+      Pubdata is the information needed to make the rollup's state transition
+      reconstructible/verifiable on L1. Depending on the protocol design and era,
+      this can include compressed transaction/state-diff information and commitments.
+      The security question is: <strong>does the data committed on L1 correspond to
+      the state transition actually proven?</strong>
+    </p>
+  </section>
+
+  <section class="section" id="l1">
+    <div class="kicker">03 / Settlement</div>
+    <h2>Sequencer → Ethereum</h2>
+
+    <div class="diagram">
+      <div class="flow">
+        <div class="node state"><strong>ZKsync OS</strong><span>execute transactions and produce a new state</span></div>
+        <div class="arrow">↓</div>
+        <div class="node state"><strong>Batch / state transition</strong><span>state root + public data + proof inputs</span></div>
+        <div class="arrow">↓</div>
+        <div class="node proof"><strong>Airbender</strong><span>prove RISC-V execution</span></div>
+        <div class="arrow">↓</div>
+        <div class="node proof"><strong>Final proof / wrapper</strong><span>compress/wrap the proof for settlement</span></div>
+        <div class="arrow">↓</div>
+        <div class="node money"><strong>Ethereum</strong><span>L1 publication + verification / settlement</span></div>
+      </div>
+    </div>
+
+    <p>
+      The operator therefore has an economic stack underneath execution:
+      L1 publication costs, proving costs, infrastructure, storage, networking and
+      operational overhead. The exact fee schedule and who bears each cost must be
+      read from the current ZKsync protocol implementation rather than inferred only
+      from the diagram.
+    </p>
+  </section>
+
+  <section class="section" id="proving">
+    <div class="kicker">04 / Proving</div>
+    <h2>Execution → witness → proof</h2>
+
+    <div class="diagram">
+      <div class="flow">
+        <div class="node state"><strong>RISC-V execution</strong><span>CPU simulator / ZKsync OS program</span></div>
+        <div class="arrow">↓</div>
+        <div class="node state"><strong>Execution trace / witness</strong><span>registers, memory interactions, timestamps and auxiliary data</span></div>
+        <div class="arrow">↓</div>
+        <div class="split">
+          <div class="node proof"><strong>Stage 1</strong><span>witness LDEs + trace commitments</span></div>
+          <div class="node proof"><strong>Stage 2</strong><span>lookup + memory arguments</span></div>
+          <div class="node proof"><strong>Stage 3</strong><span>primary STARK quotient polynomial</span></div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="split">
+          <div class="node proof"><strong>Stage 4</strong><span>DEEP / batched FRI polynomial</span></div>
+          <div class="node proof"><strong>Stage 5</strong><span>FRI / IOPP proof</span></div>
+          <div class="node proof"><strong>Recursion</strong><span>connect chunks and compress proofs</span></div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="node proof"><strong>Final proof</strong><span>wrapped into a compact proof suitable for verification</span></div>
+      </div>
+    </div>
+
+    <p>
+      Airbender's current architecture uses a RISC-V 32I+M proving machine with
+      DEEP-STARK/FRI arguments, lookup/RAM/delegation arguments and AIR constraints.
+      The repository describes proving in chunks, connecting chunks with global RAM
+      and delegation arguments, and then joining them through recursion. 
+    </p>
+
+    <div class="cols">
+      <div class="card">
+        <h3>CPU path</h3>
+        <p>
+          A native Rust RISC-V simulator can generate the preliminary witness.
+          CPU implementations and GPU implementations mirror the proving pipeline.
+        </p>
+      </div>
+      <div class="card">
+        <h3>GPU path</h3>
+        <p>
+          GPU proving can accelerate the heavy circuit work. Current documentation
+          notes that final proofs may still require CPU resources in some configurations.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="bridge">
+    <div class="kicker">05 / Asset accounting</div>
+    <h2>Bridge flow</h2>
+
+    <div class="cols">
+      <div class="card">
+        <h3>Ethereum → ZKsync</h3>
+        <div class="flow">
+          <div class="node money"><strong>L1 escrow / canonical asset</strong></div>
+          <div class="arrow">↓</div>
+          <div class="node state"><strong>ZKsync credit / representation</strong></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>ZKsync → Ethereum</h3>
+        <div class="flow">
+          <div class="node state"><strong>Burn / lock / withdrawal accounting</strong></div>
+          <div class="arrow">↓</div>
+          <div class="node money"><strong>L1 release</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Accounting invariant:</strong>
+      <code>L1 canonical assets ≥ valid outstanding L2 claims</code>.
+      A bridge bug is often a mismatch between the canonical asset ledger and the
+      claim represented by the L2 state.
+    </div>
+
+    <p>
+      Historically, ZK rollups are described as holding funds in an L1 smart contract
+      while computation and storage happen off-chain, with validity proofs used to
+      establish correct state transitions. citeturn0search6turn0search7
+    </p>
+  </section>
+
+  <section class="section" id="codebase">
+    <div class="kicker">06 / Codebase map</div>
+    <h2>Do not confuse ZKsync OS with Airbender</h2>
+
+    <p>
+      These are two connected but different layers. <strong>ZKsync OS</strong> is the
+      generalized RISC-V-based state-transition implementation. <strong>Airbender</strong>
+      is the proving system that proves execution of RISC-V programs. The official
+      ZKsync OS repository lists components such as <code>zk_ee</code>,
+      <code>basic_bootloader</code>, <code>evm_interpreter</code>,
+      <code>zksync_os_runner</code> and <code>forward_system</code>.
+    </p>
+
+    <div class="stack">
+      <div class="stack-row">
+        <div class="stack-label">Protocol / OS</div>
+        <div><code>zksync-os</code> — state transition function, execution environments and system logic</div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Execution</div>
+        <div><code>basic_bootloader/</code>, <code>process_transaction</code>, <code>runner</code>, <code>evm_interpreter/</code></div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">State</div>
+        <div><code>storage_models/</code>, state-transition code, writeback/diff handling</div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Proving</div>
+        <div><code>zksync-airbender</code> — AIR, lookup/RAM/delegation arguments, STARK/FRI and recursion</div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Prover service</div>
+        <div><code>zksync-airbender-prover</code> — FRI prover, SNARK prover and prover service</div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Settlement</div>
+        <div>Final proof / wrapper / verifier path toward Ethereum</div>
+      </div>
+    </div>
+
+    <p class="small">
+      Airbender's end-to-end documentation describes the flow from a RISC-V binary
+      through proving, final proof generation, SNARK wrapping and verification. citeturn0search3
+    </p>
+  </section>
+
+  <section class="section" id="audit">
+    <div class="kicker">07 / Security research</div>
+    <h2>Where the highest-value bugs live</h2>
+
+    <p>
+      The most dangerous class is a <strong>semantic mismatch</strong>:
+      the execution engine says one thing while the proving circuit, verifier,
+      or settlement layer accepts another.
+    </p>
+
+    <div class="diagram">
+      <div class="flow">
+        <div class="node state"><strong>VM semantics</strong><span>what execution actually does</span></div>
+        <div class="arrow">↓</div>
+        <div class="node proof"><strong>AIR / constraint semantics</strong><span>what the circuit enforces</span></div>
+        <div class="arrow">↓</div>
+        <div class="node proof"><strong>Prover assumptions</strong><span>what witness generation assumes</span></div>
+        <div class="arrow">↓</div>
+        <div class="node money"><strong>Verifier / settlement assumptions</strong><span>what ultimately gets accepted</span></div>
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong>Highest-value question:</strong><br>
+      What happens if validation succeeds, execution partially fails, and some
+      accounting or state-commit subsystem still progresses?
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Area</th><th>Priority</th><th>What to ask</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Orchestration</td><td class="priority-vh">VERY HIGH</td><td>Which phase runs after validation or failure?</td></tr>
+        <tr><td>State transition</td><td class="priority-vh">VERY HIGH</td><td>When does state actually mutate?</td></tr>
+        <tr><td>Accounting</td><td class="priority-vh">VERY HIGH</td><td>Does every credit have a corresponding debit?</td></tr>
+        <tr><td>Replay protection</td><td class="priority-vh">VERY HIGH</td><td>Can a value-changing action execute twice?</td></tr>
+        <tr><td>Settlement</td><td class="priority-vh">VERY HIGH</td><td>What exactly is committed to L1?</td></tr>
+        <tr><td>Validation</td><td class="priority-h">HIGH</td><td>What assumptions survive past validation?</td></tr>
+        <tr><td>Storage</td><td class="priority-h">HIGH</td><td>Are reads/writes and final roots consistent?</td></tr>
+        <tr><td>Execution engine</td><td class="priority-h">HIGH</td><td>Does the VM match the circuit?</td></tr>
+        <tr><td>Math / crypto</td><td class="priority-l">LOW initially</td><td>Study after protocol invariants are understood.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section" id="files">
+    <div class="kicker">08 / Reading order</div>
+    <h2>Files to study first</h2>
+
+    <div class="timeline">
+      <div class="step"><div><strong><code>basic_bootloader/</code></strong><br><span class="small">Start here. Understand the top-level lifecycle and execution phases.</span></div></div>
+      <div class="step"><div><strong><code>process_transaction.rs</code></strong><br><span class="small">Trace validation, nonce handling, execution, fee charging and failure paths.</span></div></div>
+      <div class="step"><div><strong><code>runner.rs</code></strong><br><span class="small">Understand frames, reverts, execution lifecycle and what survives failure.</span></div></div>
+      <div class="step"><div><strong><code>gas_helpers.rs</code></strong><br><span class="small">Follow fee charging, refunds and accumulators precisely.</span></div></div>
+      <div class="step"><div><strong><code>state_transition_parts/</code></strong><br><span class="small">Follow operand decoding, execution effects and writeback.</span></div></div>
+      <div class="step"><div><strong><code>devices/diffs.rs</code></strong><br><span class="small">Investigate the representation of execution-induced changes; validate the exact current role in the repo.</span></div></div>
+      <div class="step"><div><strong><code>storage_models/</code></strong><br><span class="small">Understand how state reads, writes and roots are represented.</span></div></div>
+      <div class="step"><div><strong><code>evm_interpreter/</code></strong><br><span class="small">Connect EVM semantics to the generalized execution environment.</span></div></div>
+      <div class="step"><div><strong>Airbender <code>cs/</code>, tables and prover stages</strong><br><span class="small">Only after you understand the state machine: learn how execution claims become constraints and proofs.</span></div></div>
+    </div>
+
+    <h3>Complex math — later</h3>
+    <p>
+      Study field arithmetic, FRI folding, quotient-polynomial generation and circuit
+      optimization after the protocol lifecycle is clear. Otherwise it is easy to
+      understand the mathematics without understanding what security property the
+      mathematics is protecting.
+    </p>
+  </section>
+
+  <section class="section" id="method">
+    <div class="kicker">09 / Research method</div>
+    <h2>Audit one invariant, not the whole repository</h2>
+
+    <p>
+      Pick one invariant and follow it through every layer. A strong starting point is:
+    </p>
+
+    <pre>fees credited == fees debited</pre>
+
+    <p>Then search for every place that can affect it:</p>
+
+    <div class="cols">
+      <div class="card">
+        <h3>Money words</h3>
+        <p><code>fee</code> <code>balance</code> <code>debit</code> <code>credit</code>
+        <code>refund</code> <code>reward</code> <code>settle</code>
+        <code>accumulator</code></p>
+      </div>
+      <div class="card">
+        <h3>Control words</h3>
+        <p><code>is_valid</code> <code>verified</code> <code>authorized</code>
+        <code>execute</code> <code>commit</code> <code>writeback</code>
+        <code>finalize</code></p>
+      </div>
+    </div>
+
+    <h3>Then draw the real execution path</h3>
+    <pre>validate
+   ↓
+execute
+   ↓
+update state
+   ↓
+accumulate fees
+   ↓
+refund / settle
+   ↓
+commit / publish</pre>
+
+    <p>
+      At every transition ask:
+      <strong>“What can still happen after something important has failed?”</strong>
+    </p>
+
+    <div class="note">
+      <strong>A powerful habit:</strong> whenever you see
+      <code>accumulator += x</code>, stop and ask where <code>x</code> came from,
+      whether the operation can execute twice, whether the matching debit is
+      guaranteed, and what happens if the surrounding transaction later reverts.
+    </div>
+
+    <h3>Trace one boolean everywhere</h3>
+    <p>
+      Pick one control bit such as <code>is_valid</code>, <code>verified</code>,
+      <code>should_execute</code>, <code>commit</code> or <code>reverted</code>.
+      Follow its origin, transformations and consumers. Security bugs often hide
+      where one subsystem assumes a boolean was already enforced by another subsystem.
+    </p>
+  </section>
+
+  <section class="section" id="invariants">
+    <div class="kicker">10 / Invariants</div>
+    <h2>What you should be able to prove</h2>
+
+    <div class="cols">
+      <div class="card">
+        <h3>State conservation</h3>
+        <p><code>old_state + valid_effects = new_state</code></p>
+      </div>
+      <div class="card">
+        <h3>Fee conservation</h3>
+        <p><code>total_debits = total_credits + explicit_burn/costs</code></p>
+      </div>
+      <div class="card">
+        <h3>Replay safety</h3>
+        <p>One authorized state-changing action cannot be applied twice.</p>
+      </div>
+      <div class="card">
+        <h3>Proof soundness</h3>
+        <p>No invalid execution trace satisfies all enforced constraints.</p>
+      </div>
+      <div class="card">
+        <h3>Commitment consistency</h3>
+        <p>The state/data committed for settlement corresponds to the proven transition.</p>
+      </div>
+      <div class="card">
+        <h3>Failure atomicity</h3>
+        <p>A failed or reverted operation cannot leave behind an unauthorized value change.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="sources">
+    <div class="kicker">11 / Primary sources</div>
+    <h2>Read the implementation, not just the diagram</h2>
+
+    <div class="stack">
+      <div class="stack-row">
+        <div class="stack-label">ZKsync OS</div>
+        <div><a class="link" href="https://github.com/matter-labs/zksync-os">github.com/matter-labs/zksync-os</a></div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Airbender</div>
+        <div><a class="link" href="https://github.com/matter-labs/zksync-airbender">github.com/matter-labs/zksync-airbender</a></div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Airbender architecture</div>
+        <div><a class="link" href="https://github.com/matter-labs/zksync-airbender/blob/main/docs/philosophy_and_logic.md">philosophy_and_logic.md</a></div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">End-to-end proving</div>
+        <div><a class="link" href="https://github.com/matter-labs/zksync-airbender/blob/main/docs/end_to_end.md">end_to_end.md</a></div>
+      </div>
+      <div class="stack-row">
+        <div class="stack-label">Prover service</div>
+        <div><a class="link" href="https://github.com/matter-labs/zksync-airbender-prover">github.com/matter-labs/zksync-airbender-prover</a></div>
+      </div>
+    </div>
+
+    <p class="small">
+      The current Airbender documentation describes the system as a RISC-V prover
+      with AIR, lookup/RAM/delegation arguments, chunked proving and recursion.
+      The separate prover-service repository provides FRI and SNARK prover services.
+    </p>
+  </section>
+
+  <div class="footer">
+    ZKsync OS / Airbender study page · architecture and security-research notes ·
+    Built as a first-principles reading guide.
+  </div>
+</main>
+</body>
+</html>
