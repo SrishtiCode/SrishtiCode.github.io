@@ -103,11 +103,13 @@
   }
   .nav-links{
     display:flex;
-    gap: 22px;
-    flex-wrap: wrap;
+    gap: 17px;
+    flex-wrap: nowrap;
+    align-items:center;
+    white-space: nowrap;
     font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.04em;
+    font-size: 11.5px;
+    letter-spacing: 0.035em;
   }
   .nav-links a{
     text-decoration:none;
@@ -550,7 +552,11 @@
     .glossary{ columns: 1; }
     .stats{ grid-template-columns: repeat(3,1fr); gap: 12px; }
     .contact-grid{ grid-template-columns: 1fr; }
-    .nav-links{ gap: 14px; }
+    .nav-links{
+      gap: 14px;
+      flex-wrap: wrap;
+      white-space: normal;
+    }
     .log-item{ grid-template-columns: 1fr; gap: 4px; }
   }
 
