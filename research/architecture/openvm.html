@@ -1,1 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenVM — Architecture Study | Srishti Rathi</title>
+<meta name="description" content="A first-principles architecture study of OpenVM: compilation, RISC-V execution, chips, AIR, buses, STARK proving, recursion, deferral, and verification.">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#ffffff;
+  --paper-raised:#ffffff;
+  --ink:#17181d;
+  --ink-soft:#50515a;
+  --ink-faint:#92939b;
+  --rule:#e1dfd7;
+  --accent:#4b3b7c;
+  --accent-soft:#6f5b9e;
+  --accent-tint:#efebf8;
+  --teal:#2f6f62;
+  --teal-tint:#e7f1ed;
+  --warm:#8b6740;
+  --warm-tint:#f4eee5;
+  --maxw:820px;
+
+  --serif:"Newsreader","Iowan Old Style",ui-serif,Georgia,serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-tint);color:var(--accent)}
+a{color:inherit}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+h1,h2,h3{
+  font-family:var(--serif);
+  font-weight:500;
+  color:var(--ink);
+  margin:0;
+}
+h2{font-size:31px;line-height:1.2;letter-spacing:-.015em}
+h3{font-size:22px;line-height:1.3;margin-top:30px}
+p{margin:14px 0;color:var(--ink-soft)}
+strong{color:var(--ink);font-weight:600}
+em{color:var(--accent)}
+code{
+  font-family:var(--mono);
+  font-size:.88em;
+  background:#eeece6;
+  border:1px solid #e3e0d8;
+  border-radius:4px;
+  padding:1px 5px;
+}
+
+/* NAV */
+header.nav{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:rgba(246,245,241,.94);
+  backdrop-filter:saturate(140%) blur(8px);
+  border-bottom:1px solid var(--rule);
+}
+.nav-inner{
+  max-width:var(--maxw);
+  margin:0 auto;
+  padding:15px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.nav-mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:18px;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.back-link{
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--ink-soft);
+  text-decoration:none;
+  letter-spacing:.03em;
+}
+.back-link:hover{color:var(--accent)}
+
+/* HEADER */
+.article-head{
+  padding:70px 0 44px;
+  border-bottom:1px solid var(--rule);
+}
+.eyebrow{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-size:11px;
+  color:var(--teal);
+}
+.article-head h1{
+  margin-top:9px;
+  font-size:clamp(43px,8vw,68px);
+  line-height:1;
+  letter-spacing:-.035em;
+}
+.dek{
+  max-width:690px;
+  margin-top:19px!important;
+  font-size:18px;
+  line-height:1.65;
+  color:var(--ink-soft);
+}
+.meta-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:23px;
+}
+.meta-tag{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.035em;
+  color:var(--accent);
+  background:var(--accent-tint);
+  border:1px solid #ddd6ed;
+  border-radius:999px;
+  padding:5px 9px;
+}
+.source-line{
+  margin-top:18px!important;
+  padding-top:17px;
+  border-top:1px solid var(--rule);
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-faint);
+}
+.source-line a{color:var(--accent);text-decoration:none}
+
+/* SECTIONS */
+article section{
+  padding:54px 0;
+  border-bottom:1px solid var(--rule);
+}
+.section-kicker{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.11em;
+  color:var(--ink-faint);
+  font-size:10.5px;
+  margin-bottom:10px;
+}
+
+/* HERO IDEA */
+.core-idea{
+  margin-top:25px;
+  padding:22px 24px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+  border-left:3px solid var(--accent);
+}
+.core-idea .label{
+  font-family:var(--mono);
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--accent);
+}
+.core-idea p{margin:8px 0 0;color:var(--ink);font-size:17px}
+
+/* FLOW */
+.flow{
+  margin-top:27px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.flow-step{
+  width:min(100%,500px);
+  background:var(--paper-raised);
+  border:1px solid #d9d7cf;
+  padding:17px 20px;
+  text-align:center;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.flow-step .num{
+  font-family:var(--mono);
+  color:var(--ink-faint);
+  font-size:10px;
+  letter-spacing:.08em;
+}
+.flow-step .title{
+  margin-top:2px;
+  font-family:var(--serif);
+  font-size:21px;
+}
+.flow-step .desc{
+  margin-top:3px;
+  font-size:12.5px;
+  color:var(--ink-soft);
+}
+.flow-arrow{
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--accent-soft);
+  font-size:20px;
+}
+
+/* ARCHITECTURE GRID */
+.arch-wrap{
+  margin-top:28px;
+  padding:24px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+}
+.arch-row{
+  display:grid;
+  grid-template-columns:1fr 44px 1fr;
+  align-items:center;
+  gap:10px;
+}
+.arch-row + .arch-row{margin-top:12px}
+.arch-box{
+  min-height:88px;
+  padding:15px;
+  border:1px solid #d5d2c9;
+  background:#fffefa;
+}
+.arch-box.primary{border-color:#c9c0df;background:var(--accent-tint)}
+.arch-box.teal{border-color:#c8ddd6;background:var(--teal-tint)}
+.arch-box.warm{border-color:#e2d4c0;background:var(--warm-tint)}
+.arch-box .small{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:9.5px;
+  color:var(--ink-faint);
+}
+.arch-box .name{
+  margin-top:3px;
+  font-family:var(--serif);
+  font-size:19px;
+}
+.arch-box .sub{
+  margin-top:3px;
+  font-size:11.5px;
+  line-height:1.45;
+  color:var(--ink-soft);
+}
+.arch-arrow{text-align:center;color:var(--accent-soft);font-size:19px}
+.arch-center{
+  margin:12px 0;
+  padding:13px 15px;
+  text-align:center;
+  border:1px dashed #c8c4ba;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--ink-soft);
+  letter-spacing:.03em;
+}
+
+/* DIAGRAM */
+.diagram-box{
+  margin-top:25px;
+  padding:20px;
+  background:#ffffff;
+  color:var(--ink);
+  border-radius:4px;
+  overflow:auto;
+  border:1px solid var(--rule);
+}
+.diagram-label{
+  display:block;
+  margin-bottom:13px;
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.diagram-box pre{
+  margin:0;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.65;
+  white-space:pre;
+  color:var(--ink);
+}
+
+/* CONCEPT CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:26px;
+}
+.card{
+  padding:19px;
+  background:var(--paper-raised);
+  border:1px solid var(--rule);
+}
+.card .tag{
+  font-family:var(--mono);
+  font-size:9.5px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--accent);
+}
+.card h3{
+  margin:5px 0 5px;
+  font-size:21px;
+}
+.card p{font-size:13px;margin:0}
+
+/* CODE / EXAMPLE */
+.example{
+  margin-top:24px;
+  border:1px solid var(--rule);
+  background:var(--paper-raised);
+}
+.example-head{
+  padding:9px 13px;
+  border-bottom:1px solid var(--rule);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.example pre{
+  margin:0;
+  padding:17px;
+  overflow:auto;
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.65;
+}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin-top:24px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th,td{
+  text-align:left;
+  padding:11px 12px 11px 0;
+  border-bottom:1px solid var(--rule);
+  vertical-align:top;
+}
+th{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  font-size:9.5px;
+  font-weight:500;
+  color:var(--ink-faint);
+}
+td:first-child{
+  font-family:var(--mono);
+  font-size:11.5px;
+  white-space:nowrap;
+  color:var(--ink);
+}
+td:last-child{color:var(--ink-soft)}
+
+/* STUDY PATH */
+.step-list{
+  margin:25px 0 0;
+  padding:0;
+  list-style:none;
+  counter-reset:step;
+}
+.step-list li{
+  counter-increment:step;
+  display:grid;
+  grid-template-columns:34px 1fr;
+  gap:14px;
+  padding:15px 0;
+  border-bottom:1px solid var(--rule);
+}
+.step-list li::before{
+  content:counter(step,decimal-leading-zero);
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-faint);
+  padding-top:4px;
+}
+.step-title{font-size:15px;font-weight:500}
+.step-desc{margin-top:2px;font-size:12.5px;color:var(--ink-soft)}
+
+/* AUDIT */
+.audit-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:25px;
+}
+.audit{
+  padding:16px;
+  border:1px solid var(--rule);
+  background:var(--paper-raised);
+}
+.audit .num{
+  font-family:var(--mono);
+  font-size:9.5px;
+  color:var(--accent);
+}
+.audit h3{margin:3px 0 5px;font-size:19px}
+.audit p{font-size:12.5px;margin:0}
+
+/* FOOTER */
+footer{
+  padding:38px 0 65px;
+  text-align:center;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--ink-faint);
+  letter-spacing:.04em;
+}
+
+/* MOBILE */
+@media(max-width:650px){
+  .wrap{padding:0 20px}
+  .nav-inner{padding:14px 20px}
+  .back-link{display:none}
+  .article-head{padding:52px 0 35px}
+  h2{font-size:28px}
+  .dek{font-size:16px}
+  .arch-wrap{padding:14px}
+  .arch-row{grid-template-columns:1fr}
+  .arch-arrow{transform:rotate(90deg);height:18px}
+  .cards,.audit-grid{grid-template-columns:1fr}
+  .diagram-box pre{font-size:10px}
+  article section{padding:42px 0}
+}
+</style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="../../index.html">srishti rathi</a>
+    <a class="back-link" href="../../index.html#architecture">← back to architecture studies</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+<header class="article-head">
+  <div class="eyebrow">Architecture Study · Zero Knowledge</div>
+  <h1>OpenVM</h1>
+  <p class="dek">
+    A first-principles study of OpenVM: how a Rust program becomes RISC-V,
+    how execution is decomposed into chips, how traces become AIR constraints,
+    how buses connect those constraints, and how the proving system turns the
+    whole computation into a verifiable proof.
+  </p>
+
+  <div class="meta-row">
+    <span class="meta-tag">RISC-V RV32IM</span>
+    <span class="meta-tag">No-CPU Architecture</span>
+    <span class="meta-tag">Chips & Extensions</span>
+    <span class="meta-tag">AIR / STARK</span>
+    <span class="meta-tag">SWIRL</span>
+    <span class="meta-tag">Recursion</span>
+    <span class="meta-tag">Deferral</span>
+  </div>
+
+  <p class="source-line">
+    Primary study source:
+    <a href="https://github.com/openvm-org/openvm" target="_blank" rel="noopener">github.com/openvm-org/openvm</a>
+  </p>
+</header>
+
+<article>
+
+<section>
+  <div class="section-kicker">01 · Core idea</div>
+  <h2>What is OpenVM actually trying to prove?</h2>
+
+  <p>
+    A zkVM lets a prover execute a program normally and produce a cryptographic
+    proof that the execution followed the rules of the machine. The verifier
+    does not need to replay the entire computation.
+  </p>
+
+  <p>
+    OpenVM approaches this with a <strong>modular, no-CPU architecture</strong>.
+    Instead of putting the complete virtual machine into one giant proving
+    circuit, it decomposes the machine into specialized chips and extensions.
+  </p>
+
+  <div class="core-idea">
+    <div class="label">The one idea to remember</div>
+    <p>
+      <strong>Execution produces a trace → AIRs constrain the trace →
+      buses prove that chips agree → the proof system proves those constraints →
+      recursion makes the result scalable.</strong>
+    </p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="num">01</div>
+      <div class="title">Compile</div>
+      <div class="desc">Rust → LLVM → RISC-V</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">02</div>
+      <div class="title">Execute</div>
+      <div class="desc">RISC-V instructions run through OpenVM's chip-based machine</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">03</div>
+      <div class="title">Constrain</div>
+      <div class="desc">Execution traces are represented by AIR constraints</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">04</div>
+      <div class="title">Connect</div>
+      <div class="desc">Buses enforce consistency between independent chips</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">05</div>
+      <div class="title">Prove</div>
+      <div class="desc">SWIRL / STARK machinery proves the algebraic claims</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">06</div>
+      <div class="title">Compose</div>
+      <div class="desc">Continuations, deferral and recursion scale proof generation</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+
+    <div class="flow-step">
+      <div class="num">07</div>
+      <div class="title">Verify</div>
+      <div class="desc">A final proof can be checked without replaying the program</div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">02 · Architecture</div>
+  <h2>The architecture at a glance</h2>
+
+  <p>
+    The important architectural distinction is that OpenVM is not best understood
+    as a conventional CPU with several peripherals. The proving architecture is
+    intentionally decomposed into chips, with each chip responsible for a
+    well-defined part of execution and its corresponding algebraic constraints.
+  </p>
+
+  <div class="arch-wrap">
+
+    <div class="arch-row">
+      <div class="arch-box primary">
+        <div class="small">Guest</div>
+        <div class="name">Rust Program</div>
+        <div class="sub">Application logic written by the developer</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="small">Compiler</div>
+        <div class="name">Rust + LLVM</div>
+        <div class="sub">Compiles the guest toward the RISC-V target</div>
+      </div>
+    </div>
+
+    <div class="arch-center">RISC-V RV32IM · program binary · OpenVM transpiler</div>
+
+    <div class="arch-row">
+      <div class="arch-box">
+        <div class="small">Instruction layer</div>
+        <div class="name">OpenVM ISA</div>
+        <div class="sub">RISC-V instructions plus extensible VM operations</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box teal">
+        <div class="small">Execution</div>
+        <div class="name">Chip-based VM</div>
+        <div class="sub">Base, memory, program and specialized extension chips</div>
+      </div>
+    </div>
+
+    <div class="arch-center">Each chip records execution data and exposes the state needed for proving</div>
+
+    <div class="arch-row">
+      <div class="arch-box">
+        <div class="small">Local correctness</div>
+        <div class="name">AIRs</div>
+        <div class="sub">Algebraic constraints over chip execution traces</div>
+      </div>
+      <div class="arch-arrow">↔</div>
+      <div class="arch-box warm">
+        <div class="small">Cross-chip correctness</div>
+        <div class="name">Buses / Interactions</div>
+        <div class="sub">Connect independent AIRs and enforce consistency</div>
+      </div>
+    </div>
+
+    <div class="arch-center">AIR constraints + interactions → polynomial claims</div>
+
+    <div class="arch-row">
+      <div class="arch-box primary">
+        <div class="small">Proving</div>
+        <div class="name">SWIRL / STARK</div>
+        <div class="sub">LogUp, GKR, Zerocheck, stacking, WHIR and low-degree testing</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="small">Composition</div>
+        <div class="name">Recursion</div>
+        <div class="sub">Aggregate segment and deferred proofs into a smaller result</div>
+      </div>
+    </div>
+
+    <div class="arch-center">Final proof → verifier → accepted / rejected</div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">03 · Compilation</div>
+  <h2>From Rust to RISC-V</h2>
+
+  <p>
+    The developer starts with ordinary Rust guest code. They do not write AIR,
+    STARK constraints or polynomial commitments. The normal compilation pipeline
+    lowers the program toward a machine-level representation, targeting RISC-V.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Compilation pipeline</span>
+<pre>
+Rust guest program
+       │
+       ▼
+ Rust compiler
+       │
+       ▼
+      HIR
+       │
+       ▼
+      MIR
+       │
+       ▼
+   LLVM IR
+       │
+       ▼
+ RISC-V binary
+       │
+       ▼
+OpenVM transpiler
+       │
+       ▼
+  OpenVM ISA
+</pre>
+  </div>
+
+  <p>
+    The key boundary to remember is <strong>RISC-V semantics ↔ OpenVM semantics</strong>.
+    If the translation changes what an instruction means, the prover and the
+    machine can disagree before the STARK system even enters the picture.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">04 · ISA & extensions</div>
+  <h2>A modular instruction set</h2>
+
+  <p>
+    OpenVM supports a RISC-V-based instruction set and is designed to be extended
+    with specialized operations. The motivation is straightforward: some
+    cryptographic operations are extremely expensive if decomposed into many
+    ordinary instructions.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Base</div>
+      <h3>RV32IM</h3>
+      <p>Arithmetic, logic, loads, stores, branches and other ordinary RISC-V execution.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Hashing</div>
+      <h3>Keccak / SHA</h3>
+      <p>Specialized proving paths for cryptographic hashing workloads.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Arithmetic</div>
+      <h3>Int256 / modular ops</h3>
+      <p>Large-integer operations that would otherwise expand into many smaller VM steps.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Cryptography</div>
+      <h3>ECC / Pairings</h3>
+      <p>Specialized chips for elliptic-curve and related cryptographic operations.</p>
+    </div>
+  </div>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Why extensions exist</span>
+<pre>
+Keccak using ordinary instructions
+
+Keccak
+  │
+  ├── many RISC-V instructions
+  ├── large execution trace
+  └── expensive proving
+          │
+          ▼
+      dedicated chip
+          │
+          ▼
+       Keccak AIR
+          │
+          ▼
+    smaller / specialized
+       proof workload
+</pre>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">05 · Execution</div>
+  <h2>No central CPU — chips execute the machine</h2>
+
+  <p>
+    A useful mental model is a collection of cooperating proving components.
+    A base chip handles ordinary operations, while memory and specialized
+    extensions handle their own responsibilities.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Chip-based execution</span>
+<pre>
+                         OpenVM
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+        ▼                  ▼                  ▼
+     Base chip         Memory chip       Extension chips
+     ADD / MUL         LOAD / STORE      Keccak / SHA / ECC
+     branches          read / write      Int256 / Pairing
+        │                  │                  │
+        └──────────────────┼──────────────────┘
+                           │
+                           ▼
+                    Execution traces
+</pre>
+  </div>
+
+  <p>
+    For example, an addition can be represented by a trace row containing the
+    operands and result. A memory operation needs more information: address,
+    value, access type and ordering information all have to be represented in
+    a way that later constraints can enforce memory consistency.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">06 · Trace → AIR</div>
+  <h2>How execution becomes mathematics</h2>
+
+  <p>
+    An <strong>AIR</strong> — Algebraic Intermediate Representation — replaces
+    the informal statement "the machine executed correctly" with algebraic
+    constraints over the execution trace.
+  </p>
+
+  <div class="example">
+    <div class="example-head">Simplified ADD constraint</div>
+<pre>
+a = 5
+b = 7
+c = 12
+
+constraint:
+    c - a - b = 0
+
+valid:
+    12 - 5 - 7 = 0
+
+invalid:
+    13 - 5 - 7 ≠ 0
+</pre>
+  </div>
+
+  <p>
+    Real AIRs are substantially richer. They constrain current rows, transitions
+    between rows, flags, selectors, memory accesses and other machine state.
+    The central idea remains the same: <strong>a valid execution trace must
+    satisfy every required constraint.</strong>
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Base AIR</div>
+      <h3>Instruction correctness</h3>
+      <p>Constrains arithmetic, logic, register updates, program counter behavior and related state transitions.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Memory AIR</div>
+      <h3>Read / write consistency</h3>
+      <p>Constrains the representation of memory accesses and the consistency of values over time.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Extension AIR</div>
+      <h3>Specialized operations</h3>
+      <p>Represents the algebraic correctness of operations such as Keccak or ECC.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Boundary</div>
+      <h3>Initial / final state</h3>
+      <p>Connects the trace to the intended program inputs, outputs and machine state.</p>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">07 · Buses</div>
+  <h2>How independent AIRs agree</h2>
+
+  <p>
+    AIR proves that one chip's trace obeys its own equations. That alone is
+    not enough. The chips also have to agree with one another.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Example: a memory read</span>
+<pre>
+Execution chip
+     │
+     │ "read address 100"
+     ▼
+   BUS / INTERACTION
+     │
+     ▼
+Memory chip
+     │
+     │ "address 100 → value 42"
+     ▼
+Execution state
+     │
+     ▼
+register x5 = 42
+</pre>
+  </div>
+
+  <p>
+    A useful mental model is that a bus behaves like a <strong>proof-level API</strong>.
+    One AIR emits an interaction and another AIR supplies the matching interaction.
+    The proving system checks that the required collections of interactions match.
+  </p>
+
+  <div class="core-idea">
+    <div class="label">Audit invariant</div>
+    <p>
+      <strong>VM semantics, AIR semantics and cross-AIR interactions must describe
+      the same computation.</strong>
+    </p>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">08 · Proving</div>
+  <h2>SWIRL: from constraints to a proof</h2>
+
+  <p>
+    Once the traces, AIR constraints and cross-chip interactions are defined,
+    the proving layer turns those statements into polynomial claims and then
+    into a succinct cryptographic proof.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Proof pipeline</span>
+<pre>
+AIR constraints
+      │
+      ▼
+Bus / interaction claims
+      │
+      ▼
+    LogUp
+      │
+      ▼
+GKR / reductions
+      │
+      ▼
+  Zerocheck
+      │
+      ▼
+Polynomial claims
+      │
+      ▼
+  Stacking
+      │
+      ▼
+    WHIR
+      │
+      ▼
+Low-degree testing
+      │
+      ▼
+ STARK / SWIRL proof
+</pre>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="tag">Interactions</div>
+      <h3>LogUp</h3>
+      <p>Supports lookup and multiset-style matching arguments used to connect interactions.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Reduction</div>
+      <h3>GKR</h3>
+      <p>Reduces large structured computation claims into smaller claims that are cheaper to verify.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Constraints</div>
+      <h3>Zerocheck</h3>
+      <p>Turns "this constraint polynomial is zero on the required domain" into a proof claim.</p>
+    </div>
+
+    <div class="card">
+      <div class="tag">Polynomial proof</div>
+      <h3>WHIR</h3>
+      <p>Handles polynomial openings and low-degree testing inside the STARK-style proving stack.</p>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">09 · Scaling</div>
+  <h2>Continuations and deferral</h2>
+
+  <p>
+    Large programs can produce enormous execution traces. OpenVM's proof
+    composition architecture provides mechanisms for splitting and postponing
+    expensive work rather than forcing everything into one monolithic proof.
+  </p>
+
+  <div class="arch-wrap">
+    <div class="arch-row">
+      <div class="arch-box">
+        <div class="small">Long execution</div>
+        <div class="name">Continuation</div>
+        <div class="sub">Split execution into proof segments.</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box primary">
+        <div class="small">Composition</div>
+        <div class="name">Aggregation</div>
+        <div class="sub">Combine segment proofs while preserving state continuity.</div>
+      </div>
+    </div>
+
+    <div class="arch-center">
+      state_out(segment i) = state_in(segment i + 1)
+    </div>
+
+    <div class="arch-row">
+      <div class="arch-box warm">
+        <div class="small">Expensive work</div>
+        <div class="name">Deferral</div>
+        <div class="sub">Move selected proving work outside the main execution path.</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box teal">
+        <div class="small">Later stage</div>
+        <div class="name">Proof verification</div>
+        <div class="sub">Verify the deferred result as part of later proof composition.</div>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    The security boundary is the connection between segments and between
+    deferred work and the computation that depends on it. A proof of a segment
+    is only useful if the next segment really starts from the state produced
+    by the previous one.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">10 · Recursion</div>
+  <h2>From many proofs to one root proof</h2>
+
+  <p>
+    Recursive verification means that one proof can be verified inside another
+    proving computation. This allows a large collection of segment proofs to
+    be compressed into an aggregate result.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Recursive composition</span>
+<pre>
+   Proof π₁        Proof π₂        Proof π₃        Proof π₄
+      │               │               │               │
+      └───────────────┴───────────────┴───────────────┘
+                              │
+                              ▼
+                     Recursive verifier
+                              │
+                              ▼
+                       Aggregate proof
+                              │
+                              ▼
+                      Recursive verifier
+                              │
+                              ▼
+                         ROOT PROOF
+                              │
+                              ▼
+                           Verify
+</pre>
+  </div>
+
+  <p>
+    The important property is not merely that proofs are combined. The recursive
+    verifier must correctly enforce the statement that every child proof was
+    valid and that its public inputs and commitments are connected to the
+    aggregate statement.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">11 · Final verification</div>
+  <h2>The verifier sees a proof, not the whole program</h2>
+
+  <p>
+    After proof composition, the final verifier checks the resulting cryptographic
+    statement. It does not need to replay billions of VM steps.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Final boundary</span>
+<pre>
+Huge Rust computation
+        │
+        ▼
+RISC-V execution
+        │
+        ▼
+many trace rows
+        │
+        ▼
+many AIRs + interactions
+        │
+        ▼
+STARK / SWIRL proofs
+        │
+        ▼
+recursive aggregation
+        │
+        ▼
+small final proof
+        │
+        ▼
+     VERIFIER
+        │
+   ┌────┴────┐
+   ▼         ▼
+ ACCEPT    REJECT
+</pre>
+  </div>
+
+  <p>
+    This is the payoff of the entire architecture: the computational work can
+    be enormous while the final verification task is comparatively small.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">12 · Worked example</div>
+  <h2>One ADD, from Rust to proof</h2>
+
+  <p>
+    Take a tiny guest program that computes <code>z = x + y</code>, where
+    <code>x = 10</code> and <code>y = 20</code>. The exact internal trace is
+    more detailed than this simplified example, but the architectural flow is:
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">One instruction end to end</span>
+<pre>
+Rust
+ │
+ │  z = x + y
+ ▼
+RISC-V
+ │
+ │  ADD
+ ▼
+OpenVM ISA
+ │
+ ▼
+Execution chip
+ │
+ │  trace row
+ ▼
+ADD / Base AIR
+ │
+ │  constraint:
+ │  result - x - y = 0
+ ▼
+Bus interactions
+ │
+ ▼
+Polynomial constraints
+ │
+ ▼
+SWIRL / STARK proving
+ │
+ ▼
+Segment proof
+ │
+ ▼
+Recursive aggregation
+ │
+ ▼
+Final proof
+ │
+ ▼
+Verifier → ACCEPT
+</pre>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">13 · Extensibility</div>
+  <h2>What happens when you add a new operation?</h2>
+
+  <p>
+    One of OpenVM's strongest architectural ideas is that a new specialized
+    operation does not require redesigning one enormous monolithic circuit.
+    The extension is integrated into the VM's execution and proving model.
+  </p>
+
+  <div class="diagram-box">
+    <span class="diagram-label">Extension path</span>
+<pre>
+                 NEW OPERATION
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+   Guest interface   Transpiler     Executor
+        │              │              │
+        └──────────────┼──────────────┘
+                       ▼
+                  New chip
+                       │
+                       ▼
+                    New AIR
+                       │
+                       ▼
+                Bus interactions
+                       │
+                       ▼
+                 STARK proof
+</pre>
+  </div>
+
+  <p>
+    This modularity is why understanding the <strong>chip → AIR → bus</strong>
+    pattern is more useful than memorizing individual extension names.
+  </p>
+</section>
+
+
+<section>
+  <div class="section-kicker">14 · Technology map</div>
+  <h2>OpenVM stack, layer by layer</h2>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>Technology / concept</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Guest</td><td>Rust</td><td>Program being proven.</td></tr>
+      <tr><td>Compiler</td><td>Rust compiler + LLVM</td><td>Lower guest code toward RISC-V.</td></tr>
+      <tr><td>ISA</td><td>RISC-V RV32IM</td><td>Machine-level instruction target.</td></tr>
+      <tr><td>Translation</td><td>OpenVM transpiler</td><td>Maps RISC-V into OpenVM's instruction representation.</td></tr>
+      <tr><td>Execution</td><td>Modular chips</td><td>Execute different classes of operations.</td></tr>
+      <tr><td>Memory</td><td>Memory architecture</td><td>Represent and constrain reads and writes.</td></tr>
+      <tr><td>Extensions</td><td>Keccak, SHA, ECC, arithmetic, etc.</td><td>Efficient specialized operations.</td></tr>
+      <tr><td>Arithmetization</td><td>AIR</td><td>Express execution correctness algebraically.</td></tr>
+      <tr><td>Interaction</td><td>Buses / lookups</td><td>Connect independent AIRs.</td></tr>
+      <tr><td>Proof</td><td>STARK / SWIRL stack</td><td>Prove polynomial constraints and interactions.</td></tr>
+      <tr><td>Composition</td><td>Continuations</td><td>Split long executions into segments.</td></tr>
+      <tr><td>Deferred work</td><td>Deferral</td><td>Move selected expensive proving work to another stage.</td></tr>
+      <tr><td>Aggregation</td><td>Recursion</td><td>Compress many proofs into a smaller proof.</td></tr>
+      <tr><td>Verification</td><td>Final verifier / on-chain integration</td><td>Check the resulting cryptographic statement.</td></tr>
+      <tr><td>Extension language</td><td>Rust</td><td>Implement VM extensions and proving components.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">15 · Study path</div>
+  <h2>How to study the OpenVM codebase</h2>
+
+  <p>
+    The most effective approach is to move from architecture to one concrete
+    instruction, then expand outward into proving and recursion.
+  </p>
+
+  <ol class="step-list">
+    <li>
+      <div>
+        <div class="step-title">Top-level architecture</div>
+        <div class="step-desc">Understand the relationship between the VM, extensions, chips and proving backend.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">RV32IM extension</div>
+        <div class="step-desc">Start with ordinary instructions before studying specialized cryptographic chips.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Transpiler</div>
+        <div class="step-desc">Follow how RISC-V instructions become OpenVM instructions.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Executor</div>
+        <div class="step-desc">See how an instruction is executed and what data is recorded for proving.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Memory</div>
+        <div class="step-desc">Study reads, writes, ordering, roots and the interactions that connect memory to execution.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">One simple chip</div>
+        <div class="step-desc">Understand the complete executor → trace → AIR lifecycle with the smallest useful example.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Keccak / specialized chip</div>
+        <div class="step-desc">Learn why specialized operations need their own execution and AIR logic.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Buses</div>
+        <div class="step-desc">Trace one interaction between two chips and identify exactly what prevents mismatches.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">STARK backend / SWIRL</div>
+        <div class="step-desc">Only after understanding AIRs and buses, study LogUp, GKR, Zerocheck, stacking and WHIR.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Continuations</div>
+        <div class="step-desc">Understand how long executions become independently provable segments.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Recursion</div>
+        <div class="step-desc">Follow how one proof becomes an input to another proof.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Deferral</div>
+        <div class="step-desc">Understand how expensive work can be moved out of the main proving path.</div>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Final verifier</div>
+        <div class="step-desc">Finish by tracing the exact public inputs, commitments and proof checks.</div>
+      </div>
+    </li>
+  </ol>
+</section>
+
+
+<section>
+  <div class="section-kicker">16 · Security lens</div>
+  <h2>Where bugs are most interesting</h2>
+
+  <p>
+    The architecture gives a natural audit methodology. At every boundary ask:
+    <strong>what information crosses, what invariant must hold, where is it
+    enforced, and can I construct a counterexample?</strong>
+  </p>
+
+  <div class="audit-grid">
+    <div class="audit">
+      <div class="num">01</div>
+      <h3>Compiler / transpiler</h3>
+      <p>Can RISC-V semantics and OpenVM semantics diverge for an instruction or edge case?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">02</div>
+      <h3>VM execution</h3>
+      <p>Can an instruction, branch, register update or program-counter transition be implemented incorrectly?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">03</div>
+      <h3>AIR constraints</h3>
+      <p>Is every value that matters actually constrained? Are selectors, flags, boundaries and transitions fully enforced?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">04</div>
+      <h3>Memory</h3>
+      <p>Can reads, writes, ordering or memory-root construction become inconsistent with execution?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">05</div>
+      <h3>Bus interactions</h3>
+      <p>Can one chip emit an interaction that another chip accepts without representing the intended operation?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">06</div>
+      <h3>Recursive verifier</h3>
+      <p>Can malformed proof data, public inputs or bounds cause an invalid child proof to be accepted?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">07</div>
+      <h3>Final verifier</h3>
+      <p>Are commitments, field encodings, selectors and public inputs interpreted exactly as intended?</p>
+    </div>
+
+    <div class="audit">
+      <div class="num">08</div>
+      <h3>Composition boundaries</h3>
+      <p>Do continuation and deferred proofs preserve the exact state and statement that the next stage expects?</p>
+    </div>
+  </div>
+
+  <div class="core-idea">
+    <div class="label">Audit lens</div>
+    <p>
+      <strong>Execution → Trace → AIR → Bus → Proof → Recursion → Verification</strong>
+    </p>
+  </div>
+</section>
+
+
+<section>
+  <div class="section-kicker">17 · Final mental model</div>
+  <h2>OpenVM in one picture</h2>
+
+  <div class="diagram-box">
+    <span class="diagram-label">The architecture to remember</span>
+<pre>
+                         RUST
+                           │
+                           ▼
+                    Rust Compiler
+                       + LLVM
+                           │
+                           ▼
+                        RISC-V
+                           │
+                           ▼
+                    OpenVM Transpiler
+                           │
+                           ▼
+                      OpenVM ISA
+                           │
+                           ▼
+                  ┌─────────────────┐
+                  │  CHIP EXECUTION │
+                  └────────┬────────┘
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ▼                ▼                ▼
+       Base AIR        Memory AIR      Extension AIRs
+          │                │                │
+          └────────────────┼────────────────┘
+                           │
+                           ▼
+                     BUS / LOOKUPS
+                           │
+                           ▼
+                  AIR + INTERACTIONS
+                           │
+                           ▼
+                     SWIRL / STARK
+                           │
+                           ▼
+                 SEGMENT / DEFERRED
+                       PROOFS
+                           │
+                           ▼
+                      RECURSION
+                           │
+                           ▼
+                      ROOT PROOF
+                           │
+                           ▼
+                       VERIFIER
+                           │
+                    ┌──────┴──────┐
+                    ▼             ▼
+                 ACCEPT         REJECT
+</pre>
+  </div>
+
+  <div class="core-idea">
+    <div class="label">The sentence to remember</div>
+    <p>
+      <strong>OpenVM executes a RISC-V program by decomposing machine behavior
+      into chips, proves each chip algebraically through AIR, connects the chips
+      through proof-level interactions, and composes those proofs until a final
+      verifier can establish the correctness of the computation.</strong>
+    </p>
+  </div>
+</section>
+
+</article>
+</div>
+
+<footer>
+  srishti rathi · zero-knowledge architecture study · openvm
+</footer>
+
+</body>
+</html>
