@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>zkSync Airbender Architecture</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
 :root{
   --paper:#f6f5f1;
@@ -21,8 +26,9 @@
   --red:#793a36;
   --red-soft:#f0dddb;
   --maxw:760px;
-  --serif:"Newsreader",Georgia,serif;
-  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+  --serif:"Newsreader","Iowan Old Style",ui-serif,Georgia,serif;
+  --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -30,9 +36,10 @@ body{
   margin:0;
   background:var(--paper);
   color:var(--ink);
-  font-family:var(--mono);
-  font-size:13px;
+  font-family:var(--sans);
+  font-size:14px;
   line-height:1.72;
+  -webkit-font-smoothing:antialiased;
 }
 a{color:inherit}
 header.nav{
@@ -41,14 +48,15 @@ header.nav{
   z-index:20;
   background:rgba(246,245,241,.94);
   backdrop-filter:saturate(140%) blur(7px);
+  border-top:2px solid var(--ink);
   border-bottom:1px solid var(--rule);
 }
 .nav-inner{
-  max-width:var(--maxw);
+  max-width:920px;
   margin:0 auto;
-  padding:16px 28px;
+  padding:18px 28px;
   display:flex;
-  align-items:flex-start;
+  align-items:center;
   justify-content:space-between;
   gap:20px;
 }
@@ -61,9 +69,10 @@ header.nav{
 }
 .nav-links{
   display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-  font-size:11.5px;
+  gap:18px;
+  flex-wrap:nowrap;
+  font-family:var(--mono);
+  font-size:12px;
   letter-spacing:.03em;
 }
 .nav-links a{
@@ -80,6 +89,7 @@ header.nav{
 .eyebrow{
   margin-top:58px;
   color:var(--ink-faint);
+  font-family:var(--mono);
   font-size:11px;
   letter-spacing:.16em;
   text-transform:uppercase;
@@ -109,6 +119,7 @@ h1{
 .pill{
   border:1px solid var(--rule);
   padding:4px 8px;
+  font-family:var(--mono);
   font-size:10px;
   color:var(--ink-soft);
 }
@@ -119,6 +130,7 @@ h1{
 .section:first-of-type{border-top:0}
 .kicker{
   color:var(--accent);
+  font-family:var(--mono);
   font-size:10px;
   letter-spacing:.15em;
   text-transform:uppercase;
@@ -134,7 +146,7 @@ h3{
   margin:30px 0 8px;
 }
 p{margin:8px 0 16px}
-.small{font-size:11px;color:var(--ink-faint)}
+.small{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
 .note{
   border-left:3px solid var(--accent);
   padding:12px 16px;
@@ -214,7 +226,8 @@ th,td{
   border-bottom:1px solid var(--rule);
   vertical-align:top;
 }
-th{color:var(--ink-faint);font-weight:400;text-transform:uppercase;letter-spacing:.08em;font-size:9px}
+th{color:var(--ink-faint);font-family:var(--mono);font-weight:400;text-transform:uppercase;letter-spacing:.08em;font-size:9px}
+td{font-family:var(--sans)}
 .priority-vh{color:var(--red);font-weight:600}
 .priority-h{color:var(--gold);font-weight:600}
 .priority-l{color:var(--ink-faint)}
@@ -245,7 +258,7 @@ pre{
   padding:10px 0;
 }
 .stack-row:first-child{border-top:1px solid var(--rule)}
-.stack-label{color:var(--ink-faint)}
+.stack-label{color:var(--ink-faint);font-family:var(--mono);font-size:11px}
 .link{
   text-decoration:underline;
   text-decoration-color:var(--accent-soft);
@@ -268,6 +281,7 @@ pre{
   border:1px solid var(--rule);
   display:flex;align-items:center;justify-content:center;
   color:var(--ink-faint);
+  font-family:var(--mono);
   font-size:10px;
 }
 .step strong{font-weight:500}
@@ -275,12 +289,13 @@ pre{
   border-top:1px solid var(--rule);
   padding-top:22px;
   color:var(--ink-faint);
+  font-family:var(--mono);
   font-size:10px;
 }
 @media(max-width:650px){
   .wrap{padding:0 20px 80px}
-  .nav-inner{padding:14px 20px;display:block}
-  .nav-links{margin-top:12px;gap:13px}
+  .nav-inner{padding:14px 20px;flex-wrap:wrap}
+  .nav-links{margin-top:12px;gap:13px;flex-wrap:wrap}
   h1{font-size:42px}
   h2{font-size:29px}
   .cols{grid-template-columns:1fr}
@@ -463,7 +478,7 @@ pre{
       Airbender's current architecture uses a RISC-V 32I+M proving machine with
       DEEP-STARK/FRI arguments, lookup/RAM/delegation arguments and AIR constraints.
       The repository describes proving in chunks, connecting chunks with global RAM
-      and delegation arguments, and then joining them through recursion. citeturn0search0
+      and delegation arguments, and then joining them through recursion.
     </p>
 
     <div class="cols">
@@ -517,7 +532,7 @@ pre{
     <p>
       Historically, ZK rollups are described as holding funds in an L1 smart contract
       while computation and storage happen off-chain, with validity proofs used to
-      establish correct state transitions. citeturn0search6turn0search7
+      establish correct state transitions.
     </p>
   </section>
 
@@ -531,7 +546,7 @@ pre{
       is the proving system that proves execution of RISC-V programs. The official
       ZKsync OS repository lists components such as <code>zk_ee</code>,
       <code>basic_bootloader</code>, <code>evm_interpreter</code>,
-      <code>zksync_os_runner</code> and <code>forward_system</code>. citeturn0search4
+      <code>zksync_os_runner</code> and <code>forward_system</code>.
     </p>
 
     <div class="stack">
@@ -563,7 +578,7 @@ pre{
 
     <p class="small">
       Airbender's end-to-end documentation describes the flow from a RISC-V binary
-      through proving, final proof generation, SNARK wrapping and verification. citeturn0search3
+      through proving, final proof generation, SNARK wrapping and verification.
     </p>
   </section>
 
@@ -761,7 +776,7 @@ commit / publish</pre>
     <p class="small">
       The current Airbender documentation describes the system as a RISC-V prover
       with AIR, lookup/RAM/delegation arguments, chunked proving and recursion.
-      The separate prover-service repository provides FRI and SNARK prover services. citeturn0search0turn0search2
+      The separate prover-service repository provides FRI and SNARK prover services.
     </p>
   </section>
 
