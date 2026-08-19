@@ -12,8 +12,8 @@
 
 <style>
 :root{
-  --paper:#ffffff;
-  --paper-raised:#ffffff;
+  --paper:#f6f5f1;
+  --paper-raised:#fdfcfa;
   --ink:#17181d;
   --ink-soft:#50515a;
   --ink-faint:#92939b;
@@ -74,34 +74,46 @@ header.nav{
   position:sticky;
   top:0;
   z-index:30;
-  background:rgba(246,245,241,.94);
-  backdrop-filter:saturate(140%) blur(8px);
+  background:rgba(246,245,241,.92);
+  backdrop-filter:saturate(140%) blur(6px);
   border-bottom:1px solid var(--rule);
 }
 .nav-inner{
-  max-width:var(--maxw);
+  max-width:760px;
   margin:0 auto;
-  padding:15px 28px;
+  padding:16px 28px;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:space-between;
   gap:20px;
 }
 .nav-mark{
   font-family:var(--serif);
   font-style:italic;
-  font-size:18px;
+  font-size:17px;
+  color:var(--ink);
   text-decoration:none;
   white-space:nowrap;
 }
-.back-link{
+.nav-links{
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap;
   font-family:var(--mono);
-  font-size:11.5px;
-  color:var(--ink-soft);
-  text-decoration:none;
-  letter-spacing:.03em;
+  font-size:12px;
+  letter-spacing:.04em;
 }
-.back-link:hover{color:var(--accent)}
+.nav-links a{
+  text-decoration:none;
+  color:var(--ink-soft);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+  transition:border-color .15s ease,color .15s ease;
+}
+.nav-links a:hover{
+  color:var(--ink);
+  border-color:var(--accent-soft);
+}
 
 /* HEADER */
 .article-head{
@@ -443,7 +455,7 @@ footer{
 @media(max-width:650px){
   .wrap{padding:0 20px}
   .nav-inner{padding:14px 20px}
-  .back-link{display:none}
+  .nav-links{gap:14px}
   .article-head{padding:52px 0 35px}
   h2{font-size:28px}
   .dek{font-size:16px}
@@ -461,8 +473,17 @@ footer{
 
 <header class="nav">
   <div class="nav-inner">
-    <a class="nav-mark" href="../../index.html">srishti rathi</a>
-    <a class="back-link" href="../../index.html#architecture">← back to architecture studies</a>
+    <a class="nav-mark" href="../../index.html#top">srishti rathi</a>
+    <nav class="nav-links">
+      <a href="../../index.html#about">about</a>
+      <a href="../../index.html#fundamentals">fundamentals</a>
+      <a href="../../index.html#projects">projects</a>
+      <a href="../../index.html#architecture">architecture</a>
+      <a href="../../index.html#research">research</a>
+      <a href="../../index.html#writing">writing</a>
+      <a href="../../index.html#ctf">ctf</a>
+      <a href="../../index.html#contact">contact</a>
+    </nav>
   </div>
 </header>
 
