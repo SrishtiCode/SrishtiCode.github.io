@@ -217,6 +217,107 @@
     50%{ opacity: .35; }
   }
 
+  /* ---------- architecture studies ---------- */
+  .architecture-study{
+    padding: 26px 0 30px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .architecture-study:first-of-type{
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .architecture-study-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .architecture-study-top h3{
+    font-size:19px;
+  }
+
+  .architecture-study-top span{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+
+  .architecture-study p{
+    margin:10px 0 16px;
+    color:var(--ink-soft);
+    font-size:14.5px;
+    max-width:58ch;
+  }
+
+  .architecture-diagram{
+    margin:20px 0 22px;
+    text-align:center;
+  }
+
+  .architecture-diagram img{
+    display:inline-block;
+    width:371px;
+    max-width:100%;
+    height:auto;
+  }
+
+  .architecture-flow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:5px;
+    margin:14px 0;
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--ink-soft);
+  }
+
+  .architecture-flow span{
+    padding:4px 7px;
+    border:1px solid var(--rule);
+    background:var(--paper-raised);
+  }
+
+  .architecture-flow b{
+    color:var(--accent);
+    font-weight:500;
+  }
+
+  .architecture-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+
+  .architecture-tags span{
+    font-family:var(--mono);
+    font-size:10px;
+    padding:4px 8px;
+    border-radius:4px;
+    background:var(--accent-tint);
+    color:var(--accent);
+  }
+
+  .architecture-link{
+    display:inline-block;
+    margin-top:14px;
+    font-family:var(--mono);
+    font-size:12px;
+    text-decoration:none;
+    color:var(--accent);
+    border-bottom:1px solid var(--accent-tint);
+  }
+
+  .architecture-link:hover{
+    border-color:var(--accent);
+  }
+
   /* ---------- section shell ---------- */
   section{
     padding: 56px 0;
@@ -474,6 +575,7 @@
       <a href="#about">about</a>
       <a href="#fundamentals">fundamentals</a>
       <a href="#projects">projects</a>
+      <a href="#architecture">architecture</a>
       <a href="#research">research</a>
       <a href="#writing">writing</a>
       <a href="#ctf">ctf</a>
@@ -689,6 +791,104 @@
         <a class="project-link" href="https://github.com/SrishtiCode/async-proxy" target="_blank" rel="noopener">View repository →</a>
       </div>
     </div>
+  </section>
+
+
+  <!-- ================= ARCHITECTURE STUDIES ================= -->
+  <section id="architecture">
+
+    <div class="head reveal">
+      <h2>Architecture Studies</h2>
+      <div class="note">production ZK systems</div>
+    </div>
+
+    <p class="intro-copy reveal">
+      I reconstruct production ZK architectures from documentation, papers,
+      and source code — tracing how execution becomes constraints, how
+      components interact, how proofs are composed, and where verification
+      happens.
+    </p>
+
+    <div class="architecture-study reveal">
+      <div class="architecture-study-top">
+        <h3>OpenVM</h3>
+        <span>RISC-V zkVM</span>
+      </div>
+
+      <p>
+        End-to-end architecture study covering guest compilation, VM execution,
+        AIRs, cross-AIR interactions, the STARK / Swirl proof system,
+        recursive proof composition, and final verification.
+      </p>
+
+      <div class="architecture-diagram">
+        <img src="images/openvm-architecture.png"
+             alt="OpenVM — end-to-end zkVM architecture">
+      </div>
+
+      <div class="architecture-flow">
+        <span>execution</span>
+        <b>→</b>
+        <span>AIR</span>
+        <b>→</b>
+        <span>cross-AIR buses</span>
+        <b>→</b>
+        <span>proof</span>
+        <b>→</b>
+        <span>recursion</span>
+        <b>→</b>
+        <span>verification</span>
+      </div>
+
+      <div class="architecture-tags">
+        <span>RISC-V</span>
+        <span>AIR</span>
+        <span>cross-AIR interactions</span>
+        <span>STARK / Swirl</span>
+        <span>recursive proving</span>
+      </div>
+
+      <a class="architecture-link"
+         href="research/architecture/openvm.html">
+        Read OpenVM architecture study →
+      </a>
+    </div>
+
+    <div class="architecture-study reveal">
+      <div class="architecture-study-top">
+        <h3>zkSync Airbender</h3>
+        <span>RISC-V zkVM</span>
+      </div>
+
+      <p>
+        Production zkVM study tracing the relationship between RISC-V
+        execution, traces, constraints, proving components, and the final
+        proof.
+      </p>
+
+      <a class="architecture-link"
+         href="research/architecture/airbender.html">
+        Read Airbender architecture study →
+      </a>
+    </div>
+
+    <div class="architecture-study reveal">
+      <div class="architecture-study-top">
+        <h3>Nexus</h3>
+        <span>zkVM / proving infrastructure</span>
+      </div>
+
+      <p>
+        Architecture study focused on the execution model, constraint system,
+        proving pipeline, proof composition, and verification boundary.
+      </p>
+
+      <a class="architecture-link"
+         href="research/architecture/nexus.html">
+        Read Nexus architecture study →
+      </a>
+    </div>
+
   </section>
 
   <!-- ================= RESEARCH ================= -->
