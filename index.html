@@ -119,6 +119,7 @@
     transition: border-color .15s ease, color .15s ease;
   }
   .nav-links a:hover{ color: var(--ink); border-color: var(--accent-soft); }
+  .nav-links a.nav-highlight{ color: var(--accent); }
 
   /* ---------- hero ---------- */
   .hero{
@@ -348,6 +349,23 @@
     margin: -12px 0 28px;
     font-size: 15px;
   }
+
+  /* ---------- map callout (Fundamentals) ---------- */
+  .map-callout{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin: 0 0 26px;
+    padding: 14px 18px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper-raised);
+  }
+  .map-callout .txt{ font-size: 13.5px; color: var(--ink-soft); }
+  .map-callout .txt strong{ color: var(--ink); font-weight: 500; }
+  .map-callout a.project-link{ margin-top:0; white-space:nowrap; }
 
   .reveal{
     opacity: 0;
@@ -580,6 +598,7 @@
     <nav class="nav-links">
       <a href="#about">about</a>
       <a href="#fundamentals">fundamentals</a>
+      <a href="zkvm.html" class="nav-highlight">zkmap</a>
       <a href="#projects">projects</a>
       <a href="#architecture">architecture</a>
       <a href="#research">research</a>
@@ -712,6 +731,11 @@
       <div class="note">math → implementation</div>
     </div>
     <p class="intro-copy reveal">Concepts I can comfortably explain from the math through to the implementation — not just recite from memory.</p>
+
+    <div class="map-callout reveal">
+      <span class="txt"><strong>Prefer a map?</strong> Explore all 35 topics as an interactive dependency graph.</span>
+      <a class="project-link" href="zkvm.html">Open zkmap →</a>
+    </div>
 
     <div class="glossary reveal">
       <div class="glossary-item"><span class="n">01</span><span class="t"><a href="fundamentals/finite-fields.html">Finite fields and modular arithmetic</a></span></div>
