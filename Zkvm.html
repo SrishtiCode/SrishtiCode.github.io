@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zkmap — a zero-knowledge proofs roadmap · Srishti Rathi</title>
+<meta name="description" content="An interactive map of zero-knowledge proof topics, from finite fields to zkVMs, explained from first principles.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #f6f5f1;
+    --paper-raised: #fdfcfa;
+    --ink: #16171c;
+    --ink-soft: #4c4e58;
+    --ink-faint: #92939c;
+    --rule: #e2e0d8;
+    --accent: #4b3b7c;
+    --accent-soft: #6e5a9e;
+    --accent-tint: #efebf8;
+    --teal: #2f6f62;
+    --teal-tint: #e8f1ee;
+
+    --serif: "Newsreader", "Iowan Old Style", ui-serif, Georgia, serif;
+    --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --maxw: 760px;
+
+    --c1:#7a7f8c; /* foundations */
+    --c2:#3b6fa0; /* arithmetization */
+    --c3:#2f6f62; /* proof framework (teal) */
+    --c4:#b8793a; /* polynomial commitments */
+    --c5:#6e5a9e; /* major proof systems (accent-soft) */
+    --c6:#a34a3f; /* practical systems */
+    --c7:#4b3b7c; /* advanced (accent) */
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  ::selection{ background: var(--accent-tint); color: var(--accent); }
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);}
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  header.nav{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(246,245,241,0.92);
+    backdrop-filter: saturate(140%) blur(6px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-inner{
+    max-width: 1700px;
+    margin: 0 auto;
+    padding: 16px 28px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .nav-mark{
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav-mark span{ color: var(--accent); font-style: normal; }
+  .nav-links{
+    display:flex;
+    gap: 20px;
+    flex-wrap:wrap;
+    align-items:center;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.035em;
+  }
+  .nav-links a{
+    text-decoration:none;
+    color: var(--ink-soft);
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .nav-links a:hover{ color: var(--ink); border-color: var(--accent-soft); text-decoration:none; }
+
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--teal);
+  }
+
+  .intro{max-width:760px;margin:52px auto 8px;padding:0 28px;}
+  .intro h1{font-family:var(--serif);font-weight:500;font-size:clamp(26px,4vw,34px);letter-spacing:-0.01em;margin:10px 0 16px;color:var(--ink);}
+  .intro p{color:var(--ink-soft);font-size:15px;line-height:1.7;margin:0 0 10px;max-width:60ch;}
+  .intro .hint{font-size:12.5px;color:var(--ink-faint);margin-top:16px;font-family:var(--mono);}
+  .intro .hint kbd{background:var(--paper-raised);border:1px solid var(--rule);border-radius:4px;padding:1px 6px;font-family:var(--mono);color:var(--ink-soft);}
+
+  .legend{max-width:1700px;margin:26px auto 0;padding:0 28px;display:flex;flex-wrap:wrap;gap:16px;font-size:11.5px;font-family:var(--mono);color:var(--ink-soft);}
+  .legend .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle;}
+
+  .canvas-wrap{
+    max-width:1700px;margin:26px auto 60px;padding:0 28px;
+    overflow-x:auto;
+  }
+  svg{display:block;}
+  .node-box{cursor:pointer;transition:opacity .15s ease;}
+  .node-box rect{stroke-width:1.4;fill:var(--paper-raised);}
+  .node-box text{fill:var(--ink);font-family:var(--sans);font-weight:500;}
+  .node-box .sub{fill:var(--ink-faint);}
+  .node-box.dim{opacity:0.28;}
+  .node-box.active rect{stroke-width:2.4;}
+
+  .edge{stroke:#c9c6ba;stroke-width:1.3;fill:none;transition:stroke .15s ease, opacity .15s ease;}
+  .edge.dim{opacity:0.12;}
+  .edge.active{stroke:var(--accent);stroke-width:2;opacity:1;}
+  .edge-label{fill:var(--ink-faint);font-family:var(--mono);font-size:10.5px;transition:opacity .15s ease;}
+  .edge-label.dim{opacity:0.12;}
+  .edge-label.active{fill:var(--accent);}
+
+  .section-label{fill:var(--ink-soft);font-family:var(--mono);font-size:12.5px;letter-spacing:0.02em;}
+
+  .panel{
+    position:fixed;top:0;right:0;height:100%;width:400px;max-width:88vw;
+    background:var(--paper-raised);border-left:1px solid var(--rule);
+    transform:translateX(100%);transition:transform .22s ease;
+    z-index:30;overflow-y:auto;padding:32px 28px;
+    box-shadow: -8px 0 28px rgba(22,23,28,0.06);
+  }
+  .panel.open{transform:translateX(0);}
+  .panel .close{cursor:pointer;color:var(--ink-faint);font-family:var(--mono);font-size:12px;margin-bottom:20px;display:inline-block;letter-spacing:0.03em;}
+  .panel .close:hover{color:var(--ink);}
+  .panel .tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--accent-tint);padding:3px 9px;border-radius:4px;margin-bottom:16px;letter-spacing:0.02em;}
+  .panel h2{font-family:var(--serif);font-size:23px;font-weight:500;margin:0 0 16px;color:var(--ink);}
+  .panel p{font-size:14px;line-height:1.75;color:var(--ink-soft);margin:0 0 14px;}
+  .panel .rel-title{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin:24px 0 8px;}
+  .panel .rel a{display:block;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--rule);color:var(--ink);text-decoration:none;}
+  .panel .rel a:hover{color:var(--accent);}
+  .panel .rel .arrow{color:var(--accent);margin-right:6px;}
+  .panel .read-more{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:12.5px;color:var(--accent);border-bottom:1px solid var(--accent-tint);}
+  .panel .read-more:hover{text-decoration:none;border-color:var(--accent);}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(22,23,28,0.28);
+    opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:25;
+  }
+  .overlay.open{opacity:1;pointer-events:auto;}
+
+  footer{max-width:1700px;margin:0 auto;padding:28px 28px 64px;color:var(--ink-faint);font-family:var(--mono);font-size:11.5px;letter-spacing:0.03em;border-top:1px solid var(--rule);text-align:center;}
+
+  @media (max-width:640px){
+    .intro{margin-top:32px;}
+    .canvas-wrap{padding:0 14px;}
+    .nav-links{gap:14px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-mark" href="https://srishticode.github.io/">srishti rathi <span>/ zkmap</span></a>
+    <nav class="nav-links">
+      <a href="https://srishticode.github.io/#about">about</a>
+      <a href="https://srishticode.github.io/#fundamentals">fundamentals</a>
+      <a href="https://srishticode.github.io/#projects">projects</a>
+      <a href="https://srishticode.github.io/#architecture">architecture</a>
+      <a href="https://srishticode.github.io/#research">research</a>
+    </nav>
+  </div>
+</header>
+
+<div class="intro">
+  <span class="eyebrow">interactive map</span>
+  <h1>zero-knowledge proofs, from first principles</h1>
+  <p>A map of the zero-knowledge stack: what depends on what, and why. Thirty-five topics across seven layers, from finite fields up to zkVMs and post-quantum ZK.</p>
+  <p class="hint">Click any box for a first-principles explanation and its closest neighbours. This whole map — layout, connections, panel — is generated from a small data file in JavaScript, not a static image.</p>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<div class="canvas-wrap">
+  <svg id="chart"></svg>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="panel" id="panel">
+  <span class="close" id="closeBtn">✕ close</span>
+  <div id="panelBody"></div>
+</aside>
+
+<footer>built with vanilla JS + SVG, no libraries · part of <a href="https://srishticode.github.io/">srishticode.github.io</a></footer>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   Each section is a "layer" in the ZK stack. Each node carries
+   a short first-principles explanation and (optionally) a link
+   to a deeper write-up elsewhere on the site.
+   ============================================================ */
+
+const SECTIONS = [
+  { id:1, title:"1. Mathematical & cryptographic foundations", color:"var(--c1)", nodes:[
+    { key:"finite-fields", name:"Finite Fields", desc:"A finite set of numbers with addition and multiplication that always wraps back inside the set (arithmetic mod a prime). Every ZK proof lives inside one of these fields instead of the real numbers, so operations stay exact and bounded.", href:"https://srishticode.github.io/fundamentals/finite-fields.html" },
+    { key:"polynomials", name:"Polynomials", desc:"Expressions built from powers of a variable. ZK systems represent computations as polynomials because a polynomial identity that holds at a few random points almost certainly holds everywhere — this is what makes succinct checking possible." , href:"https://srishticode.github.io/fundamentals/polynomials-and-interpolation.html"},
+    { key:"groups-ec", name:"Groups & Elliptic Curves", desc:"Groups are sets with an operation that behaves like addition; elliptic curves give groups where the discrete log problem is hard. Pairing-friendly curves (like BLS12-381) are what make schemes such as KZG and Groth16 possible.", href:"https://srishticode.github.io/fundamentals/groups-and-roots-of-unity.html" },
+    { key:"crypto-assumptions", name:"Cryptographic Assumptions", desc:"The unproven-but-believed hardness problems (discrete log, factoring, lattice problems) that give proof systems their security guarantees. Every SNARK or STARK ultimately reduces its soundness to one of these." },
+    { key:"commitments", name:"Commitments", desc:"A way to seal a value so you can't change it later, but don't have to reveal it yet — like a locked box. Commitment schemes are the building block underneath every polynomial commitment scheme." },
+    { key:"merkle", name:"Hash / Merkle Trees", desc:"A binary tree of hashes where the root commits to every leaf below it. Proving a leaf is included takes only log(n) hashes — this is the backbone of STARK and FRI commitments.", href:"https://srishticode.github.io/fundamentals/merkle-trees.html" },
+  ]},
+  { id:2, title:"2. Arithmetization: computation → algebra", color:"var(--c2)", nodes:[
+    { key:"arith-circuits", name:"Arithmetic Circuits", desc:"A computation expressed as a graph of addition and multiplication gates over a finite field. This is the intermediate form a prover actually proves — not the original program." },
+    { key:"r1cs", name:"R1CS", desc:"Rank-1 Constraint Systems: a computation expressed as a set of equations A·x ⊙ B·x = C·x. This is the constraint format Groth16 and many circom-based circuits are built on.", href:"https://srishticode.github.io/fundamentals/arithmetic-constraints.html" },
+    { key:"qap", name:"QAP", desc:"Quadratic Arithmetic Programs turn R1CS into a single polynomial divisibility check, so checking thousands of constraints collapses into checking one polynomial equation at a random point." },
+    { key:"air", name:"AIR", desc:"Algebraic Intermediate Representation: a computation expressed as an execution trace (a table of states over time) plus polynomial constraints that must hold between consecutive rows. This is what STARKs prove instead of R1CS.", href:"https://srishticode.github.io/fundamentals/air-or-r1cs.html" },
+  ]},
+  { id:3, title:"3. Proof framework", color:"var(--c3)", nodes:[
+    { key:"interactive-proofs", name:"Interactive Proofs", desc:"A protocol where a prover convinces a verifier by exchanging messages, with the verifier sending random challenges the prover can't predict. Nearly every modern proof system starts life as one of these." },
+    { key:"zero-knowledge", name:"Zero Knowledge", desc:"The property that a proof reveals nothing beyond the fact that the statement is true — the verifier learns 'yes, this is correct' and nothing about the witness itself.", href:"https://srishticode.github.io/fundamentals/soundness-completeness-zero-knowledge.html" },
+    { key:"fiat-shamir", name:"Fiat–Shamir", desc:"A transform that replaces the verifier's random challenges with a hash of the transcript so far, turning an interactive proof into a single message the prover can post non-interactively.", href:"https://srishticode.github.io/fundamentals/fiat-shamir-transform.html" },
+    { key:"poly-iops", name:"Polynomial IOPs", desc:"Interactive Oracle Proofs where the prover's messages are polynomials the verifier can query at a few points rather than read in full — the abstract framework underneath PLONK, STARKs, and Marlin." },
+    { key:"sumcheck", name:"Sumcheck", desc:"A protocol for proving the sum of a multivariate polynomial over the boolean hypercube, reducing one big sum to a sequence of tiny, cheaply-checkable univariate polynomials. Core primitive behind GKR and many modern SNARKs." },
+  ]},
+  { id:4, title:"4. Polynomial commitments & proof machinery", color:"var(--c4)", nodes:[
+    { key:"kzg", name:"KZG", desc:"A pairing-based commitment scheme: commit to a polynomial in one group element, then prove any evaluation with a single, constant-size proof — at the cost of a trusted setup.", href:"https://srishticode.github.io/fundamentals/polynomial-commitments.html" },
+    { key:"ipa", name:"IPA", desc:"Inner Product Arguments commit to a polynomial and prove evaluations using only group operations and no pairings or trusted setup — the commitment Halo2 and Bulletproofs are built on." },
+    { key:"fri", name:"FRI", desc:"Fast Reed–Solomon IOP of Proximity: proves a function is close to a low-degree polynomial by repeatedly folding it in half and checking consistency, using only hashes — no trusted setup, post-quantum friendly." },
+    { key:"permutation-args", name:"Permutation Arguments", desc:"Prove that two lists of values are a rearrangement of each other — this is how PLONK enforces 'wiring' between gates without naming each wire explicitly." },
+    { key:"lookup-args", name:"Lookup Arguments", desc:"Prove that every value in a column already appears in some predefined table, without re-deriving it with constraints — makes range checks, XOR, and other 'ugly' operations cheap." },
+  ]},
+  { id:5, title:"5. Major proof systems", color:"var(--c5)", nodes:[
+    { key:"groth16", name:"Groth16", desc:"The smallest, fastest-to-verify SNARK in wide use: a 3-element proof and a single pairing check, at the cost of a circuit-specific trusted setup. Still the default for many production zkRollups." },
+    { key:"plonk", name:"PLONK / Plonkish", desc:"A SNARK with a universal, reusable trusted setup and a flexible custom-gate arithmetization, combining permutation and lookup arguments. 'Plonkish' now refers to the whole family of arithmetizations it inspired (Halo2, etc.)." },
+    { key:"starks", name:"STARKs", desc:"Proof systems built from AIR + FRI: no trusted setup, post-quantum secure, but with larger proofs than SNARKs. The basis of most modern zkVMs." },
+    { key:"recursive-proofs", name:"Recursive Proofs", desc:"A proof that verifies another proof inside its own circuit. This lets you compress a chain of proofs into one, or verify computation incrementally as it runs (IVC)." },
+    { key:"folding", name:"Folding / Nova", desc:"Instead of recursively verifying a whole proof, folding schemes combine two instances of a relation into one cheaper instance every step — making incremental proving dramatically faster than classical recursion." },
+  ]},
+  { id:6, title:"6. Practical ZK systems", color:"var(--c6)", nodes:[
+    { key:"zkrollups", name:"zkRollups", desc:"Layer-2 blockchains that execute transactions off-chain and post a succinct proof of correct execution on-chain, inheriting the base chain's security without replaying every transaction." },
+    { key:"zkvms", name:"zkVMs", desc:"A general-purpose virtual machine (often RISC-V) where every instruction execution is proven, so you can prove arbitrary programs without hand-writing a circuit for each one." },
+    { key:"zkevms", name:"zkEVMs", desc:"A zkVM specialized to faithfully execute and prove real Ethereum bytecode, so existing smart contracts can run inside a validity-proved rollup unmodified." },
+    { key:"proof-agg", name:"Proof Aggregation", desc:"Combining many independent proofs into a single proof (or a single verification call), amortizing verification cost across thousands of transactions or rollup batches." },
+    { key:"zk-hardware", name:"ZK Hardware", desc:"GPU, FPGA, and ASIC acceleration for the number-theoretic transforms and MSMs that dominate prover time — often the difference between proving in minutes versus seconds." },
+  ]},
+  { id:7, title:"7. Advanced directions & applications", color:"var(--c7)", nodes:[
+    { key:"zkml", name:"zkML", desc:"Proving that a machine-learning model was evaluated correctly on some input, without revealing the model weights, the input, or both — an active and still-expensive research area." },
+    { key:"lattice-zk", name:"Lattice-based ZK", desc:"Proof systems built on lattice hardness assumptions instead of discrete log or hashing, because they're believed to resist attacks from quantum computers." },
+    { key:"zkdefi", name:"zkDeFi / Privacy", desc:"Using ZK proofs to hide transaction amounts, balances, or counterparties in DeFi protocols while still letting anyone verify the system's invariants hold." },
+    { key:"enterprise-id", name:"Enterprise / Identity", desc:"Selective disclosure: proving a credential or claim about yourself (age, accreditation, KYC status) is true, without handing over the underlying document." },
+    { key:"beyond-web3", name:"Beyond Web3", desc:"ZK applications outside blockchains entirely — verifiable cloud computation, private ML inference, and general trust-minimized outsourcing of computation." },
+  ]},
+];
+
+/* source-section, source-node-index -> target-section, target-node-index, label */
+const EDGES = [
+  [[1,0],[2,0],"math base"],
+  [[1,1],[2,2],"encode as polynomials"],
+  [[1,5],[2,3],"commit trace"],
+
+  [[2,0],[3,0],"prove computation"],
+  [[2,1],[3,1],"hide witness"],
+  [[2,2],[3,3],"polynomial encoding"],
+  [[2,3],[3,4],"algebraic proof"],
+
+  [[3,2],[4,0],"non-interactive"],
+  [[3,2],[4,1],"non-interactive"],
+  [[3,2],[4,2],"non-interactive"],
+  [[3,3],[4,0],"instantiate"],
+  [[3,4],[4,2],"low-degree test"],
+
+  [[4,0],[5,0],"commit"],
+  [[4,0],[5,1],"commit"],
+  [[4,1],[5,1],"commit (Halo2)"],
+  [[4,2],[5,2],"commit"],
+  [[4,3],[5,1],"wiring"],
+  [[4,4],[5,1],"lookups"],
+
+  [[5,0],[6,0],"prove state transition"],
+  [[5,1],[6,0],"prove state transition"],
+  [[5,1],[6,1],"prove circuits"],
+  [[5,2],[6,1],"prove execution"],
+  [[5,3],[6,3],"batch proofs"],
+  [[5,4],[6,3],"incremental proofs"],
+
+  [[6,1],[6,2],"EVM-specific"],
+
+  [[6,0],[7,3],"verifiable claims"],
+  [[6,1],[7,0],"general computation"],
+  [[6,2],[7,2],"private DeFi"],
+  [[6,3],[7,4],"scalable finality"],
+  [[6,4],[7,4],"accelerate proving"],
+];
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+const BOX_W = 210, BOX_H = 68, COL_GAP = 34, ROW_PITCH = 200, TOP_PAD = 60;
+const LEFT_PAD = 30;
+
+function layout() {
+  const positions = {}; // "s-n" -> {x,y,w,h,cx,cy}
+  let maxRowWidth = 0;
+  SECTIONS.forEach((sec, si) => {
+    const y = TOP_PAD + si * ROW_PITCH;
+    sec.nodes.forEach((node, ni) => {
+      const x = LEFT_PAD + ni * (BOX_W + COL_GAP);
+      positions[sec.id + "-" + ni] = {
+        x, y, w: BOX_W, h: BOX_H,
+        cx: x + BOX_W / 2, cy: y + BOX_H / 2,
+        section: sec, node, ni
+      };
+      maxRowWidth = Math.max(maxRowWidth, x + BOX_W);
+    });
+  });
+  return { positions, width: maxRowWidth + LEFT_PAD, height: TOP_PAD + SECTIONS.length * ROW_PITCH };
+}
+
+const { positions, width, height } = layout();
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const svg = document.getElementById("chart");
+const SVGNS = "http://www.w3.org/2000/svg";
+svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+svg.setAttribute("width", width);
+svg.setAttribute("height", height);
+
+function el(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// arrow marker
+const defs = el("defs", {});
+const marker = el("marker", { id:"arrow", viewBox:"0 0 10 10", refX:"8", refY:"5", markerWidth:"6", markerHeight:"6", orient:"auto-start-reverse" });
+marker.appendChild(el("path", { d:"M1 1L8 5L1 9", fill:"none", stroke:"#c9c6ba", "stroke-width":"1.4" }));
+defs.appendChild(marker);
+svg.appendChild(defs);
+
+// section labels
+SECTIONS.forEach(sec => {
+  const y = TOP_PAD + (sec.id - 1) * ROW_PITCH - 22;
+  svg.appendChild(el("text", { x:LEFT_PAD, y, class:"section-label" })).textContent = sec.title;
+});
+
+// edges (drawn first, under nodes)
+const edgeEls = [];
+EDGES.forEach(([[ss,sn],[ts,tn],label], i) => {
+  const s = positions[ss + "-" + sn];
+  const t = positions[ts + "-" + tn];
+  let x1, y1, x2, y2;
+  if (ss === ts) {
+    x1 = s.x + s.w; y1 = s.cy;
+    x2 = t.x;       y2 = t.cy;
+  } else {
+    x1 = s.cx; y1 = s.y + s.h;
+    x2 = t.cx; y2 = t.y;
+  }
+  const path = el("path", {
+    d: `M${x1} ${y1} L${x2} ${y2}`,
+    class: "edge", "marker-end":"url(#arrow)",
+    "data-src": ss+"-"+sn, "data-tgt": ts+"-"+tn
+  });
+  svg.appendChild(path);
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const lbl = el("text", { x:mx, y:my, class:"edge-label", "text-anchor":"middle" });
+  lbl.textContent = label;
+  svg.appendChild(lbl);
+  edgeEls.push({ path, lbl, src: ss+"-"+sn, tgt: ts+"-"+tn });
+});
+
+// nodes
+const nodeEls = {};
+Object.keys(positions).forEach(key => {
+  const p = positions[key];
+  const g = el("g", { class:"node-box", "data-key":key });
+  g.appendChild(el("rect", { x:p.x, y:p.y, width:p.w, height:p.h, rx:7, fill:"var(--paper-raised)", stroke:p.section.color }));
+  const t = el("text", { x:p.x+14, y:p.y+p.h/2+1, "dominant-baseline":"middle", "font-size":"13.5" });
+  t.textContent = p.node.name;
+  g.appendChild(t);
+  g.addEventListener("click", () => selectNode(key));
+  svg.appendChild(g);
+  nodeEls[key] = g;
+});
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+const legend = document.getElementById("legend");
+SECTIONS.forEach(sec => {
+  const item = document.createElement("span");
+  item.innerHTML = `<span class="dot" style="background:${sec.color}"></span>${sec.title.replace(/^\d+\.\s*/, "")}`;
+  legend.appendChild(item);
+});
+
+/* ============================================================
+   INTERACTION
+   ============================================================ */
+const panel = document.getElementById("panel");
+const overlay = document.getElementById("overlay");
+const panelBody = document.getElementById("panelBody");
+let activeKey = null;
+
+function neighbours(key) {
+  const out = [], into = [];
+  EDGES.forEach(([[ss,sn],[ts,tn],label]) => {
+    const s = ss+"-"+sn, t = ts+"-"+tn;
+    if (s === key) out.push({ key: t, label });
+    if (t === key) into.push({ key: s, label });
+  });
+  return { out, into };
+}
+
+function selectNode(key) {
+  activeKey = key;
+  const p = positions[key];
+
+  Object.keys(nodeEls).forEach(k => nodeEls[k].classList.toggle("dim", k !== key));
+  nodeEls[key].classList.remove("dim");
+  nodeEls[key].classList.add("active");
+  Object.keys(nodeEls).forEach(k => { if (k !== key) nodeEls[k].classList.remove("active"); });
+
+  edgeEls.forEach(e => {
+    const touches = e.src === key || e.tgt === key;
+    e.path.classList.toggle("dim", !touches);
+    e.path.classList.toggle("active", touches);
+    e.lbl.classList.toggle("dim", !touches);
+    e.lbl.classList.toggle("active", touches);
+  });
+
+  const { out, into } = neighbours(key);
+  const relHtml = (list, dir) => list.map(r => {
+    const rp = positions[r.key];
+    return `<a href="#" data-goto="${r.key}"><span class="arrow">${dir==='out'?'→':'←'}</span>${rp.node.name} <span style="color:var(--ink-faint);font-size:11px;">— ${r.label}</span></a>`;
+  }).join("");
+
+  panelBody.innerHTML = `
+    <span class="tag">${p.section.title.replace(/^\d+\.\s*/, "")}</span>
+    <h2>${p.node.name}</h2>
+    <p>${p.node.desc}</p>
+    ${p.node.href ? `<a class="read-more" href="${p.node.href}">full write-up →</a>` : ""}
+    ${out.length ? `<div class="rel-title">leads to</div><div class="rel">${relHtml(out,'out')}</div>` : ""}
+    ${into.length ? `<div class="rel-title">builds on</div><div class="rel">${relHtml(into,'in')}</div>` : ""}
+  `;
+  panelBody.querySelectorAll("[data-goto]").forEach(a => {
+    a.addEventListener("click", (e) => { e.preventDefault(); selectNode(a.getAttribute("data-goto")); });
+  });
+
+  panel.classList.add("open");
+  overlay.classList.add("open");
+}
+
+function closePanel() {
+  panel.classList.remove("open");
+  overlay.classList.remove("open");
+  Object.keys(nodeEls).forEach(k => { nodeEls[k].classList.remove("dim"); nodeEls[k].classList.remove("active"); });
+  edgeEls.forEach(e => { e.path.classList.remove("dim"); e.path.classList.remove("active"); e.lbl.classList.remove("dim"); e.lbl.classList.remove("active"); });
+  activeKey = null;
+}
+
+document.getElementById("closeBtn").addEventListener("click", closePanel);
+overlay.addEventListener("click", closePanel);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
+</script>
+</body>
+</html>
